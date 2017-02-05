@@ -11,9 +11,9 @@ public class GraphItWindow : EditorWindow
     static int mMouseOverGraphIndex = -1;
     static float mMouseX = 0;
 
-    static float x_offset = 2.0f;
-    static float y_gap = 5.0f;
-    static float y_offset = 2;
+    static float x_offset = 300.0f;
+    static float y_gap = 40.0f;
+    static float y_offset = 40;
     static int precision_slider = 3;
 
     static GUIStyle NameLabel;
@@ -99,28 +99,6 @@ public class GraphItWindow : EditorWindow
             InitializeStyles();
             CreateLineMaterial();
 
-            EditorGUILayout.BeginHorizontal(GUIStyle.none);
-            EditorGUILayout.BeginVertical(FracGS, GUILayout.Height(18));
-            precision_slider = EditorGUILayout.IntSlider("Fractional Digits", precision_slider, 0, 15);
-            EditorGUILayout.EndVertical();
-            if (GUILayout.Button("Show All Graphs"))
-            {
-                foreach (KeyValuePair<string, GraphItData> kv in GraphIt.Instance.Graphs)
-                {
-                    kv.Value.SetHidden(false);
-                }
-            }
-            /*
-            if (GUILayout.Button("?"))
-            {
-                foreach (KeyValuePair<string, GraphItData> kv in GraphIt.Instance.Graphs)
-                {
-                    kv.Value.SetHidden(false);
-                }
-            }*/
-            //EditorGUILayout.LabelField("Left click+drag on graph to resize. Right click to hide graph.", EditorStyles.helpBox );
-            EditorGUILayout.EndHorizontal();
-
             mLineMaterial.SetPass(0);
 
             int graph_index = 0;
@@ -166,7 +144,7 @@ public class GraphItWindow : EditorWindow
 
                 foreach (KeyValuePair<string, GraphItData> kv in GraphIt.Instance.Graphs)
                 {
-                    if ( kv.Value.GetHidden() )
+                    if (kv.Value.GetHidden())
                     {
                         continue;
                     }
@@ -251,17 +229,17 @@ public class GraphItWindow : EditorWindow
                 Rect r = EditorGUILayout.BeginVertical(s);
                 if (r.width != -0)
                 {
-                    mWidth = r.width - 2 * x_offset;
+                    mWidth = r.width - x_offset;
                 }
 
                 //Determine if we can fit all of the text
-                float row_size = 18;
-                float text_block_size = row_size * 4;
-                if (kv.Value.mData.Count == 1)
-                {
-                    text_block_size = row_size * 3;
-                }
-                bool show_full_text = (kv.Value.mData.Count * text_block_size + row_size) < height;
+                //float row_size = 158;
+                //float text_block_size = row_size * 4;
+                //if (kv.Value.mData.Count == 1)
+                //{
+                //    text_block_size = row_size * 3;
+                //}
+                //bool show_full_text = (kv.Value.mData.Count * text_block_size + row_size) < height;
 
                 string num_format = "###,###,###,##0.";
                 for( int i = 0; i < precision_slider; i++ )
@@ -272,56 +250,19 @@ public class GraphItWindow : EditorWindow
                 string fu_str = " " + (kv.Value.mFixedUpdate ? "(FixedUpdate)" : "");
 
                 //skip subgraph title if only one, and it's the same.
-                if (show_full_text)
-                {
-                    NameLabel.normal.textColor = Color.white;
-                    EditorGUILayout.LabelField(kv.Key + fu_str, NameLabel);
-                }
+                NameLabel.normal.textColor = Color.white;
+                //wNameLabel.normal
+                EditorGUILayout.LabelField(kv.Key + fu_str, NameLabel);
+
 
                 foreach (KeyValuePair<string, GraphItDataInternal> entry in kv.Value.mData)
                 {
                     GraphItDataInternal g = entry.Value;
-                    if (show_full_text)
+                    if (kv.Value.mData.Count > 1 || entry.Key != GraphIt.BASE_GRAPH)
                     {
-                        if (kv.Value.mData.Count > 1 || entry.Key != GraphIt.BASE_GRAPH)
-                        {
-                            NameLabel.normal.textColor = g.mColor;
-                            EditorGUILayout.LabelField(entry.Key, NameLabel);
-                        }
-                        EditorGUILayout.LabelField("Avg: " + g.mAvg.ToString(num_format) + " (" + g.mFastAvg.ToString(num_format) + ")", SmallLabel);
-                        EditorGUILayout.LabelField("Min: " + g.mMin.ToString(num_format), SmallLabel);
-                        EditorGUILayout.LabelField("Max: " + g.mMax.ToString(num_format), SmallLabel);
+                        NameLabel.normal.textColor = g.mColor;
                     }
-                    else
-                    {
-                        //fit each line manually or drop it
-                        height -= row_size;
-                        if (height >= 0)
-                        {
-                            if (kv.Value.mData.Count > 1)
-                            {
-                                NameLabel.normal.textColor = g.mColor;
-                            }
-                            else
-                            {
-                                NameLabel.normal.textColor = Color.white;
-                            }
-                            string text = entry.Key;
-                            if( text == GraphIt.BASE_GRAPH )
-                            {
-                                text = kv.Key;
-                            }
-                            EditorGUILayout.LabelField(text + fu_str, NameLabel);
-                        }
-                        height -= row_size;
-                        if (height >= 0)
-                        {
-                            EditorGUILayout.LabelField("Avg: " + g.mAvg.ToString(num_format) + " (" + g.mFastAvg.ToString(num_format) +
-                            ")  Min: " + g.mMin.ToString(num_format) +
-                            "  Max: " + g.mMax.ToString(num_format)
-                            , SmallLabel);
-                        }
-                    }
+                    EditorGUILayout.LabelField(entry.Key +"   Avg: " + g.mAvg.ToString(num_format) + " (" + g.mFastAvg.ToString(num_format) + "),Min: " + g.mMin.ToString(num_format) + ",Max: " + g.mMax.ToString(num_format), NameLabel);
                 }
                 
                 //Respond to mouse input!

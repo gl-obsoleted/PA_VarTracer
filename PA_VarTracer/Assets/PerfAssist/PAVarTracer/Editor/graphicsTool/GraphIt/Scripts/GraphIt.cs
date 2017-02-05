@@ -45,7 +45,7 @@ public class GraphItDataInternal
 
 public class GraphItData
 {
-    public const int DEFAULT_SAMPLES = 2048;
+    public const int DEFAULT_SAMPLES = 1048;
     public const int RECENT_WINDOW_SIZE = 120;
     
     public Dictionary<string, GraphItDataInternal> mData = new Dictionary<string, GraphItDataInternal>();
@@ -54,6 +54,7 @@ public class GraphItData
 
     public int mCurrentIndex;
     public bool mInclude0;
+    public bool mIsNormalized;
 
     public bool mReadyForUpdate;
     public bool mFixedUpdate;
@@ -82,7 +83,7 @@ public class GraphItData
         mWindowSize = DEFAULT_SAMPLES;
         mFullArray = false;
 
-        mSharedYAxis = false;
+        mSharedYAxis = false; 
         mHidden = false;
         mHeight = 175;
 
@@ -211,7 +212,7 @@ public class GraphIt : MonoBehaviour
 #if UNITY_EDITOR
             if( mInstance == null )
             {
-                GameObject go = new GameObject("GraphItVar");
+                GameObject go = new GameObject("GraphIt");
                 go.hideFlags = HideFlags.HideAndDontSave;
                 mInstance = go.AddComponent<GraphIt>();
             }
@@ -279,6 +280,12 @@ public class GraphIt : MonoBehaviour
             {
                 recent_sum += g.mDataPoints[recent_start];
                 recent_start = (recent_start + 1) % g.mDataPoints.Length;
+            }
+
+            if (graph.mIsNormalized)
+            {
+                min = 0;
+                max = 1;
             }
 
             g.mMin = min;
@@ -626,4 +633,19 @@ public class GraphIt : MonoBehaviour
         g.mSharedYAxis = shared_y_axis;
 #endif
     }
+
+
+    public static void NormalizedGraph(string graph, bool isNormalized)
+    {
+#if UNITY_EDITOR
+        if (!Instance.Graphs.ContainsKey(graph))
+        {
+            Instance.Graphs[graph] = new GraphItData(graph);
+        }
+
+        GraphItData g = Instance.Graphs[graph];
+        g.mIsNormalized = isNormalized;
+#endif
+    }
+
 }

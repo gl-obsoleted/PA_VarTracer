@@ -51,15 +51,41 @@ using UnityEngine;
                  m_window.CheckForResizing();
          }
 
-
-         public static void DefineVisualVar(string channel,string varName)
+         public static void DefineVisualChannel(string channel,float height,bool isShareY = false,bool isNormalized = false)
          {
-
+             GraphIt.GraphSetupHeight(channel, height);
+             GraphIt.ShareYAxis(channel,isShareY);
+             GraphIt.NormalizedGraph(channel,isNormalized);
          }
 
-         public static void UpdateVisualVar(string channel, string varName,float value)
+         public static void DefineVisualVarColor(string channel,string varName,Color color)
          {
+             GraphIt.GraphSetupColour(channel,varName,color);
+         }
 
+         public static void UpdateVisualVarBySingle(string channel, string varName,float value)
+         {
+             GraphIt.Log(channel,varName,value);
+         }
+
+         public static void UpdateVisualVarByGroup(string channel, List<string> varNames, List<float> values)
+         {
+             if(varNames.Count!=values.Count)
+             {
+                 Debug.LogErrorFormat("UpdateVisualVarByGroup paramater error, channel name ={0}",channel);
+                 return;
+             }
+             for (int i = 0; i < varNames.Count;i++)
+             {
+                 GraphIt.Log(channel, varNames[i],values[i]);
+             }
+             StepVisualVar(channel);
+         }
+
+
+         public static void StepVisualVar(string channel)
+         {
+             GraphIt.StepGraph(channel);
          }
 
          public static void SendVisualEvent(string channel,string EventFlag)
@@ -71,13 +97,6 @@ using UnityEngine;
          void OnEnable()
          {
              EditorApplication.update += MyDelegate;
-             GraphIt.GraphSetupColour("TestData", "X", Color.red);
-             GraphIt.GraphSetupColour("TestData", "Y", Color.green);
-             GraphIt.GraphSetupColour("TestData", "Z", Color.blue);
-
-             GraphIt.GraphSetupColour("TestData2", "X", Color.red);
-             GraphIt.GraphSetupColour("TestData2", "Y", Color.green);
-             GraphIt.GraphSetupColour("TestData2", "Z", Color.blue);
          }
 
          void OnDisable()
@@ -91,24 +110,14 @@ using UnityEngine;
          }
 
          void Update()
-         {
-             GraphIt.Log("TestData", "X", UnityEngine.Random.value * 5.0f);
-             GraphIt.Log("TestData", "Y", UnityEngine.Random.value * 5.0f + 10f);
-             GraphIt.Log("TestData", "Z", UnityEngine.Random.value * 5.0f + 20f);
+         {  
+             UpdateVisualVarByGroup("Camera Rate", new List<string> { "X", "Y", "Z", "Total" }, new List<float>{ 0.3f +UnityEngine.Random.value * 0.1f
+                 ,0.5f +UnityEngine.Random.value * 0.1f,0.7f+UnityEngine.Random.value * 0.1f,0.9f+UnityEngine.Random.value * 0.1f});
+             UpdateVisualVarByGroup("Player Rate", new List<string> { "X", "Y", "Z", "Total" }, new List<float>{0.3f+UnityEngine.Random.value * 0.1f
+                 ,0.5f+UnityEngine.Random.value * 0.1f,0.7f +UnityEngine.Random.value * 0.1f,0.9f+UnityEngine.Random.value * 0.1f});
+             UpdateVisualVarByGroup("NPC Rate", new List<string> { "X", "Y", "Z", "Total"}, new List<float>{0.3f+UnityEngine.Random.value * 0.1f
+                 ,0.5f+UnityEngine.Random.value * 0.1f,0.7f+UnityEngine.Random.value * 0.1f,0.9f+UnityEngine.Random.value * 0.1f});
 
-             GraphIt.StepGraph("TestData");
-
-             GraphIt.Log("TestData2", "X", UnityEngine.Random.value * 5.0f);
-             GraphIt.Log("TestData2", "Y", UnityEngine.Random.value * 5.0f + 10f);
-             GraphIt.Log("TestData2", "Z", UnityEngine.Random.value * 5.0f + 20f);
-
-             GraphIt.StepGraph("TestData2");
-
-             //var dataInfoMap = result.NavigateResult;
-                //GraphItLuaPro.Log(HanoiData.GRAPH_TIMECONSUMING, HanoiData.SUBGRAPH_LUA_TIMECONSUMING_INCLUSIVE, dataInfoMap[HanoiData.SUBGRAPH_LUA_TIMECONSUMING_INCLUSIVE]);
-                //GraphItLuaPro.Log(HanoiData.GRAPH_TIMECONSUMING, HanoiData.SUBGRAPH_LUA_TIMECONSUMING_EXCLUSIVE, dataInfoMap[HanoiData.SUBGRAPH_LUA_TIMECONSUMING_EXCLUSIVE]);
-                //GraphItLuaPro.Log(HanoiData.GRAPH_TIME_PERCENT, HanoiData.SUBGRAPH_LUA_PERCENT_INCLUSIVE, dataInfoMap[HanoiData.SUBGRAPH_LUA_PERCENT_INCLUSIVE]);
-                //GraphItLuaPro.Log(HanoiData.GRAPH_TIME_PERCENT, HanoiData.SUBGRAPH_LUA_PERCENT_EXCLUSIVE, dataInfoMap[HanoiData.SUBGRAPH_LUA_PERCENT_EXCLUSIVE]);
              Repaint();
          }
 
@@ -122,7 +131,6 @@ using UnityEngine;
 
          public void OnGUI()
          {
-             GraphItWindow.DrawGraphs(this.position, this);
              CheckForResizing();
              Handles.BeginGUI();
              Handles.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(1, 1, 1));
@@ -132,24 +140,13 @@ using UnityEngine;
                  drawGUIElement();
              }
              GUILayout.EndArea();
-
-             //navigation窗口内容
-             GUILayout.BeginArea(new Rect(0, m_navigationScreenPosY, m_winWidth, m_navigationScreenHeight));
+             ////navigation窗口内容
+             GUILayout.BeginArea(new Rect(0, m_navigationScreenPosY, m_winWidth, m_winHeight));
              {
-                 //if (m_data.isHanoiDataHasContent())
+                 GraphItWindow.DrawGraphs(this.position, this);
              }
              GUILayout.EndArea();
-
-             if (EditorWindow.focusedWindow == this)
-             {
-                 CheckForInput();
-             }
              Handles.EndGUI();
-         }
-
-         private void ClearHanoiRoot() {
-             //GraphItLuaPro.Clear();
-             //GraphItWindowLuaPro.MouseXOnPause = -1;
          }
 
          private void drawGUIElement()
@@ -190,18 +187,9 @@ using UnityEngine;
              m_controlScreenHeight = m_winHeight - m_detailScreenHeight - m_navigationScreenHeight;
              m_controlScreenPosY = 0.0f;
 
-
-             GraphIt.GraphSetupHeight("TestData", m_navigationScreenHeight / 2);
-             GraphIt.GraphSetupHeight("TestData2", m_navigationScreenHeight / 2);
-             //GraphItLuaPro.GraphSetupHeight(HanoiData.GRAPH_TIME_PERCENT, m_navigationScreenHeight / 2);
-             GraphIt.ShareYAxis("TestData", true);
-             GraphIt.ShareYAxis("TestData2",true);
-             //GraphItLuaPro.ShareYAxis(HanoiData.GRAPH_TIME_PERCENT, true);
-
-             //GraphItLuaPro.GraphSetupHeight(HanoiData.GRAPH_TIMECONSUMING, m_navigationScreenHeight / 2 - GraphItWindowLuaPro.y_gap);
-             //GraphItLuaPro.GraphSetupHeight(HanoiData.GRAPH_TIME_PERCENT, m_navigationScreenHeight / 2 - GraphItWindowLuaPro.y_gap);
-             //GraphItLuaPro.ShareYAxis(HanoiData.GRAPH_TIMECONSUMING,true);
-             //GraphItLuaPro.ShareYAxis(HanoiData.GRAPH_TIME_PERCENT,true);
+             DefineVisualChannel("Camera Rate", m_navigationScreenHeight / 2, true, true);
+             DefineVisualChannel("Player Rate", m_navigationScreenHeight / 2, true, true);
+             DefineVisualChannel("NPC Rate", m_navigationScreenHeight / 2, true, true);
          }
 
          public Vector2 ViewToDrawingTransformPoint(Vector2 lhs)
