@@ -23,6 +23,19 @@ public class GraphItWindow : EditorWindow
 
     static Material mLineMaterial;
 
+    public static float m_winWidth = 0.0f;
+    public static float m_winHeight = 0.0f;
+
+    public static float m_controlScreenHeight = 0.0f;
+    public static float m_controlScreenPosY = 0.0f;
+
+    public static float m_navigationScreenHeight = 0.0f;
+    public static float m_navigationScreenPosY = 0.0f;
+
+    public static float m_detailScreenHeight = 0.0f;
+    public static float m_detailScreenPosY = 0.0f;
+
+
     static void InitializeStyles()
     {
         if (NameLabel == null)
@@ -39,6 +52,74 @@ public class GraphItWindow : EditorWindow
             FracGS = new GUIStyle(EditorStyles.whiteLabel);
             FracGS.alignment = TextAnchor.LowerLeft;
         }
+    }
+
+    [MenuItem("Window/PerfAssist" + "/GraphItVariable")]
+    static void Init()
+    {
+        // Get existing open window or if none, make a new one:
+        GraphItWindow window = (GraphItWindow)EditorWindow.GetWindow(typeof(GraphItWindow), false, "GraphItVariable ");
+        window.minSize = new Vector2(230f, 50f);
+        window.Show();
+    }
+
+
+
+    void OnEnable()
+    {
+        EditorApplication.update += MyDelegate;
+    }
+
+    void OnDisable()
+    {
+        EditorApplication.update -= MyDelegate;
+    }
+
+    void MyDelegate()
+    {
+        Repaint();
+    }
+
+    public void CheckForResizing()
+    {
+        if (Mathf.Approximately(position.width, m_winWidth) &&
+            Mathf.Approximately(position.height, m_winHeight))
+            return;
+
+        m_winWidth = position.width;
+        m_winHeight = position.height;
+
+        m_detailScreenHeight = m_winHeight / 1.65f;
+        m_detailScreenPosY = m_winHeight / 2.5f;
+
+        m_navigationScreenHeight = (m_winHeight - m_detailScreenHeight) / 1.1f;
+        m_navigationScreenPosY = m_detailScreenPosY / 10.0f;
+
+        m_controlScreenHeight = m_winHeight - m_detailScreenHeight - m_navigationScreenHeight;
+        m_controlScreenPosY = 0.0f;
+    }
+
+
+    void OnGUI()
+    {
+        CheckForResizing();
+
+        Handles.BeginGUI();
+        Handles.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(1, 1, 1));
+        //control窗口内容
+        GUILayout.BeginArea(new Rect(0, m_controlScreenPosY, m_winWidth, m_controlScreenHeight));
+        {
+            //drawGUIElement();
+        }
+        GUILayout.EndArea();
+        ////navigation窗口内容
+        GUILayout.BeginArea(new Rect(0, m_navigationScreenPosY, m_winWidth, m_winHeight));
+        {
+            DrawGraphs(position, this);
+        }
+        GUILayout.EndArea();
+        Handles.EndGUI();
+
     }
 
     static void DrawGraphGridLines(float y_pos, float width, float height, bool draw_mouse_line)

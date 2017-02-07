@@ -99,6 +99,8 @@ using UnityEngine;
          {
              GUILayout.BeginHorizontal();
              {
+                 //select = GUI.Toolbar(Rect(10, 10, barResource.length * 80, 30), select, barResource);  
+
                  if (GUILayout.Button("Loadfile", GUILayout.Width(70)))
                  {
 
