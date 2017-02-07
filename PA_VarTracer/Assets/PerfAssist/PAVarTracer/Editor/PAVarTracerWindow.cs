@@ -32,8 +32,6 @@ using UnityEngine;
          public static float m_detailScreenHeight = 0.0f;
          public static float m_detailScreenPosY = 0.0f;
 
-         public bool m_isTestCallLua = false;
-
          private static PAVarTracerWindow m_window;
          public PAVarTracerWindow Window
          {
@@ -51,73 +49,19 @@ using UnityEngine;
                  m_window.CheckForResizing();
          }
 
-         public static void DefineVisualChannel(string channel,float height,bool isShareY = false,bool isNormalized = false)
-         {
-             GraphIt.GraphSetupHeight(channel, height);
-             GraphIt.ShareYAxis(channel,isShareY);
-             GraphIt.NormalizedGraph(channel,isNormalized);
-         }
-
-         public static void DefineVisualVarColor(string channel,string varName,Color color)
-         {
-             GraphIt.GraphSetupColour(channel,varName,color);
-         }
-
-         public static void UpdateVisualVarBySingle(string channel, string varName,float value)
-         {
-             GraphIt.Log(channel,varName,value);
-         }
-
-         public static void UpdateVisualVarByGroup(string channel, List<string> varNames, List<float> values)
-         {
-             if(varNames.Count!=values.Count)
-             {
-                 Debug.LogErrorFormat("UpdateVisualVarByGroup paramater error, channel name ={0}",channel);
-                 return;
-             }
-             for (int i = 0; i < varNames.Count;i++)
-             {
-                 GraphIt.Log(channel, varNames[i],values[i]);
-             }
-             StepVisualVar(channel);
-         }
-
-
-         public static void StepVisualVar(string channel)
-         {
-             GraphIt.StepGraph(channel);
-         }
-
-         public static void SendVisualEvent(string channel,string EventFlag)
-         {
-
-         }
-
-
-         void OnEnable()
-         {
-             EditorApplication.update += MyDelegate;
-         }
-
-         void OnDisable()
-         {
-             EditorApplication.update -= MyDelegate;
-         }
-
-         void MyDelegate()
-         {
-             Repaint();
-         }
 
          void Update()
          {  
-             UpdateVisualVarByGroup("Camera Rate", new List<string> { "X", "Y", "Z", "Total" }, new List<float>{ 0.3f +UnityEngine.Random.value * 0.1f
-                 ,0.5f +UnityEngine.Random.value * 0.1f,0.7f+UnityEngine.Random.value * 0.1f,0.9f+UnityEngine.Random.value * 0.1f});
-             UpdateVisualVarByGroup("Player Rate", new List<string> { "X", "Y", "Z", "Total" }, new List<float>{0.3f+UnityEngine.Random.value * 0.1f
-                 ,0.5f+UnityEngine.Random.value * 0.1f,0.7f +UnityEngine.Random.value * 0.1f,0.9f+UnityEngine.Random.value * 0.1f});
-             UpdateVisualVarByGroup("NPC Rate", new List<string> { "X", "Y", "Z", "Total"}, new List<float>{0.3f+UnityEngine.Random.value * 0.1f
-                 ,0.5f+UnityEngine.Random.value * 0.1f,0.7f+UnityEngine.Random.value * 0.1f,0.9f+UnityEngine.Random.value * 0.1f});
-
+             //UpdateVisualVarByGroup("Camera Rate", new List<string> { "X", "Y", "Z", "Total" }, new List<float>{ 0.3f +UnityEngine.Random.value * 0.1f
+             //    ,0.5f +UnityEngine.Random.value * 0.1f,0.7f+UnityEngine.Random.value * 0.1f,0.9f+UnityEngine.Random.value * 0.1f});
+             //UpdateVisualVarByGroup("Player Rate", new List<string> { "X", "Y", "Z", "Total" }, new List<float>{0.3f+UnityEngine.Random.value * 0.1f
+             //    ,0.5f+UnityEngine.Random.value * 0.1f,0.7f +UnityEngine.Random.value * 0.1f,0.9f+UnityEngine.Random.value * 0.1f});
+             //UpdateVisualVarByGroup("NPC Rate", new List<string> { "X", "Y", "Z", "Total" }, new List<float>{NpcObj.transform.position.x
+             //    ,NpcObj.transform.position.y,NpcObj.transform.position.z,0.9f+UnityEngine.Random.value * 0.1f});
+             //UpdateVisualVarByGroup("Test1 Rate", new List<string> { "X", "Y", "Z", "Total" }, new List<float>{0.3f+UnityEngine.Random.value * 0.1f
+             //    ,0.5f+UnityEngine.Random.value * 0.1f,0.7f+UnityEngine.Random.value * 0.1f,0.9f+UnityEngine.Random.value * 0.1f});
+             //UpdateVisualVarByGroup("Test2 Rate", new List<string> { "X", "Y", "Z", "Total" }, new List<float>{0.3f+UnityEngine.Random.value * 0.1f
+             //    ,0.5f+UnityEngine.Random.value * 0.1f,0.7f+UnityEngine.Random.value * 0.1f,0.9f+UnityEngine.Random.value * 0.1f});
              Repaint();
          }
 
@@ -131,7 +75,9 @@ using UnityEngine;
 
          public void OnGUI()
          {
+             CheckForInput();
              CheckForResizing();
+
              Handles.BeginGUI();
              Handles.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(1, 1, 1));
              //control´°¿ÚÄÚÈÝ
@@ -187,9 +133,12 @@ using UnityEngine;
              m_controlScreenHeight = m_winHeight - m_detailScreenHeight - m_navigationScreenHeight;
              m_controlScreenPosY = 0.0f;
 
-             DefineVisualChannel("Camera Rate", m_navigationScreenHeight / 2, true, true);
-             DefineVisualChannel("Player Rate", m_navigationScreenHeight / 2, true, true);
-             DefineVisualChannel("NPC Rate", m_navigationScreenHeight / 2, true, true);
+             //DefineVisualChannel("Camera Rate", m_navigationScreenHeight / 2, true, true);
+             //DefineVisualChannel("Player Rate", m_navigationScreenHeight / 2, true, true);
+             //DefineVisualChannel("NPC Rate", m_navigationScreenHeight / 2, true, false);
+             //DefineVisualChannel("Test1 Rate", m_navigationScreenHeight / 2, true, true);
+             //DefineVisualChannel("Test2 Rate", m_navigationScreenHeight / 2, true, true);
+
          }
 
          public Vector2 ViewToDrawingTransformPoint(Vector2 lhs)
@@ -230,17 +179,13 @@ using UnityEngine;
              switch (Event.current.type)
              {
                  case EventType.KeyUp:
-                     m_isTestCallLua = !m_isTestCallLua;
-                     EditorApplication.isPaused = false;
+                     //SendVisualEvent("NPC Rate", "move");   
                      break;
                  case EventType.mouseMove:
                      {
                      }
                      break;
                  case EventType.MouseDrag:
-                     if (Event.current.button == 1)
-                     {
-                     }
                      break;
                  case EventType.ScrollWheel:
                      {

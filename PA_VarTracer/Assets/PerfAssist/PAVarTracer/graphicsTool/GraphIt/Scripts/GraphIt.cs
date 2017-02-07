@@ -26,10 +26,10 @@ public class GraphItDataInternal
                 mColor = Color.green;
                 break;
             case 3:
-                mColor = Color.red;
+                mColor = Color.cyan;
                 break;
             default:
-                mColor = Color.green;
+                mColor = Color.gray;
                 break;
         }
     }
@@ -41,6 +41,17 @@ public class GraphItDataInternal
     public float mFastAvg;
 
     public Color mColor;
+}
+
+public class EventData
+{
+    public string m_eventName;
+    public int m_eventFrameIndex;
+    public EventData(int eventFrameIndex,string eventName)
+    {
+        m_eventFrameIndex = eventFrameIndex;
+        m_eventName = eventName;
+    }
 }
 
 public class GraphItData
@@ -56,6 +67,8 @@ public class GraphItData
     public bool mInclude0;
     public bool mIsNormalized;
 
+    public List<EventData> mEventData = new List<EventData>();
+
     public bool mReadyForUpdate;
     public bool mFixedUpdate;
 
@@ -67,6 +80,8 @@ public class GraphItData
     protected bool mHidden;
     protected float mHeight;
 
+    public int mTotalIndex = 0;
+
 
     public GraphItData( string name)
     {
@@ -75,6 +90,8 @@ public class GraphItData
         mData = new Dictionary<string, GraphItDataInternal>();
 
         mCurrentIndex = 0;
+        mTotalIndex = 0;
+
         mInclude0 = true;
 
         mReadyForUpdate = false;
@@ -91,10 +108,6 @@ public class GraphItData
         if (PlayerPrefs.HasKey(mName + "_height"))
         {
             SetHeight(PlayerPrefs.GetFloat(mName + "_height"));
-        }
-        if (PlayerPrefs.HasKey(mName + "_hidden"))
-        {
-            SetHidden(PlayerPrefs.GetInt(mName + "_hidden")==1);
         }
     }
 
@@ -182,30 +195,21 @@ public class GraphItData
         PlayerPrefs.SetFloat( mName+"_height", GetHeight() );
     }
 
-    public bool GetHidden()
-    {
-        return mHidden;
-    }
-    public void SetHidden(bool hidden)
-    {
-        mHidden = hidden;
-        PlayerPrefs.SetInt(mName + "_hidden", GetHidden() ? 1 : 0 );
-    }
-
 }
 
-public class GraphIt : MonoBehaviour
+public class GraphItVar : MonoBehaviour
 {
 
 #if UNITY_EDITOR
     public const string BASE_GRAPH = "base";
     public const string VERSION = "1.2.0";
     public Dictionary<string, GraphItData> Graphs = new Dictionary<string, GraphItData>();
+    public Dictionary<string, GraphItVariableBody> VariableBodys = new Dictionary<string, GraphItVariableBody>();
 
-    static GraphIt mInstance = null;
+    static GraphItVar mInstance = null;
 #endif
 
-    public static GraphIt Instance
+    public static GraphItVar Instance
     {
         get
         {
@@ -214,7 +218,7 @@ public class GraphIt : MonoBehaviour
             {
                 GameObject go = new GameObject("GraphIt");
                 go.hideFlags = HideFlags.HideAndDontSave;
-                mInstance = go.AddComponent<GraphIt>();
+                mInstance = go.AddComponent<GraphItVar>();
             }
             return mInstance;
 #else
@@ -234,6 +238,7 @@ public class GraphIt : MonoBehaviour
             g.mCounter = 0.0f;
         }
 
+        graph.mTotalIndex++;
         graph.mCurrentIndex = (graph.mCurrentIndex + 1) % graph.mWindowSize;
         if (graph.mCurrentIndex == 0)
         {
@@ -250,8 +255,8 @@ public class GraphIt : MonoBehaviour
             for (int i = 1; i < graph.GraphLength(); ++i)
             {
                 sum += g.mDataPoints[i];
-                min = Mathf.Min(min, g.mDataPoints[i]);
-                max = Mathf.Max(max, g.mDataPoints[i]);
+                min = Mathf.Min(min,g.mDataPoints[i]);
+                max = Mathf.Max(max,g.mDataPoints[i]);
             }
             if (graph.mInclude0)
             {
@@ -378,26 +383,6 @@ public class GraphIt : MonoBehaviour
         g.SetHeight(height);
 #endif
     }
-
-    /// <summary>
-    /// Optional setup function that allows you to specify if the graph is hidden or not by default
-    /// </summary>
-    /// <param name="graph"></param>
-    /// <param name="subgraph"></param>
-    /// <param name="include_0"></param>
-    public static void GraphSetupHidden(string graph, bool hidden)
-    {
-#if UNITY_EDITOR
-        if (!Instance.Graphs.ContainsKey(graph))
-        {
-            Instance.Graphs[graph] = new GraphItData(graph);
-        }
-
-        GraphItData g = Instance.Graphs[graph];
-        g.SetHidden(hidden);
-#endif
-    }
-    
 
     /// <summary>
     /// Optional setup function that allows you to specify how many samples to track.
@@ -646,6 +631,124 @@ public class GraphIt : MonoBehaviour
         GraphItData g = Instance.Graphs[graph];
         g.mIsNormalized = isNormalized;
 #endif
+    }
+
+    public static void SetGraphEvent(string graph, string eventName)
+    {
+#if UNITY_EDITOR
+        if (Instance.Graphs.ContainsKey(graph))
+        {
+            GraphItData g = Instance.Graphs[graph];
+            g.mEventData.Add(new EventData(g.mTotalIndex, eventName));
+        }
+#endif
+    }
+
+    public static void DefineVariable(string variableBody, string variableName,Color color)
+    {
+#if UNITY_EDITOR
+        foreach (var varBody in Instance.VariableBodys.Values)
+        { 
+            if(varBody.VariableDict.ContainsKey(variableName))
+            {
+                Debug.LogFormat("variableName {0} ,Already Exsit!", variableName);
+                return;
+            }
+        }
+        
+        if (!Instance.VariableBodys.ContainsKey(variableBody))
+        {
+            var body =new GraphItVariableBody(variableBody);
+            body.VariableDict[variableName] = new GraphItVariable(variableName);
+            Instance.VariableBodys[variableBody] = body;
+        }
+
+        var variableDict =Instance.VariableBodys[variableBody].VariableDict;
+        if(!variableDict.ContainsKey(variableName))
+        {
+            variableDict[variableName] = new GraphItVariable(variableName);
+        }
+        variableDict[variableName].Color = color;
+#endif
+    }
+
+    public static void DefineEvent(string variableBody, string eventName)
+    {
+#if UNITY_EDITOR
+        if (string.IsNullOrEmpty(eventName))
+            return;
+        if (!Instance.VariableBodys.ContainsKey(variableBody))
+        {
+            var body = new GraphItVariableBody(variableBody);
+            Instance.VariableBodys[variableBody] = body;
+        }
+
+        Instance.VariableBodys[variableBody].registEvent(eventName);
+#endif
+    }
+
+    public static void SendEvent(string eventName)
+    {
+        List<string> needChannel = new List<string>();
+#if UNITY_EDITOR
+        if (string.IsNullOrEmpty(eventName))
+            return;
+        foreach(var variableBodys in Instance.VariableBodys.Values)
+        {
+            if(variableBodys.RegistEventList.ContainsKey(eventName))
+            {
+                foreach(var var in variableBodys.VariableDict.Values)
+                {
+                
+                    foreach(var channelName in var.ChannelDict.Keys)
+                    {
+                        if (!needChannel.Contains(channelName))
+                            needChannel.Add(channelName);
+                    }
+                }
+            }
+        }
+        
+        foreach(string channelName  in needChannel)
+        {
+            SetGraphEvent(channelName,eventName); 
+        }
+#endif
+    }
+
+    public static void AttachVariable(string variableName, string ChannelName)
+    {
+#if UNITY_EDITOR
+        foreach (var VarBody in Instance.VariableBodys.Values)
+        {
+            if(VarBody.VariableDict.ContainsKey(variableName))
+            {
+                var var = VarBody.VariableDict[variableName];
+                var.AttchChannel(ChannelName);
+            }
+        }
+#endif
+    }
+
+    public static void UpdateVariable(string variableName,float value)
+    {
+#if UNITY_EDITOR
+        foreach (var VarBody in Instance.VariableBodys.Values)
+        {
+            if (VarBody.VariableDict.ContainsKey(variableName))
+            {
+                var var = VarBody.VariableDict[variableName];
+                var.InsertValue(value);
+            }
+        }
+#endif
+    }
+
+    public static void DefineVisualChannel(string channel, float height, bool isShareY = false, bool isNormalized = false)
+    {
+        GraphItVar.GraphSetupHeight(channel, height);
+        GraphItVar.ShareYAxis(channel, isShareY);
+        GraphItVar.NormalizedGraph(channel, isNormalized);
     }
 
 }
