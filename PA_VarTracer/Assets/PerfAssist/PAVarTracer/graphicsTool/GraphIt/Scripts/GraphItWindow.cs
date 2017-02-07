@@ -5,15 +5,16 @@ using System.Collections.Generic;
 
 public class GraphItWindow : EditorWindow
 {
+    const int InValidNum = -1;
     static Vector2 mScrollPos;
     static float mWidth;
 
-    static int mMouseOverGraphIndex = -1;
+    static int mMouseOverGraphIndex = InValidNum;
     static float mMouseX = 0;
 
     static float x_offset = 300.0f;
     static float y_gap = 40.0f;
-    static float y_offset = 30;
+    static float y_offset = 55;
     static int precision_slider = 3;
 
     static GUIStyle NameLabel;
@@ -32,9 +33,8 @@ public class GraphItWindow : EditorWindow
     public static float m_navigationScreenHeight = 0.0f;
     public static float m_navigationScreenPosY = 0.0f;
 
-    public static float m_detailScreenHeight = 0.0f;
-    public static float m_detailScreenPosY = 0.0f;
-
+    public static int m_variableBarIndex = InValidNum;
+    
 
     static void InitializeStyles()
     {
@@ -89,14 +89,12 @@ public class GraphItWindow : EditorWindow
         m_winWidth = position.width;
         m_winHeight = position.height;
 
-        m_detailScreenHeight = m_winHeight / 1.65f;
-        m_detailScreenPosY = m_winHeight / 2.5f;
-
-        m_navigationScreenHeight = (m_winHeight - m_detailScreenHeight) / 1.1f;
-        m_navigationScreenPosY = m_detailScreenPosY / 10.0f;
-
-        m_controlScreenHeight = m_winHeight - m_detailScreenHeight - m_navigationScreenHeight;
+        m_controlScreenHeight  = m_winHeight / 17;
         m_controlScreenPosY = 0.0f;
+
+
+        m_navigationScreenHeight = m_winHeight -  m_controlScreenHeight;
+        m_navigationScreenPosY = m_controlScreenHeight;
     }
 
 
@@ -109,7 +107,7 @@ public class GraphItWindow : EditorWindow
         //control窗口内容
         GUILayout.BeginArea(new Rect(0, m_controlScreenPosY, m_winWidth, m_controlScreenHeight));
         {
-            //drawGUIElement();
+            DrawVariableBar();
         }
         GUILayout.EndArea();
         ////navigation窗口内容
@@ -121,6 +119,44 @@ public class GraphItWindow : EditorWindow
         Handles.EndGUI();
 
     }
+
+
+    void DrawVariableBar()
+    {
+        GUILayout.BeginVertical();
+            List<string> VariableOptions = new List<string>();
+            foreach (var varBody in GraphItVar.Instance.VariableBodys.Values)
+            {
+                foreach (var var in varBody.VariableDict.Keys)
+                {
+                    VariableOptions.Add(var);
+                }
+            }
+
+            m_variableBarIndex = GUI.SelectionGrid(new Rect(0, 0, 180, 20), (int)m_variableBarIndex, VariableOptions.ToArray(), VariableOptions.Count);
+
+            GUILayout.Label("", GUILayout.Height(25));
+            GUILayout.BeginHorizontal();
+            
+                if (m_variableBarIndex >InValidNum)
+                {
+                    foreach(var graphName  in GraphItVar.Instance.Graphs.Keys)
+                    {
+                        var graphItVar = GraphItVar.GetGraphItVariableByVariableName(VariableOptions[m_variableBarIndex]);
+                        if (graphItVar != null)
+                        {
+                            if (GUILayout.Toggle(graphItVar.ChannelDict.ContainsKey(graphName),graphName, GUILayout.MaxWidth(60)))
+                                graphItVar.AttchChannel(graphName);
+                            else
+                                graphItVar.DetachChannel(graphName);
+                        }
+                    }
+                }
+
+            GUILayout.EndHorizontal();
+        GUILayout.EndVertical();
+    }
+
 
     static void DrawGraphGridLines(float y_pos, float width, float height, bool draw_mouse_line)
     {

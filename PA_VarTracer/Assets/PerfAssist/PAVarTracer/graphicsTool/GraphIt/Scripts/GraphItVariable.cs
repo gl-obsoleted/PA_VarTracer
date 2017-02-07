@@ -7,7 +7,7 @@ public class GraphItVariable
 {
     private string m_varName;
     private List<float> m_valueList = new List<float>();
-    const int saveValueNum = GraphItData.DEFAULT_SAMPLES;
+    const int saveValueNum = GraphItData.DEFAULT_SAMPLES-1;
     Dictionary<string, string> m_channelDict = new Dictionary<string, string>();
 
     public Dictionary<string, string> ChannelDict
@@ -65,7 +65,44 @@ public class GraphItVariable
         if(string.IsNullOrEmpty(channel))
             return ;
         if (!m_channelDict.ContainsKey(channel))
+        {
             m_channelDict[channel] = channel;
+            if (m_valueList.Count>0)
+            {
+#if UNITY_EDITOR
+                if (GraphItVar.Instance.Graphs.ContainsKey(channel))
+                {
+                    GraphItData g = GraphItVar.Instance.Graphs[channel];
+
+                    if (!g.mData.ContainsKey(m_varName))
+                    {
+                        g.mData[m_varName] = new GraphItDataInternal(g.mData.Count);
+                    }
+                    //g.mData[m_varName].mDataPoints = m_valueList.ToArray();
+                    g.mData[m_varName].mColor = m_color;
+                }
+#endif
+            }
+        }
     }
 
+    public void DetachChannel(string channel)
+    {
+        if (string.IsNullOrEmpty(channel))
+            return;
+        if (m_channelDict.ContainsKey(channel))
+        {
+            m_channelDict.Remove(channel);
+#if UNITY_EDITOR
+            if (GraphItVar.Instance.Graphs.ContainsKey(channel))
+            {
+                GraphItData g = GraphItVar.Instance.Graphs[channel];
+                if (g.mData.ContainsKey(m_varName))
+                {
+                    g.mData.Remove(m_varName);
+                }
+            }
+#endif
+        }
+    }
 }

@@ -699,7 +699,6 @@ public class GraphItVar : MonoBehaviour
             {
                 foreach(var var in variableBodys.VariableDict.Values)
                 {
-                
                     foreach(var channelName in var.ChannelDict.Keys)
                     {
                         if (!needChannel.Contains(channelName))
@@ -746,9 +745,27 @@ public class GraphItVar : MonoBehaviour
 
     public static void DefineVisualChannel(string channel, float height, bool isShareY = false, bool isNormalized = false)
     {
-        GraphItVar.GraphSetupHeight(channel, height);
-        GraphItVar.ShareYAxis(channel, isShareY);
-        GraphItVar.NormalizedGraph(channel, isNormalized);
+        GraphSetupHeight(channel, height);
+        ShareYAxis(channel, isShareY);
+        NormalizedGraph(channel, isNormalized);
+    }
+
+    public static GraphItVariable GetGraphItVariableByVariableName(string variableName)
+    {
+        if (string.IsNullOrEmpty(variableName))
+            return null;
+
+#if UNITY_EDITOR
+        foreach (var VarBody in Instance.VariableBodys.Values)
+        {
+            if (VarBody.VariableDict.ContainsKey(variableName))
+            {
+                var var = VarBody.VariableDict[variableName];
+                return var;
+            }
+        }
+#endif    
+        return null;
     }
 
 }
