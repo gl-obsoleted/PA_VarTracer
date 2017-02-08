@@ -7,8 +7,15 @@ public class GraphItVariable
 {
     private string m_varName;
     private List<float> m_valueList = new List<float>();
-    const int saveValueNum = GraphItData.DEFAULT_SAMPLES-1;
+    const int saveValueNum = GraphItData.DEFAULT_SAMPLES;
     Dictionary<string, string> m_channelDict = new Dictionary<string, string>();
+    private VariableConfigPopup m_popupWindow;
+
+    public VariableConfigPopup PopupWindow
+    {
+        get { return m_popupWindow; }
+        set { m_popupWindow = value; }
+    }
 
     public Dictionary<string, string> ChannelDict
     {
@@ -31,6 +38,8 @@ public class GraphItVariable
     public GraphItVariable(string varName)
     {
         m_varName = varName;
+
+        m_popupWindow = new VariableConfigPopup(varName);
     }
 
     public void InsertValue(float value)
@@ -53,6 +62,7 @@ public class GraphItVariable
                 }
                 g.mData[m_varName].mColor = m_color;
 
+                g.mData[m_varName].mCurrentValue = value;
                 g.mData[m_varName].mCounter += value;
                 g.mReadyForUpdate = true;
             }
@@ -73,13 +83,21 @@ public class GraphItVariable
                 if (GraphItVar.Instance.Graphs.ContainsKey(channel))
                 {
                     GraphItData g = GraphItVar.Instance.Graphs[channel];
-
                     if (!g.mData.ContainsKey(m_varName))
                     {
                         g.mData[m_varName] = new GraphItDataInternal(g.mData.Count);
                     }
-                    //g.mData[m_varName].mDataPoints = m_valueList.ToArray();
+
+                    g.mData[m_varName].mDataPoints = new float[GraphItData.DEFAULT_SAMPLES];
+                    for (int i = 0; i < m_valueList.Count; i++)
+                    {
+                        g.mData[m_varName].mDataPoints[i] = m_valueList[i];
+                    }
+
                     g.mData[m_varName].mColor = m_color;
+                    g.mCurrentIndex = m_valueList.Count-1;
+                    if (g.mCurrentIndex == GraphItData.DEFAULT_SAMPLES-1)
+                        g.mFullArray = true; 
                 }
 #endif
             }

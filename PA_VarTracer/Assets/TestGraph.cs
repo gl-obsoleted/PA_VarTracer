@@ -8,24 +8,16 @@ public class TestGraph : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
         Application.runInBackground = true;
-        GraphItVar.DefineVisualChannel("A", 200, true, false);
-        GraphItVar.DefineVisualChannel("B", 200, true, false);
-        GraphItVar.DefineVisualChannel("C", 200, true, false);
 
-        GraphItVar.DefineVariable("NPC","X",Color.green);
-        GraphItVar.DefineVariable("NPC", "Y",Color.yellow);
-        GraphItVar.DefineVariable("WBO", "Z", Color.cyan);
+        GraphItVar.DefineVariable("X", "NPC", Color.green);
+        GraphItVar.DefineVariable("Y", "NPC", Color.yellow);
+        GraphItVar.DefineVariable("Z", "WBO", Color.cyan);
+        GraphItVar.DefineVariable("W", "WBO", Color.blue);
        // GraphItVar.DefineVariable("NPC", "Z", Color.cyan);
 
-        GraphItVar.AttachVariable("X", "A");
-        GraphItVar.AttachVariable("Y", "B");
-        GraphItVar.AttachVariable("Z", "B");
-        GraphItVar.AttachVariable("X", "C");
-
-
-        GraphItVar.DefineEvent("NPC", "MOVE");
-        GraphItVar.DefineEvent("NPC", "JUMP");
-        GraphItVar.DefineEvent("WBO", "ATTACK");
+        GraphItVar.DefineEvent("MOVE","NPC");
+        GraphItVar.DefineEvent("JUMP","NPC");
+        GraphItVar.DefineEvent("ATTACK","WBO");
 
 	}
 	
@@ -38,18 +30,7 @@ public class TestGraph : MonoBehaviour {
         GraphItVar.UpdateVariable("Y", NpcObj.transform.position.y);
 
         GraphItVar.UpdateVariable("Z", NpcObj.transform.position.z);
-
-       // CheckInput();
 	}
 
-
-    void CheckInput()
-    {
-        if (Input.GetKey(KeyCode.E))
-        {
-            GraphItVar.SendEvent("MOVE");
-        }
-
-    }
 
 }

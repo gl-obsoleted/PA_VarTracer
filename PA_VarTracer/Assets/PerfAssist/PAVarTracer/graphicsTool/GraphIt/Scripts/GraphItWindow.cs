@@ -12,7 +12,7 @@ public class GraphItWindow : EditorWindow
     static int mMouseOverGraphIndex = InValidNum;
     static float mMouseX = 0;
 
-    static float x_offset = 300.0f;
+    static float x_offset = 150.0f;
     static float y_gap = 40.0f;
     static float y_offset = 55;
     static int precision_slider = 3;
@@ -34,8 +34,8 @@ public class GraphItWindow : EditorWindow
     public static float m_navigationScreenPosY = 0.0f;
 
     public static int m_variableBarIndex = InValidNum;
-    
 
+    private Rect _optionPopupRect;
     static void InitializeStyles()
     {
         if (NameLabel == null)
@@ -63,11 +63,11 @@ public class GraphItWindow : EditorWindow
         window.Show();
     }
 
-
-
     void OnEnable()
     {
         EditorApplication.update += MyDelegate;
+        if (GraphItVar.Instance != null && GraphItVar.Instance.Graphs.Count==0)
+            GraphItVar.AddChannel();
     }
 
     void OnDisable()
@@ -123,38 +123,43 @@ public class GraphItWindow : EditorWindow
 
     void DrawVariableBar()
     {
-        GUILayout.BeginVertical();
-            List<string> VariableOptions = new List<string>();
+        GUILayout.BeginHorizontal();
+
+        GUILayout.Space(10);
+        if (GUILayout.Button("addGraph", EditorStyles.toolbarButton, GUILayout.Width(100)))
+            GraphItVar.AddChannel();
+
+        GUILayout.Space(5);
+
+        if (GUILayout.Button("removeGraph", EditorStyles.toolbarButton, GUILayout.Width(100)))
+            GraphItVar.RemoveChannel();
+
+            GUILayout.Space(20);
+
             foreach (var varBody in GraphItVar.Instance.VariableBodys.Values)
             {
-                foreach (var var in varBody.VariableDict.Keys)
+                foreach(var var in varBody.VariableDict.Values)
                 {
-                    VariableOptions.Add(var);
-                }
-            }
+                    var saveColor = GUI.color;
+                    if(GraphItVar.IsVariableOnShow(var.VarName))
+                        GUI.color = var.Color;
 
-            m_variableBarIndex = GUI.SelectionGrid(new Rect(0, 0, 180, 20), (int)m_variableBarIndex, VariableOptions.ToArray(), VariableOptions.Count);
-
-            GUILayout.Label("", GUILayout.Height(25));
-            GUILayout.BeginHorizontal();
-            
-                if (m_variableBarIndex >InValidNum)
-                {
-                    foreach(var graphName  in GraphItVar.Instance.Graphs.Keys)
+                    if (GUILayout.Button(var.VarName, EditorStyles.toolbarDropDown,GUILayout.Width(100)))
                     {
-                        var graphItVar = GraphItVar.GetGraphItVariableByVariableName(VariableOptions[m_variableBarIndex]);
-                        if (graphItVar != null)
+                        try
                         {
-                            if (GUILayout.Toggle(graphItVar.ChannelDict.ContainsKey(graphName),graphName, GUILayout.MaxWidth(60)))
-                                graphItVar.AttchChannel(graphName);
-                            else
-                                graphItVar.DetachChannel(graphName);
+                            PopupWindow.Show(_optionPopupRect,var.PopupWindow);
+                        }
+                        catch (ExitGUIException)
+                        {
+                            // have no idea why Unity throws ExitGUIException() in GUIUtility.ExitGUI()
+                            // so we silently ignore the exception 
                         }
                     }
+                    GUI.color = saveColor;
                 }
-
-            GUILayout.EndHorizontal();
-        GUILayout.EndVertical();
+            }
+        GUILayout.EndHorizontal();
     }
 
 
@@ -404,7 +409,8 @@ public class GraphItWindow : EditorWindow
                     {
                         NameLabel.normal.textColor = g.mColor;
                     }
-                    EditorGUILayout.LabelField(entry.Key +"   Avg: " + g.mAvg.ToString(num_format) + " (" + g.mFastAvg.ToString(num_format) + "),Min: " + g.mMin.ToString(num_format) + ",Max: " + g.mMax.ToString(num_format), NameLabel);
+                    //EditorGUILayout.LabelField(entry.Key +"   Avg: " + g.mAvg.ToString(num_format) + " (" + g.mFastAvg.ToString(num_format) + "),Min: " + g.mMin.ToString(num_format) + ",Max: " + g.mMax.ToString(num_format), NameLabel);
+                    EditorGUILayout.LabelField(entry.Key + "   Value: " + g.mCurrentValue.ToString(num_format), NameLabel);
                 }
                 
                 ////Respond to mouse input!

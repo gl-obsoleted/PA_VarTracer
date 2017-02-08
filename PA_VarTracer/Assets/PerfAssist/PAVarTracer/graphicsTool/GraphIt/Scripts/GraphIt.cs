@@ -13,7 +13,7 @@ public class GraphItDataInternal
         mMax = 0.0f;
         mAvg = 0.0f;
         mFastAvg = 0.0f;
-
+        mCurrentValue = 0.0f;
         switch(subgraph_index)
         {
             case 0:
@@ -39,7 +39,7 @@ public class GraphItDataInternal
     public float mMax;
     public float mAvg;
     public float mFastAvg;
-
+    public float mCurrentValue;
     public Color mColor;
 }
 
@@ -644,7 +644,7 @@ public class GraphItVar : MonoBehaviour
 #endif
     }
 
-    public static void DefineVariable(string variableBody, string variableName,Color color)
+    public static void DefineVariable(string variableName,string variableBody, Color color)
     {
 #if UNITY_EDITOR
         foreach (var varBody in Instance.VariableBodys.Values)
@@ -672,7 +672,7 @@ public class GraphItVar : MonoBehaviour
 #endif
     }
 
-    public static void DefineEvent(string variableBody, string eventName)
+    public static void DefineEvent(string eventName,string variableBody)
     {
 #if UNITY_EDITOR
         if (string.IsNullOrEmpty(eventName))
@@ -768,4 +768,43 @@ public class GraphItVar : MonoBehaviour
         return null;
     }
 
+
+    public static bool IsVariableOnShow(string  variableName)
+    {
+        if (string.IsNullOrEmpty(variableName))
+            return false;
+
+        var graphVar = GetGraphItVariableByVariableName(variableName);
+        if (graphVar == null)
+            return false;
+
+        if (graphVar.ChannelDict.Count > 0)
+            return true;
+
+        return false;
+    }
+
+    public static void AddChannel()
+    {
+        string newChannelName = Instance.Graphs.Count.ToString();
+        DefineVisualChannel(newChannelName,200,true);
+    }
+
+    public static void RemoveChannel()
+    {
+        if (Instance.Graphs.Count <= 1)
+            return;
+
+        string removeChannelName = (Instance.Graphs.Count-1).ToString();
+#if UNITY_EDITOR
+        foreach (var VarBody in Instance.VariableBodys.Values)
+        {
+            foreach(var var in VarBody.VariableDict.Values)
+            {
+                var.DetachChannel(removeChannelName);
+            }
+        }
+        Instance.Graphs.Remove(removeChannelName);
+#endif
+    }
 }
