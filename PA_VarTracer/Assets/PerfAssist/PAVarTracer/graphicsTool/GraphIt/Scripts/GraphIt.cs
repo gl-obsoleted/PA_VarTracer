@@ -65,7 +65,6 @@ public class GraphItData
 
     public int mCurrentIndex;
     public bool mInclude0;
-    public bool mIsNormalized;
 
     public List<EventData> mEventData = new List<EventData>();
 
@@ -74,6 +73,8 @@ public class GraphItData
 
     public int mWindowSize;
     public bool mFullArray;
+
+    public float m_maxValue;
 
     public bool mSharedYAxis;
 
@@ -127,58 +128,31 @@ public class GraphItData
 
     public float GetMin( string subgraph )
     {
-        if (mSharedYAxis)
-        {
-            bool min_set = false;
-            float min = 0;
-            foreach (KeyValuePair<string, GraphItDataInternal> entry in mData)
-            {
-                GraphItDataInternal g = entry.Value;
-                if (!min_set)
-                {
-                    min = g.mMin;
-                    min_set = true;
-                }
-                min = Math.Min(min, g.mMin);
-            }
-            return min;
-        }
-        else
-        {
-            if (!mData.ContainsKey(subgraph))
-            {
-                mData[subgraph] = new GraphItDataInternal(mData.Count);
-            }
-            return mData[subgraph].mMin;
-        }
+        return 0;
     }
 
     public float GetMax( string subgraph )
     {
-        if (mSharedYAxis)
+        bool max_set = false;
+        float max = 0;
+        foreach (KeyValuePair<string, GraphItDataInternal> entry in mData)
         {
-            bool max_set = false;
-            float max = 0;
-            foreach (KeyValuePair<string, GraphItDataInternal> entry in mData)
+            GraphItDataInternal g = entry.Value;
+            if (!max_set)
             {
-                GraphItDataInternal g = entry.Value;
-                if (!max_set)
-                {
-                    max = g.mMax;
-                    max_set = true;
-                }
-                max = Math.Max(max, g.mMax);
+                max = g.mMax;
+                max_set = true;
             }
-            return max;
+            max = Math.Max(max, g.mMax);
         }
-        else
+
+        int resultValue = 1;
+        while (resultValue<max)
         {
-            if (!mData.ContainsKey(subgraph))
-            {
-                mData[subgraph] = new GraphItDataInternal(mData.Count);
-            }
-            return mData[subgraph].mMax;
+            resultValue *= 10;
         }
+        m_maxValue = resultValue;
+        return resultValue;
     }
 
     public float GetHeight()
@@ -250,17 +224,17 @@ public class GraphItVar : MonoBehaviour
             GraphItDataInternal g = entry.Value;
 
             float sum = g.mDataPoints[0];
-            float min = g.mDataPoints[0];
+            //float min = g.mDataPoints[0];
             float max = g.mDataPoints[0];
             for (int i = 1; i < graph.GraphLength(); ++i)
             {
                 sum += g.mDataPoints[i];
-                min = Mathf.Min(min,g.mDataPoints[i]);
+                //min = Mathf.Min(min,g.mDataPoints[i]);
                 max = Mathf.Max(max,g.mDataPoints[i]);
             }
             if (graph.mInclude0)
             {
-                min = Mathf.Min(min, 0.0f);
+                //min = Mathf.Min(min, 0.0f);
                 max = Mathf.Max(max, 0.0f);
             }
 
@@ -287,13 +261,7 @@ public class GraphItVar : MonoBehaviour
                 recent_start = (recent_start + 1) % g.mDataPoints.Length;
             }
 
-            if (graph.mIsNormalized)
-            {
-                min = 0;
-                max = 1;
-            }
-
-            g.mMin = min;
+            g.mMin = 0;
             g.mMax = max;
             g.mAvg = sum / graph.GraphLength();
             g.mFastAvg = recent_sum / recent_count;
@@ -620,19 +588,6 @@ public class GraphItVar : MonoBehaviour
     }
 
 
-    public static void NormalizedGraph(string graph, bool isNormalized)
-    {
-#if UNITY_EDITOR
-        if (!Instance.Graphs.ContainsKey(graph))
-        {
-            Instance.Graphs[graph] = new GraphItData(graph);
-        }
-
-        GraphItData g = Instance.Graphs[graph];
-        g.mIsNormalized = isNormalized;
-#endif
-    }
-
     public static void SetGraphEvent(string graph, string eventName)
     {
 #if UNITY_EDITOR
@@ -743,11 +698,10 @@ public class GraphItVar : MonoBehaviour
 #endif
     }
 
-    public static void DefineVisualChannel(string channel, float height, bool isShareY = false, bool isNormalized = false)
+    public static void DefineVisualChannel(string channel, float height, bool isShareY = false)
     {
         GraphSetupHeight(channel, height);
         ShareYAxis(channel, isShareY);
-        NormalizedGraph(channel, isNormalized);
     }
 
     public static GraphItVariable GetGraphItVariableByVariableName(string variableName)

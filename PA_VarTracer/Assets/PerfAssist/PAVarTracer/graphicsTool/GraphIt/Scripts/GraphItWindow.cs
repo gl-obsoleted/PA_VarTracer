@@ -125,40 +125,40 @@ public class GraphItWindow : EditorWindow
     {
         GUILayout.BeginHorizontal();
 
-        GUILayout.Space(10);
-        if (GUILayout.Button("addGraph", EditorStyles.toolbarButton, GUILayout.Width(100)))
-            GraphItVar.AddChannel();
+            GUILayout.Space(10);
+            if (GUILayout.Button("addGraph", EditorStyles.toolbarButton, GUILayout.Width(100)))
+                GraphItVar.AddChannel();
 
-        GUILayout.Space(5);
+            GUILayout.Space(5);
 
-        if (GUILayout.Button("removeGraph", EditorStyles.toolbarButton, GUILayout.Width(100)))
-            GraphItVar.RemoveChannel();
+            if (GUILayout.Button("removeGraph", EditorStyles.toolbarButton, GUILayout.Width(100)))
+                GraphItVar.RemoveChannel();
 
-            GUILayout.Space(20);
+                GUILayout.Space(20);
 
-            foreach (var varBody in GraphItVar.Instance.VariableBodys.Values)
-            {
-                foreach(var var in varBody.VariableDict.Values)
+                foreach (var varBody in GraphItVar.Instance.VariableBodys.Values)
                 {
-                    var saveColor = GUI.color;
-                    if(GraphItVar.IsVariableOnShow(var.VarName))
-                        GUI.color = var.Color;
-
-                    if (GUILayout.Button(var.VarName, EditorStyles.toolbarDropDown,GUILayout.Width(100)))
+                    foreach(var var in varBody.VariableDict.Values)
                     {
-                        try
+                        var saveColor = GUI.color;
+                        if(GraphItVar.IsVariableOnShow(var.VarName))
+                            GUI.color = var.Color;
+
+                        if (GUILayout.Button(var.VarName, EditorStyles.toolbarDropDown,GUILayout.Width(100)))
                         {
-                            PopupWindow.Show(_optionPopupRect,var.PopupWindow);
+                            try
+                            {
+                                PopupWindow.Show(_optionPopupRect,var.PopupWindow);
+                            }
+                            catch (ExitGUIException)
+                            {
+                                // have no idea why Unity throws ExitGUIException() in GUIUtility.ExitGUI()
+                                // so we silently ignore the exception 
+                            }
                         }
-                        catch (ExitGUIException)
-                        {
-                            // have no idea why Unity throws ExitGUIException() in GUIUtility.ExitGUI()
-                            // so we silently ignore the exception 
-                        }
+                        GUI.color = saveColor;
                     }
-                    GUI.color = saveColor;
                 }
-            }
         GUILayout.EndHorizontal();
     }
 
@@ -398,9 +398,11 @@ public class GraphItWindow : EditorWindow
 
                 //skip subgraph title if only one, and it's the same.
                 NameLabel.normal.textColor = Color.white;
-                //wNameLabel.normalc
-                EditorGUILayout.LabelField(kv.Key + fu_str, NameLabel);
 
+                EditorGUILayout.BeginHorizontal();
+                    EditorGUILayout.LabelField(kv.Key + fu_str, NameLabel,GUILayout.Width(80));
+                    EditorGUILayout.LabelField("Max:" + kv.Value.m_maxValue, NameLabel);
+                EditorGUILayout.EndHorizontal();
 
                 foreach (KeyValuePair<string, GraphItDataInternal> entry in kv.Value.mData)
                 {
