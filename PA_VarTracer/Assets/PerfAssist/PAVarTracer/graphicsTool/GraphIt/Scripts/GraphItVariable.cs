@@ -59,9 +59,9 @@ public class GraphItVariable
         foreach (var channel in m_channelDict.Keys)
         {
 #if UNITY_EDITOR
-            if (GraphItVar.Instance.Graphs.ContainsKey(channel))
+            if (VarTracer.Instance.Graphs.ContainsKey(channel))
             {
-                GraphItData g = GraphItVar.Instance.Graphs[channel];
+                GraphItData g = VarTracer.Instance.Graphs[channel];
                 if (!g.mData.ContainsKey(m_varName))
                 {
                     g.mData[m_varName] = new GraphItDataInternal(g.mData.Count);
@@ -86,9 +86,9 @@ public class GraphItVariable
             if (m_valueList.Count>0)
             {
 #if UNITY_EDITOR
-                if (GraphItVar.Instance.Graphs.ContainsKey(channel))
+                if (VarTracer.Instance.Graphs.ContainsKey(channel))
                 {
-                    GraphItData g = GraphItVar.Instance.Graphs[channel];
+                    GraphItData g = VarTracer.Instance.Graphs[channel];
                     if (!g.mData.ContainsKey(m_varName))
                     {
                         g.mData[m_varName] = new GraphItDataInternal(g.mData.Count);
@@ -118,9 +118,9 @@ public class GraphItVariable
         {
             m_channelDict.Remove(channel);
 #if UNITY_EDITOR
-            if (GraphItVar.Instance.Graphs.ContainsKey(channel))
+            if (VarTracer.Instance.Graphs.ContainsKey(channel))
             {
-                GraphItData g = GraphItVar.Instance.Graphs[channel];
+                GraphItData g = VarTracer.Instance.Graphs[channel];
                 if (g.mData.ContainsKey(m_varName))
                 {
                     g.mData.Remove(m_varName);

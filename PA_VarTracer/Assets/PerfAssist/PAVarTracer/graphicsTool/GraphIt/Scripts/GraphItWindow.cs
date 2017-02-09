@@ -12,9 +12,9 @@ public class GraphItWindow : EditorWindow
     static int mMouseOverGraphIndex = InValidNum;
     static float mMouseX = 0;
 
-    static float x_offset = 150.0f;
+    static float x_offset = 200.0f;
     static float y_gap = 40.0f;
-    static float y_offset = 55;
+    static float y_offset = 20;
     static int precision_slider = 3;
 
     static GUIStyle NameLabel;
@@ -34,6 +34,11 @@ public class GraphItWindow : EditorWindow
     public static float m_navigationScreenPosY = 0.0f;
 
     public static int m_variableBarIndex = InValidNum;
+
+    const int variableNumPerLine = 12;
+    const int variableLineHight = 20;
+
+    const int variableLineStartY = 25;
 
     Rect m_popupWindow = new Rect(235, 0, 70, 18);
 
@@ -67,13 +72,37 @@ public class GraphItWindow : EditorWindow
     void OnEnable()
     {
         EditorApplication.update += MyDelegate;
-        if (GraphItVar.Instance != null && GraphItVar.Instance.Graphs.Count==0)
-            GraphItVar.AddChannel();
+        if (VarTracer.Instance != null)
+        {
+            if(VarTracer.Instance.Graphs.Count==0)
+                VarTracer.AddChannel();
+
+            bool constainsCamera = VarTracer.Instance.VariableBodys.ContainsKey("Camera");
+            if (!constainsCamera || VarTracer.Instance.VariableBodys["Camera"].VariableDict.Count==0)
+            {
+                VarTracerTool.DefineVariable("CameraV_X", "Camera", Color.green);
+                VarTracerTool.DefineVariable("CameraV_Y", "Camera", Color.cyan);
+                VarTracerTool.DefineVariable("CameraV_Z", "Camera", Color.yellow);
+                VarTracerTool.DefineVariable("CameraV_T", "Camera", Color.blue);
+
+                VarTracerTool.DefineVariable("NpcV_X", "Npc", Color.green);
+                VarTracerTool.DefineVariable("NpcV_Y", "Npc", Color.cyan);
+                VarTracerTool.DefineVariable("NpcV_Z", "Npc", Color.yellow);
+                VarTracerTool.DefineVariable("NpcV_T", "Npc", Color.blue);
+
+                VarTracerTool.DefineVariable("PlayerV_X", "Player", Color.green);
+                VarTracerTool.DefineVariable("PlayerV_Y", "Player", Color.cyan);
+                VarTracerTool.DefineVariable("PlayerV_Z", "Player", Color.yellow);
+                VarTracerTool.DefineVariable("PlayerV_T", "Player", Color.blue);
+            }
+        }
     }
 
     void OnDisable()
     {
         EditorApplication.update -= MyDelegate;
+        VarTracer.Instance.Graphs.Clear();
+        VarTracer.Instance.VariableBodys.Clear();
     }
 
     void MyDelegate()
@@ -90,7 +119,8 @@ public class GraphItWindow : EditorWindow
         m_winWidth = position.width;
         m_winHeight = position.height;
 
-        m_controlScreenHeight  = m_winHeight / 17;
+        UpdateVariableAreaHight();
+
         m_controlScreenPosY = 0.0f;
 
 
@@ -118,39 +148,97 @@ public class GraphItWindow : EditorWindow
         }
         GUILayout.EndArea();
         Handles.EndGUI();
+    }
 
+
+    void UpdateVariableAreaHight()
+    {
+        var lineNum = CalculateVariableLineNum();
+        var varList = GetVariableList();
+
+        var ry = variableLineStartY + lineNum * variableLineHight;
+
+        y_offset = ry;
+        m_controlScreenHeight = ry;
+    }
+
+    int  CalculateVariableLineNum()
+    {
+        List<GraphItVariable> variableList = new List<GraphItVariable>();
+        foreach (var varBody in VarTracer.Instance.VariableBodys.Values)
+        {
+            foreach (var var in varBody.VariableDict.Values)
+            {
+                variableList.Add(var);
+            }
+        }
+
+        int lineNum = variableList.Count / variableNumPerLine;
+        int mod = variableList.Count % variableNumPerLine;
+        if (mod > 0)
+            lineNum += 1;
+
+        return lineNum;
+    }
+
+    List<GraphItVariable> GetVariableList()
+    {
+        List<GraphItVariable> variableList = new List<GraphItVariable>();
+        foreach (var varBody in VarTracer.Instance.VariableBodys.Values)
+        {
+            foreach (var var in varBody.VariableDict.Values)
+            {
+                variableList.Add(var);
+            }
+        }
+        return variableList;
     }
 
 
     void DrawVariableBar()
     {
-        GUILayout.BeginHorizontal();
+        GUILayout.BeginVertical();
+            GUILayout.BeginHorizontal();
 
             GUILayout.Space(10);
-            if (GUILayout.Button("addGraph", EditorStyles.toolbarButton, GUILayout.Width(100)))
-                GraphItVar.AddChannel();
+            if (GUILayout.Button("Add Graph", EditorStyles.toolbarButton, GUILayout.Width(100)))
+                VarTracer.AddChannel();
 
             GUILayout.Space(5);
 
-            if (GUILayout.Button("removeGraph", EditorStyles.toolbarButton, GUILayout.Width(100)))
-                GraphItVar.RemoveChannel();
+            if (GUILayout.Button("Remove Graph", EditorStyles.toolbarButton, GUILayout.Width(100)))
+                VarTracer.RemoveChannel();
 
-                GUILayout.Space(20);
-                
-                int variableNum =0;      
-                foreach (var varBody in GraphItVar.Instance.VariableBodys.Values)
+            GUILayout.Space(5);
+
+            if (GUILayout.Button("Clear All", EditorStyles.toolbarButton, GUILayout.Width(100)))
+                VarTracer.ClearAllVariable();
+
+            GUILayout.EndHorizontal();
+
+                var lineNum = CalculateVariableLineNum();
+                var varList = GetVariableList();
+
+                for (int i = 0; i < lineNum;i++)
                 {
-                    foreach(var var in varBody.VariableDict.Values)
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Space(10);
+                    int variableNum = 0;
+                    for(int j = 0;j < variableNumPerLine;j++)
                     {
+                        if (j + i * variableNumPerLine >= varList.Count)
+                            continue;
+                        var var = varList[j + i * variableNumPerLine];
                         var saveColor = GUI.color;
-                        if(GraphItVar.IsVariableOnShow(var.VarName))
+                        if (VarTracer.IsVariableOnShow(var.VarName))
                             GUI.color = var.Color;
 
-                        if (GUILayout.Button(var.VarName, EditorStyles.toolbarDropDown,GUILayout.Width(100)))
+                        if (GUILayout.Button(var.VarName, EditorStyles.toolbarDropDown, GUILayout.Width(100)))
                         {
                             try
                             {
-                                m_popupWindow.x = 235 + variableNum * 100;
+                                m_popupWindow.x = 10 + variableNum * 100;
+                                m_popupWindow.y = i * variableLineHight;
                                 PopupWindow.Show(m_popupWindow, var.PopupWindow);
                             }
                             catch (ExitGUIException)
@@ -162,8 +250,9 @@ public class GraphItWindow : EditorWindow
                         GUI.color = saveColor;
                         variableNum++;
                     }
+                    GUILayout.EndHorizontal();
                 }
-        GUILayout.EndHorizontal();
+        GUILayout.EndVertical();
     }
 
 
@@ -215,7 +304,7 @@ public class GraphItWindow : EditorWindow
 
     public static void DrawGraphs(Rect rect, EditorWindow window)
     {
-        if (GraphItVar.Instance)
+        if (VarTracer.Instance)
         {
             InitializeStyles();
             CreateLineMaterial();
@@ -240,7 +329,7 @@ public class GraphItWindow : EditorWindow
                 GL.Color(new Color(0.2f, 0.2f, 0.2f));
 
                 float scrolled_y_pos = y_offset - mScrollPos.y;
-                foreach (KeyValuePair<string, GraphItData> kv in GraphItVar.Instance.Graphs)
+                foreach (KeyValuePair<string, GraphItData> kv in VarTracer.Instance.Graphs)
                 {
                     float height = kv.Value.GetHeight();
 
@@ -257,7 +346,7 @@ public class GraphItWindow : EditorWindow
                 GL.Begin(GL.LINES);
                 scrolled_y_pos = y_offset - mScrollPos.y;
 
-                foreach (KeyValuePair<string, GraphItData> kv in GraphItVar.Instance.Graphs)
+                foreach (KeyValuePair<string, GraphItData> kv in VarTracer.Instance.Graphs)
                 {
                     graph_index++;
 
@@ -335,7 +424,7 @@ public class GraphItWindow : EditorWindow
 
 
                 scrolled_y_pos = y_offset - mScrollPos.y;
-                foreach (KeyValuePair<string, GraphItData> kv in GraphItVar.Instance.Graphs)
+                foreach (KeyValuePair<string, GraphItData> kv in VarTracer.Instance.Graphs)
                 {
                     float x_step = mWidth / kv.Value.GraphFullLength();
 
@@ -377,7 +466,7 @@ public class GraphItWindow : EditorWindow
             {
                 mMouseOverGraphIndex = -1; //clear it out every repaint to ensure when the mouse leaves we don't leave the pointer around
             }
-            foreach (KeyValuePair<string, GraphItData> kv in GraphItVar.Instance.Graphs)
+            foreach (KeyValuePair<string, GraphItData> kv in VarTracer.Instance.Graphs)
             {
                 graph_index++;
                 
@@ -404,7 +493,7 @@ public class GraphItWindow : EditorWindow
                 NameLabel.normal.textColor = Color.white;
 
                 EditorGUILayout.BeginHorizontal();
-                    EditorGUILayout.LabelField(kv.Key + fu_str, NameLabel,GUILayout.Width(80));
+                EditorGUILayout.LabelField(kv.Key + fu_str, NameLabel, GUILayout.Width(x_offset-80));
                     if(kv.Value.mData.Count>0)
                         EditorGUILayout.LabelField("Max:" + kv.Value.m_maxValue, NameLabel);
                 EditorGUILayout.EndHorizontal();
@@ -412,7 +501,7 @@ public class GraphItWindow : EditorWindow
                 foreach (KeyValuePair<string, GraphItDataInternal> entry in kv.Value.mData)
                 {
                     GraphItDataInternal g = entry.Value;
-                    if (kv.Value.mData.Count > 1 || entry.Key != GraphItVar.BASE_GRAPH)
+                    if (kv.Value.mData.Count > 1 || entry.Key != VarTracer.BASE_GRAPH)
                     {
                         NameLabel.normal.textColor = g.mColor;
                     }
