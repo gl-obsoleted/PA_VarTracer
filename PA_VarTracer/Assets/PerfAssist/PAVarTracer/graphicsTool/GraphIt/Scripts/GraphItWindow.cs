@@ -35,7 +35,8 @@ public class GraphItWindow : EditorWindow
 
     public static int m_variableBarIndex = InValidNum;
 
-    private Rect _optionPopupRect;
+    Rect m_popupWindow = new Rect(235, 0, 70, 18);
+
     static void InitializeStyles()
     {
         if (NameLabel == null)
@@ -135,7 +136,8 @@ public class GraphItWindow : EditorWindow
                 GraphItVar.RemoveChannel();
 
                 GUILayout.Space(20);
-
+                
+                int variableNum =0;      
                 foreach (var varBody in GraphItVar.Instance.VariableBodys.Values)
                 {
                     foreach(var var in varBody.VariableDict.Values)
@@ -148,7 +150,8 @@ public class GraphItWindow : EditorWindow
                         {
                             try
                             {
-                                PopupWindow.Show(_optionPopupRect,var.PopupWindow);
+                                m_popupWindow.x = 235 + variableNum * 100;
+                                PopupWindow.Show(m_popupWindow, var.PopupWindow);
                             }
                             catch (ExitGUIException)
                             {
@@ -157,6 +160,7 @@ public class GraphItWindow : EditorWindow
                             }
                         }
                         GUI.color = saveColor;
+                        variableNum++;
                     }
                 }
         GUILayout.EndHorizontal();
@@ -401,7 +405,8 @@ public class GraphItWindow : EditorWindow
 
                 EditorGUILayout.BeginHorizontal();
                     EditorGUILayout.LabelField(kv.Key + fu_str, NameLabel,GUILayout.Width(80));
-                    EditorGUILayout.LabelField("Max:" + kv.Value.m_maxValue, NameLabel);
+                    if(kv.Value.mData.Count>0)
+                        EditorGUILayout.LabelField("Max:" + kv.Value.m_maxValue, NameLabel);
                 EditorGUILayout.EndHorizontal();
 
                 foreach (KeyValuePair<string, GraphItDataInternal> entry in kv.Value.mData)

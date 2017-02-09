@@ -10,6 +10,12 @@ public class GraphItVariable
     const int saveValueNum = GraphItData.DEFAULT_SAMPLES;
     Dictionary<string, string> m_channelDict = new Dictionary<string, string>();
     private VariableConfigPopup m_popupWindow;
+    private Rect m_popupRect;
+    public Rect PopupRect
+    {
+        get { return m_popupRect; }
+        set { m_popupRect = value; }
+    }
 
     public VariableConfigPopup PopupWindow
     {
