@@ -154,8 +154,6 @@ public class GraphItWindow : EditorWindow
     void UpdateVariableAreaHight()
     {
         var lineNum = CalculateVariableLineNum();
-        var varList = GetVariableList();
-
         var ry = variableLineStartY + lineNum * variableLineHight;
 
         y_offset = ry;
