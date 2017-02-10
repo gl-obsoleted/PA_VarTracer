@@ -102,6 +102,7 @@ public class GraphItVariable
 
                     g.mData[m_varName].mColor = m_color;
                     g.mCurrentIndex = m_valueList.Count-1;
+                    g.mTotalIndex = g.mCurrentIndex; 
                     if (g.mCurrentIndex == GraphItData.DEFAULT_SAMPLES-1)
                         g.mFullArray = true; 
                 }

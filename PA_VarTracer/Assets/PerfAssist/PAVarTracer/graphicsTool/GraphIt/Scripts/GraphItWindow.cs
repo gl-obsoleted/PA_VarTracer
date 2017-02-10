@@ -64,13 +64,51 @@ public class GraphItWindow : EditorWindow
     static void Init()
     {
         // Get existing open window or if none, make a new one:
-        GraphItWindow window = (GraphItWindow)EditorWindow.GetWindow(typeof(GraphItWindow), false, "GraphItVariable ");
+        GraphItWindow window = (GraphItWindow)EditorWindow.GetWindow(typeof(GraphItWindow), false,"GraphItVariable");
         window.minSize = new Vector2(230f, 50f);
         window.Show();
     }
 
+
+    //static void PlayModeStateChanged()
+    //{
+    //    if (EditorApplication.isPlaying)
+    //    {
+    //        GameObject go = new GameObject("GraphIt");
+    //        go.hideFlags = HideFlags.HideAndDontSave;
+    //        VarTracer.mInstance = go.AddComponent<VarTracer>();
+    //        if (VarTracer.Instance != null)
+    //        {
+    //            if (VarTracer.Instance.Graphs.Count == 0)
+    //                VarTracer.AddChannel();
+
+    //            bool constainsCamera = VarTracer.Instance.VariableBodys.ContainsKey("Camera");
+    //            if (!constainsCamera || VarTracer.Instance.VariableBodys["Camera"].VariableDict.Count == 0)
+    //            {
+    //                VarTracerTool.DefineVariable("CameraV_X", "Camera", Color.green);
+    //                VarTracerTool.DefineVariable("CameraV_Y", "Camera", Color.cyan);
+    //                VarTracerTool.DefineVariable("CameraV_Z", "Camera", Color.yellow);
+    //                VarTracerTool.DefineVariable("CameraV_T", "Camera", Color.magenta);
+
+    //                VarTracerTool.DefineVariable("NpcV_X", "Npc", Color.green);
+    //                VarTracerTool.DefineVariable("NpcV_Y", "Npc", Color.cyan);
+    //                VarTracerTool.DefineVariable("NpcV_Z", "Npc", Color.yellow);
+    //                VarTracerTool.DefineVariable("NpcV_T", "Npc", Color.magenta);
+
+    //                VarTracerTool.DefineVariable("PlayerV_X", "Player", Color.green);
+    //                VarTracerTool.DefineVariable("PlayerV_Y", "Player", Color.cyan);
+    //                VarTracerTool.DefineVariable("PlayerV_Z", "Player", Color.yellow);
+    //                VarTracerTool.DefineVariable("PlayerV_T", "Player", Color.magenta);
+    //            }
+
+    //         }
+    //    }
+    //}
+
+
     void OnEnable()
     {
+        //EditorApplication.playmodeStateChanged += PlayModeStateChanged;
         EditorApplication.update += MyDelegate;
         if (VarTracer.Instance != null)
         {
@@ -83,18 +121,19 @@ public class GraphItWindow : EditorWindow
                 VarTracerTool.DefineVariable("CameraV_X", "Camera", Color.green);
                 VarTracerTool.DefineVariable("CameraV_Y", "Camera", Color.cyan);
                 VarTracerTool.DefineVariable("CameraV_Z", "Camera", Color.yellow);
-                VarTracerTool.DefineVariable("CameraV_T", "Camera", Color.blue);
+                VarTracerTool.DefineVariable("CameraV_T", "Camera", Color.magenta);
 
                 VarTracerTool.DefineVariable("NpcV_X", "Npc", Color.green);
                 VarTracerTool.DefineVariable("NpcV_Y", "Npc", Color.cyan);
                 VarTracerTool.DefineVariable("NpcV_Z", "Npc", Color.yellow);
-                VarTracerTool.DefineVariable("NpcV_T", "Npc", Color.blue);
+                VarTracerTool.DefineVariable("NpcV_T", "Npc", Color.magenta);
 
                 VarTracerTool.DefineVariable("PlayerV_X", "Player", Color.green);
                 VarTracerTool.DefineVariable("PlayerV_Y", "Player", Color.cyan);
                 VarTracerTool.DefineVariable("PlayerV_Z", "Player", Color.yellow);
-                VarTracerTool.DefineVariable("PlayerV_T", "Player", Color.blue);
+                VarTracerTool.DefineVariable("PlayerV_T", "Player", Color.magenta);
             }
+
         }
     }
 
@@ -210,7 +249,7 @@ public class GraphItWindow : EditorWindow
             GUILayout.Space(5);
 
             if (GUILayout.Button("Clear All", EditorStyles.toolbarButton, GUILayout.Width(100)))
-                VarTracer.ClearAllVariable();
+                VarTracer.ClearAll();
 
             GUILayout.EndHorizontal();
 

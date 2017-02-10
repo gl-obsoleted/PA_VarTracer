@@ -83,7 +83,6 @@ public class GraphItData
 
     public int mTotalIndex = 0;
 
-
     public GraphItData( string name)
     {
         mName = name;
@@ -168,7 +167,6 @@ public class GraphItData
         SetHeight( Mathf.Max(mHeight + delta, 50) );
         PlayerPrefs.SetFloat( mName+"_height", GetHeight() );
     }
-
 }
 
 public class VarTracer : MonoBehaviour
@@ -180,7 +178,7 @@ public class VarTracer : MonoBehaviour
     public Dictionary<string, GraphItData> Graphs = new Dictionary<string, GraphItData>();
     public Dictionary<string, GraphItVariableBody> VariableBodys = new Dictionary<string, GraphItVariableBody>();
 
-    static VarTracer mInstance = null;
+    public static VarTracer mInstance = null;
 #endif
 
     public static VarTracer Instance
@@ -298,8 +296,6 @@ public class VarTracer : MonoBehaviour
         }
 #endif
     }
-    
-
 
     /// <summary>
     /// Optional setup function that allows you to specify the initial height of a graph.
@@ -429,7 +425,7 @@ public class VarTracer : MonoBehaviour
 #endif
     }
 
-    public static void ClearAllVariable()
+    public static void ClearAll()
     {
 #if UNITY_EDITOR
         foreach (var VarBody in Instance.VariableBodys.Values)
@@ -442,6 +438,12 @@ public class VarTracer : MonoBehaviour
                         var.DetachChannel(graphName);
                 }
             }
+        }
+
+        foreach (KeyValuePair<string, GraphItData> kv in Instance.Graphs)
+        {
+            GraphItData g = kv.Value;
+            g.mEventData.Clear();
         }
 #endif
     }
