@@ -20,14 +20,14 @@ public class VarTracerTool
         if (!VarTracer.Instance.VariableBodys.ContainsKey(variableBody))
         {
             var body = new GraphItVariableBody(variableBody);
-            body.VariableDict[variableName] = new GraphItVariable(variableName);
+            body.VariableDict[variableName] = new GraphItVariable(variableName,variableBody);
             VarTracer.Instance.VariableBodys[variableBody] = body;
         }
 
         var variableDict = VarTracer.Instance.VariableBodys[variableBody].VariableDict;
         if (!variableDict.ContainsKey(variableName))
         {
-            variableDict[variableName] = new GraphItVariable(variableName);
+            variableDict[variableName] = new GraphItVariable(variableName,variableBody);
         }
         variableDict[variableName].Color = color;
 #endif
@@ -59,11 +59,21 @@ public class VarTracerTool
         }
 
         VarTracer.Instance.VariableBodys[variableBody].registEvent(eventName);
+
+        if (!VarTracer.Instance.MEventDataDict.ContainsKey(eventName))
+            VarTracer.Instance.MEventDataDict.Add(eventName, new List<EventData>());
 #endif
     }
 
     public static void SendEvent(string eventName)
     {
+        if (VarTracer.Instance.MEventDataDict.ContainsKey(eventName))
+        {
+            List<EventData> listEvent;
+            VarTracer.Instance.MEventDataDict.TryGetValue(eventName, out listEvent);
+            listEvent.Add(new EventData(VarTracer.Instance.m_frameIndex, eventName));
+        }
+
         List<string> needChannel = new List<string>();
 #if UNITY_EDITOR
         if (string.IsNullOrEmpty(eventName))

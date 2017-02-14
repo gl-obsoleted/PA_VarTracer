@@ -96,6 +96,21 @@ public class GraphItData
 
     public int mTotalIndex = 0;
 
+    float m_XStep = 4;
+
+    Vector2 m_scrollPos;
+    public Vector2 ScrollPos
+    {
+        get { return m_scrollPos; }
+        set { m_scrollPos = value; }
+    }
+
+    public float XStep
+    {
+        get { return m_XStep; }
+        set { m_XStep = value; }
+    }
+
     public GraphItData( string name)
     {
         mName = name;
@@ -107,7 +122,7 @@ public class GraphItData
 
         mInclude0 = true;
 
-        mReadyForUpdate = false;
+        mReadyForUpdate = true;
         mFixedUpdate = false;
 
         mWindowSize = DEFAULT_SAMPLES;
@@ -186,7 +201,13 @@ public class VarTracer : MonoBehaviour
     public Dictionary<string, GraphItData> Graphs = new Dictionary<string, GraphItData>();
     public Dictionary<string, GraphItVariableBody> VariableBodys = new Dictionary<string, GraphItVariableBody>();
 
+    private Dictionary<string, List<EventData>> mEventDataDict = new Dictionary<string, List<EventData>>();
+    public Dictionary<string, List<EventData>> MEventDataDict
+    {
+        get { return mEventDataDict; }
+    }
     public static VarTracer mInstance = null;
+    public int m_frameIndex;
 #endif
 
     public static VarTracer Instance
@@ -220,8 +241,9 @@ public class VarTracer : MonoBehaviour
             g.mCounter = 0.0f;
         }
 
+        m_frameIndex++;
         graph.mTotalIndex++;
-        graph.mCurrentIndex ++;
+        graph.mCurrentIndex++;
 
         foreach (KeyValuePair<string, GraphItDataInternal> entry in graph.mData)
         {

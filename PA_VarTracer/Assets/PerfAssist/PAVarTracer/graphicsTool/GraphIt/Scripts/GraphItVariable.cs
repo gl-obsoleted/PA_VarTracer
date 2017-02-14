@@ -6,6 +6,12 @@ using System.Collections.Generic;
 public class GraphItVariable
 {
     private string m_varName;
+    private string m_varBodyName;
+    public string VarBodyName
+    {
+        get { return m_varBodyName; }
+        set { m_varBodyName = value; }
+    }
     private List<float> m_valueList = new List<float>();
     Dictionary<string, string> m_channelDict = new Dictionary<string, string>();
     private VariableConfigPopup m_popupWindow;
@@ -40,10 +46,10 @@ public class GraphItVariable
         set { m_varName = value; }
     }
 
-    public GraphItVariable(string varName)
+    public GraphItVariable(string varName, string varBodyName)
     {
         m_varName = varName;
-
+        m_varBodyName = varBodyName;
         m_popupWindow = new VariableConfigPopup(varName);
     }
 
@@ -65,7 +71,6 @@ public class GraphItVariable
 
                 g.mData[m_varName].mCurrentValue = value;
                 g.mData[m_varName].mCounter += value;
-                g.mReadyForUpdate = true;
             }
 #endif
         }
@@ -97,7 +102,15 @@ public class GraphItVariable
 
                     g.mData[m_varName].mColor = m_color;
                     g.mCurrentIndex = m_valueList.Count-1;
-                    g.mTotalIndex = m_valueList.Count - 1; 
+                    g.mTotalIndex = m_valueList.Count - 1;
+
+                    foreach (var eventName in VarTracer.Instance.VariableBodys[m_varBodyName].RegistEventList.Keys)
+                    {
+                        if (VarTracer.Instance.MEventDataDict.ContainsKey(eventName))
+                        {
+                            g.mEventData.AddRange(VarTracer.Instance.MEventDataDict[eventName]);
+                        }
+                    }
                 }
 #endif
             }

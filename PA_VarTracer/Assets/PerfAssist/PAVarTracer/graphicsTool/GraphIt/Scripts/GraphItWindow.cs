@@ -6,7 +6,6 @@ using System.Collections.Generic;
 public class GraphItWindow : EditorWindow
 {
     const int InValidNum = -1;
-    static Vector2 mScrollPos;
     static Vector2 mGraphViewScrollPos;
 
     static float mWidth;
@@ -17,7 +16,6 @@ public class GraphItWindow : EditorWindow
     static float x_offset = 200.0f;
     static float y_gap = 40.0f;
     static float y_offset = 20;
-    static float x_step = 4;
     static int precision_slider = 3;
 
 
@@ -73,46 +71,8 @@ public class GraphItWindow : EditorWindow
         window.Show();
     }
 
-
-    //static void PlayModeStateChanged()
-    //{
-    //    if (EditorApplication.isPlaying)
-    //    {
-    //        GameObject go = new GameObject("GraphIt");
-    //        go.hideFlags = HideFlags.HideAndDontSave;
-    //        VarTracer.mInstance = go.AddComponent<VarTracer>();
-    //        if (VarTracer.Instance != null)
-    //        {
-    //            if (VarTracer.Instance.Graphs.Count == 0)
-    //                VarTracer.AddChannel();
-
-    //            bool constainsCamera = VarTracer.Instance.VariableBodys.ContainsKey("Camera");
-    //            if (!constainsCamera || VarTracer.Instance.VariableBodys["Camera"].VariableDict.Count == 0)
-    //            {
-    //                VarTracerTool.DefineVariable("CameraV_X", "Camera", Color.green);
-    //                VarTracerTool.DefineVariable("CameraV_Y", "Camera", Color.cyan);
-    //                VarTracerTool.DefineVariable("CameraV_Z", "Camera", Color.yellow);
-    //                VarTracerTool.DefineVariable("CameraV_T", "Camera", Color.magenta);
-
-    //                VarTracerTool.DefineVariable("NpcV_X", "Npc", Color.green);
-    //                VarTracerTool.DefineVariable("NpcV_Y", "Npc", Color.cyan);
-    //                VarTracerTool.DefineVariable("NpcV_Z", "Npc", Color.yellow);
-    //                VarTracerTool.DefineVariable("NpcV_T", "Npc", Color.magenta);
-
-    //                VarTracerTool.DefineVariable("PlayerV_X", "Player", Color.green);
-    //                VarTracerTool.DefineVariable("PlayerV_Y", "Player", Color.cyan);
-    //                VarTracerTool.DefineVariable("PlayerV_Z", "Player", Color.yellow);
-    //                VarTracerTool.DefineVariable("PlayerV_T", "Player", Color.magenta);
-    //            }
-
-    //         }
-    //    }
-    //}
-
-
     void OnEnable()
     {
-        //EditorApplication.playmodeStateChanged += PlayModeStateChanged;
         EditorApplication.update += MyDelegate;
         if (VarTracer.Instance != null)
         {
@@ -369,8 +329,7 @@ public class GraphItWindow : EditorWindow
             Rect find_y = EditorGUILayout.BeginVertical(GUIStyle.none);
             EditorGUILayout.EndVertical();
 
-            float scrolled_y_pos = y_offset - mScrollPos.y;
-            float scrolled_x_pos = -mScrollPos.x;
+            float scrolled_y_pos = y_offset;
             if (Event.current.type == EventType.Repaint)
             {
                 GL.PushMatrix();
@@ -395,10 +354,9 @@ public class GraphItWindow : EditorWindow
                 }
                 GL.End();
 
+                scrolled_y_pos = y_offset;
                 //Draw Lines
                 GL.Begin(GL.LINES);
-                scrolled_y_pos = y_offset - mScrollPos.y;
-
                 foreach (KeyValuePair<string, GraphItData> kv in VarTracer.Instance.Graphs)
                 {
                     graph_index++;
@@ -411,8 +369,8 @@ public class GraphItWindow : EditorWindow
                         GL.Color(Color.white);
                         if(eventData.m_eventFrameIndex>0)
                         {
-                            float x = x_offset + eventData.m_eventFrameIndex * x_step + scrolled_x_pos;
-                            if (x <= x_offset - x_step) continue;
+                            float x = x_offset + (eventData.m_eventFrameIndex + 1) * kv.Value.XStep - kv.Value.ScrollPos.x;
+                            if (x <= x_offset - kv.Value.XStep) continue;
                             if (x >= mWidth + x_offset) break;
 
                             float y0 = scrolled_y_pos + height;
@@ -448,13 +406,13 @@ public class GraphItWindow : EditorWindow
                                 float value = 0;
                                 if (i >= 1)
                                 {
-                                    float x0 = x_offset + (i - 1) * x_step + scrolled_x_pos;
-                                    if (x0 <= x_offset - x_step) continue;
+                                    float x0 = x_offset + (i - 1) * kv.Value.XStep - kv.Value.ScrollPos.x;
+                                    if (x0 <= x_offset - kv.Value.XStep) continue;
                                     if (x0 >= mWidth + x_offset) break;
                                     value = g.mDataInfos[i].Value;
                                     float y0 = scrolled_y_pos + height * (1 - (previous_value - y_min) / y_range);
 
-                                    float x1 = x_offset + i * x_step + scrolled_x_pos;
+                                    float x1 = x_offset + i * kv.Value.XStep - kv.Value.ScrollPos.x;
                                     float y1 = scrolled_y_pos + height * (1 - (value - y_min) / y_range);
 
                                     Plot(x0, y0, x1, y1);
@@ -469,30 +427,20 @@ public class GraphItWindow : EditorWindow
                 GL.End();
 
 
-                scrolled_y_pos = y_offset - mScrollPos.y;
+                scrolled_y_pos = y_offset;
                 foreach (KeyValuePair<string, GraphItData> kv in VarTracer.Instance.Graphs)
                 {
-                   // float x_step = mWidth / kv.Value.GraphFullLength();
-
                     float height = kv.Value.GetHeight();
                     foreach (var eventData in kv.Value.mEventData)
                     {
-                        //int frameIndex = 0;
-
-                        //if (kv.Value.mTotalIndex <= kv.Value.GraphFullLength())
-                        //{
-                        //    frameIndex = eventData.m_eventFrameIndex;
-                        //}
-                        //else
-                        //    if (kv.Value.mTotalIndex - eventData.m_eventFrameIndex <= kv.Value.GraphFullLength())
-                        //        frameIndex = kv.Value.GraphFullLength() - (kv.Value.mTotalIndex - eventData.m_eventFrameIndex);
-
                         if (kv.Value.mTotalIndex > 0)
                         {
-                            float x = x_offset + kv.Value.mTotalIndex * x_step;
+                            float x = x_offset + (eventData.m_eventFrameIndex + 1) * kv.Value.XStep - kv.Value.ScrollPos.x;
+                            if (x <= x_offset - kv.Value.XStep) continue;
+                            if (x >= mWidth + x_offset) break;
                             float y0 = scrolled_y_pos + height;
 
-                            Rect tooltip_r = new Rect(x-60, y0, 80, 20);
+                            Rect tooltip_r = new Rect(x-75, y0, 100, 20);
                             HoverText.normal.textColor = Color.white;
                             GUI.Label(tooltip_r, eventData.m_eventName, HoverText);
                         }
@@ -508,21 +456,14 @@ public class GraphItWindow : EditorWindow
 
             mGraphViewScrollPos = EditorGUILayout.BeginScrollView(mGraphViewScrollPos, GUIStyle.none);
             graph_index = 0;
-            if (Event.current.type == EventType.Repaint)
-            {
-                mMouseOverGraphIndex = -1; //clear it out every repaint to ensure when the mouse leaves we don't leave the pointer around
-                //if ((Event.current.type == EventType.MouseDown && Event.current.button == 1))
-                //{
-                //    EditorApplication.isPaused = !EditorApplication.isPaused;
-                //}
-            }
+
             foreach (KeyValuePair<string, GraphItData> kv in VarTracer.Instance.Graphs)
             {
                 graph_index++;
 
                 mWidth = window.position.width - x_offset;
                 float height = kv.Value.GetHeight();
-                float width = kv.Value.GraphLength() * x_step;
+                float width = kv.Value.GraphLength() * kv.Value.XStep;
                 if (width < mWidth)
                 {
                     width = mWidth - x_offset;
@@ -530,9 +471,9 @@ public class GraphItWindow : EditorWindow
                 else
                 {
                     if (!EditorApplication.isPaused)
-                        mScrollPos.x = width - mWidth;
+                        kv.Value.ScrollPos = new Vector2(width - mWidth,kv.Value.ScrollPos.y);
+                        //kv.Value.ScrollPos.Set(kv.Value.ScrollPos.x + (width - mWidth), kv.Value.ScrollPos.y);
                 }
-
 
                 GUIStyle s = new GUIStyle();                
                 s.fixedHeight = height + y_gap;
@@ -570,7 +511,11 @@ public class GraphItWindow : EditorWindow
                     EditorGUILayout.LabelField(entry.Key + "   Value: " + g.mCurrentValue.ToString(num_format), NameLabel);
                 }
 
-                //GraphItData.DEFAULT_SAMPLES = EditorGUILayout.IntSlider("Fractional Digits", GraphItData.DEFAULT_SAMPLES, GraphItData.RECENT_WINDOW_SIZE, 3000);
+                GUILayout.BeginHorizontal();
+                HoverText.normal.textColor = Color.grey;
+                GUILayout.Label("STEP SCALE:", HoverText, GUILayout.Width(90));
+                kv.Value.XStep = GUILayout.HorizontalSlider(kv.Value.XStep, 0.1f, 10, GUILayout.Width(100));
+                GUILayout.EndHorizontal();
 
                 ////Respond to mouse input!
                 if (Event.current.type == EventType.MouseDrag && r.Contains(Event.current.mousePosition - Event.current.delta))
@@ -578,18 +523,19 @@ public class GraphItWindow : EditorWindow
                     if (Event.current.button == 0)
                     {
                         //kv.Value.DoHeightDelta(Event.current.delta.y);
-                        mScrollPos.x += Event.current.delta.x;
+                        kv.Value.ScrollPos.Set(kv.Value.ScrollPos.x + Event.current.delta.x, kv.Value.ScrollPos.y);
                     }
                     window.Repaint();
                 }
 
                 EditorGUILayout.EndVertical();
 
-                GUILayout.Space(300);
-                mScrollPos = GUILayout.BeginScrollView(mScrollPos, GUILayout.Width(mWidth), GUILayout.Height(0));
-                GUILayout.Label("", GUILayout.Width(width), GUILayout.Height(0));
-                GUILayout.EndScrollView();
-
+                GUILayout.BeginHorizontal();
+                    GUILayout.Space(x_offset);
+                    kv.Value.ScrollPos = GUILayout.BeginScrollView(kv.Value.ScrollPos, GUILayout.Width(mWidth), GUILayout.Height(0));
+                    GUILayout.Label("", GUILayout.Width(width), GUILayout.Height(0));
+                    GUILayout.EndScrollView();
+                GUILayout.EndHorizontal();
                 //mScrollPos = EditorGUILayout.BeginScrollView(mScrollPos,GUILayout.Width(mWidth), GUILayout.Height(0));
                 //GUILayout.Label("", GUILayout.Width(width), GUILayout.Height(0));
                 //EditorGUILayout.EndScrollView();
