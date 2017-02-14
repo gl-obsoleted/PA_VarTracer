@@ -88,6 +88,7 @@ public class GraphItData
     public int mWindowSize;
 
     public float m_maxValue;
+    public float m_minValue;
 
     public bool mSharedYAxis;
 
@@ -120,7 +121,7 @@ public class GraphItData
         mCurrentIndex = 0;
         mTotalIndex = 0;
 
-        mInclude0 = true;
+        mInclude0 = false;
 
         mReadyForUpdate = true;
         mFixedUpdate = false;
@@ -150,7 +151,20 @@ public class GraphItData
 
     public float GetMin( string subgraph )
     {
-        return 0;
+        bool min_set = false;
+        float min = 0;
+        foreach (var entry in mData)
+        {
+            var g = entry.Value;
+            if (!min_set)
+            {
+                min = g.mMin;
+                min_set = true;
+            }
+            min = Math.Min(min, g.mMin);
+        }
+        m_minValue = min; 
+        return min;
     }
 
     public float GetMax( string subgraph )
@@ -167,14 +181,8 @@ public class GraphItData
             }
             max = Math.Max(max, g.mMax);
         }
-
-        int resultValue = 1;
-        while (resultValue<max)
-        {
-            resultValue *= 10;
-        }
-        m_maxValue = resultValue;
-        return resultValue;
+        m_maxValue = max;
+        return max;
     }
 
     public float GetHeight()
@@ -235,7 +243,6 @@ public class VarTracer : MonoBehaviour
         {
             GraphItDataInternal g = entry.Value;
 
-            //g.mDataPoints[graph.mCurrentIndex] = g.mCounter;
             g.mDataInfos.Add(new DataInfo(g.mCounter));
             
             g.mCounter = 0.0f;
@@ -250,17 +257,17 @@ public class VarTracer : MonoBehaviour
             GraphItDataInternal g = entry.Value;
 
             float sum = g.mDataInfos[0].Value;
-            //float min = g.mDataPoints[0];
+            float min = g.mDataInfos[0].Value;
             float max = g.mDataInfos[0].Value;
             for (int i = 1; i < graph.GraphLength(); ++i)
             {
                 sum += g.mDataInfos[i].Value;
-                //min = Mathf.Min(min,g.mDataPoints[i]);
+                min = Mathf.Min(min, g.mDataInfos[i].Value);
                 max = Mathf.Max(max, g.mDataInfos[i].Value);
             }
             if (graph.mInclude0)
             {
-                //min = Mathf.Min(min, 0.0f);
+                min = Mathf.Min(min, 0.0f);
                 max = Mathf.Max(max, 0.0f);
             }
 
@@ -280,7 +287,7 @@ public class VarTracer : MonoBehaviour
                 recent_start = (recent_start + 1) % g.mDataInfos.Count;
             }
 
-            g.mMin = 0;
+            g.mMin = min;
             g.mMax = max;
         }
 #endif

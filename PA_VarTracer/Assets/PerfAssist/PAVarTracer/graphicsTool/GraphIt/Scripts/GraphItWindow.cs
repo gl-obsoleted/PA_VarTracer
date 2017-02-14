@@ -16,7 +16,7 @@ public class GraphItWindow : EditorWindow
     static float x_offset = 200.0f;
     static float y_gap = 40.0f;
     static float y_offset = 20;
-    static int precision_slider = 3;
+    static int precision_slider = 2;
 
 
     static GUIStyle NameLabel;
@@ -472,7 +472,6 @@ public class GraphItWindow : EditorWindow
                 {
                     if (!EditorApplication.isPaused)
                         kv.Value.ScrollPos = new Vector2(width - mWidth,kv.Value.ScrollPos.y);
-                        //kv.Value.ScrollPos.Set(kv.Value.ScrollPos.x + (width - mWidth), kv.Value.ScrollPos.y);
                 }
 
                 GUIStyle s = new GUIStyle();                
@@ -500,6 +499,11 @@ public class GraphItWindow : EditorWindow
                         EditorGUILayout.LabelField("Max:" + kv.Value.m_maxValue, NameLabel);
                 EditorGUILayout.EndHorizontal();
 
+                EditorGUILayout.BeginHorizontal();
+                if (kv.Value.mData.Count > 0)
+                    EditorGUILayout.LabelField("Min:" + kv.Value.m_minValue,NameLabel);
+                EditorGUILayout.EndHorizontal();
+
                 foreach (KeyValuePair<string, GraphItDataInternal> entry in kv.Value.mData)
                 {
                     GraphItDataInternal g = entry.Value;
@@ -523,7 +527,7 @@ public class GraphItWindow : EditorWindow
                     if (Event.current.button == 0)
                     {
                         //kv.Value.DoHeightDelta(Event.current.delta.y);
-                        kv.Value.ScrollPos.Set(kv.Value.ScrollPos.x + Event.current.delta.x, kv.Value.ScrollPos.y);
+                        kv.Value.ScrollPos = new Vector2(kv.Value.ScrollPos.x + Event.current.delta.x, kv.Value.ScrollPos.y);
                     }
                     window.Repaint();
                 }
