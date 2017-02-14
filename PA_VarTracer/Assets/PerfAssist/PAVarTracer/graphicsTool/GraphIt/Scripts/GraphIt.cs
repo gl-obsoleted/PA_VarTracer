@@ -3,16 +3,29 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
+
+public class  DataInfo{
+    private float m_value;
+    public float Value
+    {
+        get { return m_value; }
+        set { m_value = value; }
+    }
+    public DataInfo(float value)
+    {
+        m_value = value;
+    }
+}
+
+
 public class GraphItDataInternal
 {
     public GraphItDataInternal( int subgraph_index )
     {
-        mDataPoints = new float[GraphItData.DEFAULT_SAMPLES];
+        mDataInfos = new List<DataInfo>();
         mCounter = 0.0f;
         mMin = 0.0f;
         mMax = 0.0f;
-        mAvg = 0.0f;
-        mFastAvg = 0.0f;
         mCurrentValue = 0.0f;
         switch(subgraph_index)
         {
@@ -33,20 +46,21 @@ public class GraphItDataInternal
                 break;
         }
     }
-    public float[] mDataPoints;
     public float mCounter;
     public float mMin;
     public float mMax;
-    public float mAvg;
-    public float mFastAvg;
     public float mCurrentValue;
     public Color mColor;
+    public List<DataInfo> mDataInfos;
+
 }
 
 public class EventData
 {
     public string m_eventName;
     public int m_eventFrameIndex;
+    public Color m_color; 
+
     public EventData(int eventFrameIndex,string eventName)
     {
         m_eventFrameIndex = eventFrameIndex;
@@ -56,7 +70,7 @@ public class EventData
 
 public class GraphItData
 {
-    public const int DEFAULT_SAMPLES = 1048;
+    public static int DEFAULT_SAMPLES = 1048;
     public const int RECENT_WINDOW_SIZE = 120;
     
     public Dictionary<string, GraphItDataInternal> mData = new Dictionary<string, GraphItDataInternal>();
@@ -72,7 +86,6 @@ public class GraphItData
     public bool mFixedUpdate;
 
     public int mWindowSize;
-    public bool mFullArray;
 
     public float m_maxValue;
 
@@ -98,7 +111,6 @@ public class GraphItData
         mFixedUpdate = false;
 
         mWindowSize = DEFAULT_SAMPLES;
-        mFullArray = false;
 
         mSharedYAxis = false; 
         mHidden = false;
@@ -113,10 +125,6 @@ public class GraphItData
 
     public int GraphLength()
     {
-        if (mFullArray)
-        {
-            return GraphFullLength();
-        }
         return mCurrentIndex;
     }
 
@@ -206,29 +214,27 @@ public class VarTracer : MonoBehaviour
         {
             GraphItDataInternal g = entry.Value;
 
-            g.mDataPoints[graph.mCurrentIndex] = g.mCounter;
+            //g.mDataPoints[graph.mCurrentIndex] = g.mCounter;
+            g.mDataInfos.Add(new DataInfo(g.mCounter));
+            
             g.mCounter = 0.0f;
         }
 
         graph.mTotalIndex++;
-        graph.mCurrentIndex = (graph.mCurrentIndex + 1) % graph.mWindowSize;
-        if (graph.mCurrentIndex == 0)
-        {
-            graph.mFullArray = true;
-        }
+        graph.mCurrentIndex ++;
 
         foreach (KeyValuePair<string, GraphItDataInternal> entry in graph.mData)
         {
             GraphItDataInternal g = entry.Value;
 
-            float sum = g.mDataPoints[0];
+            float sum = g.mDataInfos[0].Value;
             //float min = g.mDataPoints[0];
-            float max = g.mDataPoints[0];
+            float max = g.mDataInfos[0].Value;
             for (int i = 1; i < graph.GraphLength(); ++i)
             {
-                sum += g.mDataPoints[i];
+                sum += g.mDataInfos[i].Value;
                 //min = Mathf.Min(min,g.mDataPoints[i]);
-                max = Mathf.Max(max,g.mDataPoints[i]);
+                max = Mathf.Max(max, g.mDataInfos[i].Value);
             }
             if (graph.mInclude0)
             {
@@ -241,28 +247,19 @@ public class VarTracer : MonoBehaviour
             int recent_count = GraphItData.RECENT_WINDOW_SIZE;
             if (recent_start < 0)
             {
-                if (graph.mFullArray)
-                {
-                    recent_start += g.mDataPoints.Length;
-                }
-                else
-                {
-                    recent_count = graph.GraphLength();
-                    recent_start = 0;
-                }
+                recent_count = graph.GraphLength();
+                recent_start = 0;
             }
 
             float recent_sum = 0.0f;
             for (int i = 0; i < recent_count; ++i)
             {
-                recent_sum += g.mDataPoints[recent_start];
-                recent_start = (recent_start + 1) % g.mDataPoints.Length;
+                recent_sum += g.mDataInfos[recent_start].Value;
+                recent_start = (recent_start + 1) % g.mDataInfos.Count;
             }
 
             g.mMin = 0;
             g.mMax = max;
-            g.mAvg = sum / graph.GraphLength();
-            g.mFastAvg = recent_sum / recent_count;
         }
 #endif
     }

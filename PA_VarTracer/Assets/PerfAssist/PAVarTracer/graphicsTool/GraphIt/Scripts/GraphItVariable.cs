@@ -7,7 +7,6 @@ public class GraphItVariable
 {
     private string m_varName;
     private List<float> m_valueList = new List<float>();
-    const int saveValueNum = GraphItData.DEFAULT_SAMPLES;
     Dictionary<string, string> m_channelDict = new Dictionary<string, string>();
     private VariableConfigPopup m_popupWindow;
     private Rect m_popupRect;
@@ -50,10 +49,6 @@ public class GraphItVariable
 
     public void InsertValue(float value)
     {
-        if (m_valueList.Count ==saveValueNum)
-        {
-            m_valueList.RemoveAt(0);
-        }
         m_valueList.Add(value);
 
         foreach (var channel in m_channelDict.Keys)
@@ -76,7 +71,7 @@ public class GraphItVariable
         }
     }
 
-    public void  AttchChannel(string channel)
+    public void AttchChannel(string channel)
     {
         if(string.IsNullOrEmpty(channel))
             return ;
@@ -94,17 +89,15 @@ public class GraphItVariable
                         g.mData[m_varName] = new GraphItDataInternal(g.mData.Count);
                     }
 
-                    g.mData[m_varName].mDataPoints = new float[GraphItData.DEFAULT_SAMPLES];
-                    for (int i = 0; i < m_valueList.Count; i++)
+                    g.mData[m_varName].mDataInfos.Clear();
+                    foreach (float value in m_valueList)
                     {
-                        g.mData[m_varName].mDataPoints[i] = m_valueList[i];
+                        g.mData[m_varName].mDataInfos.Add(new DataInfo(value));                        
                     }
 
                     g.mData[m_varName].mColor = m_color;
                     g.mCurrentIndex = m_valueList.Count-1;
-                    g.mTotalIndex = g.mCurrentIndex; 
-                    if (g.mCurrentIndex == GraphItData.DEFAULT_SAMPLES-1)
-                        g.mFullArray = true; 
+                    g.mTotalIndex = m_valueList.Count - 1; 
                 }
 #endif
             }
