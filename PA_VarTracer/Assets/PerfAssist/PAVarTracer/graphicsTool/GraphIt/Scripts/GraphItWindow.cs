@@ -328,7 +328,7 @@ public class GraphItWindow : EditorWindow
             Rect find_y = EditorGUILayout.BeginVertical(GUIStyle.none);
             EditorGUILayout.EndVertical();
 
-            float scrolled_y_pos = y_offset;
+            float scrolled_y_pos = y_offset - mGraphViewScrollPos.y;
             if (Event.current.type == EventType.Repaint)
             {
                 GL.PushMatrix();
@@ -353,7 +353,7 @@ public class GraphItWindow : EditorWindow
                 }
                 GL.End();
 
-                scrolled_y_pos = y_offset;
+                scrolled_y_pos = y_offset - mGraphViewScrollPos.y;
                 //Draw Lines
                 GL.Begin(GL.LINES);
 
@@ -395,6 +395,12 @@ public class GraphItWindow : EditorWindow
                                     if (x0 >= mWidth + x_offset) break;
                                     value = g.mDataInfos[i].Value;
                                     float y0 = scrolled_y_pos + height * (1 - (previous_value - y_min) / y_range);
+
+                                    if(i==1)
+                                    {
+                                        x0 = x_offset;
+                                        y0 = scrolled_y_pos + height;
+                                    }
 
                                     float x1 = x_offset + i * kv.Value.XStep - kv.Value.ScrollPos.x;
                                     float y1 = scrolled_y_pos + height * (1 - (value - y_min) / y_range);
@@ -442,42 +448,8 @@ public class GraphItWindow : EditorWindow
                 }                
                 GL.End();
 
-
-                scrolled_y_pos = y_offset;
-                foreach (KeyValuePair<string, GraphItData> kv in VarTracer.Instance.Graphs)
-                {
-                    float height = kv.Value.GetHeight();
-                    foreach (var varBody in VarTracer.Instance.VariableBodys)
-                    {
-                        foreach (var var in varBody.Value.VariableDict.Values)
-                        {
-                            foreach (var channelName in var.ChannelDict.Values)
-                            {
-                                if (channelName.Equals(kv.Key))
-                                {
-                                    foreach (var eventInfo in varBody.Value.EventInfos.Values)
-                                    {
-                                        foreach (var data in eventInfo)
-                                        {
-                                            if (data.m_eventFrameIndex > 0)
-                                            {
-                                                float x = x_offset + data.m_eventFrameIndex * kv.Value.XStep - kv.Value.ScrollPos.x;
-                                                if (x <= x_offset - kv.Value.XStep) continue;
-                                                if (x >= mWidth + x_offset) break;
-                                                float y0 = scrolled_y_pos + height;
-
-                                                Rect tooltip_r = new Rect(x - 75, y0, 100, 20);
-                                                HoverText.normal.textColor = Color.white;
-                                                GUI.Label(tooltip_r, data.m_eventName, HoverText);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    scrolled_y_pos += (height + y_gap);
-                }
+                scrolled_y_pos = y_offset - mGraphViewScrollPos.y;
+                scrolled_y_pos = ShowEventLabel(scrolled_y_pos);
                 GL.PopMatrix();
             
                 GL.Viewport(new Rect(0, 0, rect.width, rect.height));
@@ -509,10 +481,6 @@ public class GraphItWindow : EditorWindow
                 s.stretchWidth = true;
                 Rect r = EditorGUILayout.BeginVertical(s);
                 r.height = height;
-                //if (r.width !=0)
-                //{
-                //    mWidth = r.width - x_offset;
-                //}
 
                 string num_format = "###,###,##0.";
                 for( int i = 0; i < precision_slider; i++ )
@@ -523,16 +491,17 @@ public class GraphItWindow : EditorWindow
                 //skip subgraph title if only one, and it's the same.
                 NameLabel.normal.textColor = Color.white;
 
-                EditorGUILayout.BeginHorizontal();
+                GUILayout.BeginHorizontal();
                 EditorGUILayout.LabelField(kv.Key, NameLabel, GUILayout.Width(x_offset-80));
-                    if(kv.Value.mData.Count>0)
+                GUILayout.BeginVertical();
+                    if (kv.Value.mData.Count > 0)
                         EditorGUILayout.LabelField("Max:" + kv.Value.m_maxValue.ToString(num_format), NameLabel);
-                EditorGUILayout.EndHorizontal();
-
-                EditorGUILayout.BeginHorizontal();
-                if (kv.Value.mData.Count > 0)
-                    EditorGUILayout.LabelField("Min:" + kv.Value.m_minValue.ToString(num_format), NameLabel);
-                EditorGUILayout.EndHorizontal();
+                    if (kv.Value.mData.Count > 0)
+                        EditorGUILayout.LabelField("Max:" + kv.Value.m_maxValue.ToString(num_format), NameLabel);
+                    if (kv.Value.mData.Count > 0)
+                        EditorGUILayout.LabelField("Max:" + kv.Value.m_maxValue.ToString(num_format), NameLabel);
+                GUILayout.EndVertical();
+                GUILayout.EndHorizontal();
 
                 foreach (KeyValuePair<string, GraphItDataInternal> entry in kv.Value.mData)
                 {
@@ -544,6 +513,11 @@ public class GraphItWindow : EditorWindow
                     //EditorGUILayout.LabelField(entry.Key +"   Avg: " + g.mAvg.ToString(num_format) + " (" + g.mFastAvg.ToString(num_format) + "),Min: " + g.mMin.ToString(num_format) + ",Max: " + g.mMax.ToString(num_format), NameLabel);
                     EditorGUILayout.LabelField(entry.Key + "   Value: " + g.mCurrentValue.ToString(num_format), NameLabel);
                 }
+
+                EditorGUILayout.BeginHorizontal();
+                if (kv.Value.mData.Count > 0)
+                    EditorGUILayout.LabelField("Min:" + kv.Value.m_minValue.ToString(num_format), NameLabel);
+                EditorGUILayout.EndHorizontal();
 
                 GUILayout.BeginHorizontal();
                 HoverText.normal.textColor = Color.grey;
@@ -566,16 +540,55 @@ public class GraphItWindow : EditorWindow
                     window.Repaint();
                 }
 
-                EditorGUILayout.EndVertical();
-                
                 GUILayout.BeginHorizontal();
                 GUILayout.Space(x_offset);
                 kv.Value.ScrollPos = GUILayout.BeginScrollView(kv.Value.ScrollPos, GUILayout.Width(mWidth), GUILayout.Height(0));
                 GUILayout.Label("", GUILayout.Width(width), GUILayout.Height(0));
                 GUILayout.EndScrollView();
                 GUILayout.EndHorizontal();
+
+                EditorGUILayout.EndVertical();
             }
             EditorGUILayout.EndScrollView();
         }
+    }
+
+    private static float ShowEventLabel(float scrolled_y_pos)
+    {
+        foreach (KeyValuePair<string, GraphItData> kv in VarTracer.Instance.Graphs)
+        {
+            float height = kv.Value.GetHeight();
+            foreach (var varBody in VarTracer.Instance.VariableBodys)
+            {
+                foreach (var var in varBody.Value.VariableDict.Values)
+                {
+                    foreach (var channelName in var.ChannelDict.Values)
+                    {
+                        if (channelName.Equals(kv.Key))
+                        {
+                            foreach (var eventInfo in varBody.Value.EventInfos.Values)
+                            {
+                                foreach (var data in eventInfo)
+                                {
+                                    if (data.m_eventFrameIndex > 0)
+                                    {
+                                        float x = x_offset + data.m_eventFrameIndex * kv.Value.XStep - kv.Value.ScrollPos.x;
+                                        if (x <= x_offset - kv.Value.XStep) continue;
+                                        if (x >= mWidth + x_offset) break;
+                                        float y0 = scrolled_y_pos + height;
+
+                                        Rect tooltip_r = new Rect(x - 75, y0, 100, 20);
+                                        HoverText.normal.textColor = Color.white;
+                                        GUI.Label(tooltip_r, data.m_eventName, HoverText);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            scrolled_y_pos += (height + y_gap);
+        }
+        return scrolled_y_pos;
     }
 }
