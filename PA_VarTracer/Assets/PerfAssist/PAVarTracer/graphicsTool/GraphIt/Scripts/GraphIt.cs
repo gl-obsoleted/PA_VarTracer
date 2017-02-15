@@ -190,7 +190,6 @@ public class GraphItData
 public class VarTracer : MonoBehaviour
 {
 #if UNITY_EDITOR
-    public const string BASE_GRAPH = "base";
     public const string VERSION = "1.2.0";
     public Dictionary<string, GraphItData> Graphs = new Dictionary<string, GraphItData>();
     public Dictionary<string, GraphItVariableBody> VariableBodys = new Dictionary<string, GraphItVariableBody>();
