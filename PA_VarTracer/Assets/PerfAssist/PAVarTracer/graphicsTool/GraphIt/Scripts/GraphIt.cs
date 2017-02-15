@@ -4,14 +4,14 @@ using System.Collections;
 using System.Collections.Generic;
 
 
-public class  DataInfo{
+public class  VarDataInfo{
     private float m_value;
     public float Value
     {
         get { return m_value; }
         set { m_value = value; }
     }
-    public DataInfo(float value)
+    public VarDataInfo(float value)
     {
         m_value = value;
     }
@@ -22,7 +22,7 @@ public class GraphItDataInternal
 {
     public GraphItDataInternal( int subgraph_index )
     {
-        mDataInfos = new List<DataInfo>();
+        mDataInfos = new List<VarDataInfo>();
         mCounter = 0.0f;
         mMin = 0.0f;
         mMax = 0.0f;
@@ -51,7 +51,7 @@ public class GraphItDataInternal
     public float mMax;
     public float mCurrentValue;
     public Color mColor;
-    public List<DataInfo> mDataInfos;
+    public List<VarDataInfo> mDataInfos;
 }
 
 public class EventData
@@ -223,7 +223,7 @@ public class VarTracer : MonoBehaviour
         {
             GraphItDataInternal g = entry.Value;
 
-            g.mDataInfos.Add(new DataInfo(g.mCounter));
+            g.mDataInfos.Add(new VarDataInfo(g.mCounter));
             
             g.mCounter = 0.0f;
         }

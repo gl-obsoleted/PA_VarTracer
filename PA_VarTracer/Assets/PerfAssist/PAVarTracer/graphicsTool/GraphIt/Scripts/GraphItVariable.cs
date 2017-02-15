@@ -97,7 +97,7 @@ public class GraphItVariable
                     g.mData[m_varName].mDataInfos.Clear();
                     foreach (float value in m_valueList)
                     {
-                        g.mData[m_varName].mDataInfos.Add(new DataInfo(value));                        
+                        g.mData[m_varName].mDataInfos.Add(new VarDataInfo(value));                        
                     }
 
                     g.mData[m_varName].mColor = m_color;

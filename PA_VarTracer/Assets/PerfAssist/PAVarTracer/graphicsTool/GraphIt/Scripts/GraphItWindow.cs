@@ -62,7 +62,7 @@ public class GraphItWindow : EditorWindow
         }
     }
 
-    [MenuItem("Window/PerfAssist" + "/GraphItVariable")]
+    [MenuItem("Window/PerfAssist" + "/VarTracer")]
     static void Init()
     {
         // Get existing open window or if none, make a new one:
