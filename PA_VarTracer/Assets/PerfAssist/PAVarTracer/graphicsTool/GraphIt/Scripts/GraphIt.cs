@@ -52,14 +52,12 @@ public class GraphItDataInternal
     public float mCurrentValue;
     public Color mColor;
     public List<DataInfo> mDataInfos;
-
 }
 
 public class EventData
 {
     public string m_eventName;
     public int m_eventFrameIndex;
-    public Color m_color; 
 
     public EventData(int eventFrameIndex,string eventName)
     {
@@ -80,8 +78,6 @@ public class GraphItData
     public int mCurrentIndex;
     public bool mInclude0;
 
-    public List<EventData> mEventData = new List<EventData>();
-
     public bool mReadyForUpdate;
     public bool mFixedUpdate;
 
@@ -94,8 +90,6 @@ public class GraphItData
 
     protected bool mHidden;
     protected float mHeight;
-
-    public int mTotalIndex = 0;
 
     float m_XStep = 4;
 
@@ -119,7 +113,6 @@ public class GraphItData
         mData = new Dictionary<string, GraphItDataInternal>();
 
         mCurrentIndex = 0;
-        mTotalIndex = 0;
 
         mInclude0 = false;
 
@@ -132,7 +125,6 @@ public class GraphItData
         mHidden = false;
         mHeight = 175;
 
-
         if (PlayerPrefs.HasKey(mName + "_height"))
         {
             SetHeight(PlayerPrefs.GetFloat(mName + "_height"));
@@ -141,12 +133,7 @@ public class GraphItData
 
     public int GraphLength()
     {
-        return mCurrentIndex;
-    }
-
-    public int GraphFullLength()
-    {
-        return mWindowSize;
+        return mCurrentIndex ;
     }
 
     public float GetMin( string subgraph )
@@ -202,20 +189,14 @@ public class GraphItData
 
 public class VarTracer : MonoBehaviour
 {
-
 #if UNITY_EDITOR
     public const string BASE_GRAPH = "base";
     public const string VERSION = "1.2.0";
     public Dictionary<string, GraphItData> Graphs = new Dictionary<string, GraphItData>();
     public Dictionary<string, GraphItVariableBody> VariableBodys = new Dictionary<string, GraphItVariableBody>();
 
-    private Dictionary<string, List<EventData>> mEventDataDict = new Dictionary<string, List<EventData>>();
-    public Dictionary<string, List<EventData>> MEventDataDict
-    {
-        get { return mEventDataDict; }
-    }
     public static VarTracer mInstance = null;
-    public int m_frameIndex;
+    public static int m_wholeFrameIndex;
 #endif
 
     public static VarTracer Instance
@@ -235,7 +216,7 @@ public class VarTracer : MonoBehaviour
 #endif
         }
     }
-        
+
     void StepGraphInternal(GraphItData graph)
     {
 #if UNITY_EDITOR
@@ -247,11 +228,7 @@ public class VarTracer : MonoBehaviour
             
             g.mCounter = 0.0f;
         }
-
-        m_frameIndex++;
-        graph.mTotalIndex++;
         graph.mCurrentIndex++;
-
         foreach (KeyValuePair<string, GraphItDataInternal> entry in graph.mData)
         {
             GraphItDataInternal g = entry.Value;
@@ -305,6 +282,8 @@ public class VarTracer : MonoBehaviour
                 StepGraphInternal(g);
             }
         }
+        if (Graphs.Count>0)
+            m_wholeFrameIndex++;
 #endif
     }
 
@@ -338,6 +317,7 @@ public class VarTracer : MonoBehaviour
         }
 
         GraphItData g = Instance.Graphs[graph];
+        g.mCurrentIndex = m_wholeFrameIndex;
         g.SetHeight(height);
 #endif
     }
@@ -358,18 +338,6 @@ public class VarTracer : MonoBehaviour
 
         GraphItData g = Instance.Graphs[graph];
         g.mSharedYAxis = shared_y_axis;
-#endif
-    }
-
-
-    public static void SetGraphEvent(string graph, string eventName)
-    {
-#if UNITY_EDITOR
-        if (Instance.Graphs.ContainsKey(graph))
-        {
-            GraphItData g = Instance.Graphs[graph];
-            g.mEventData.Add(new EventData(g.mTotalIndex, eventName));
-        }
 #endif
     }
 
@@ -464,12 +432,6 @@ public class VarTracer : MonoBehaviour
                         var.DetachChannel(graphName);
                 }
             }
-        }
-
-        foreach (KeyValuePair<string, GraphItData> kv in Instance.Graphs)
-        {
-            GraphItData g = kv.Value;
-            g.mEventData.Clear();
         }
 #endif
     }

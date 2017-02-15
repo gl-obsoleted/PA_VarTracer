@@ -101,16 +101,7 @@ public class GraphItVariable
                     }
 
                     g.mData[m_varName].mColor = m_color;
-                    g.mCurrentIndex = m_valueList.Count-1;
-                    g.mTotalIndex = m_valueList.Count - 1;
-
-                    foreach (var eventName in VarTracer.Instance.VariableBodys[m_varBodyName].RegistEventList.Keys)
-                    {
-                        if (VarTracer.Instance.MEventDataDict.ContainsKey(eventName))
-                        {
-                            g.mEventData.AddRange(VarTracer.Instance.MEventDataDict[eventName]);
-                        }
-                    }
+                    g.mCurrentIndex = m_valueList.Count - 1;
                 }
 #endif
             }

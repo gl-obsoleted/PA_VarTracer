@@ -5,6 +5,12 @@ using System.Collections.Generic;
 
 public class GraphItVariableBody
 {
+    Dictionary<string, Color> m_eventColors = new Dictionary<string, Color>();
+    public Dictionary<string, Color> EventColors
+    {
+        get { return m_eventColors; }
+        set { m_eventColors = value; }
+    }
     private string channelName;
     public string ChannelName
     {
@@ -31,19 +37,23 @@ public class GraphItVariableBody
         set { m_variableDict = value; }
     }
 
-    private Dictionary<string, string> m_registEventList = new Dictionary<string, string>();
-
-    public Dictionary<string, string> RegistEventList
+    //eventName  eventData
+    Dictionary<string, List<EventData>> eventInfos = new Dictionary<string, List<EventData>>();
+    public Dictionary<string, List<EventData>> EventInfos
     {
-        get { return m_registEventList; }
-        set { m_registEventList = value; }
+        get { return eventInfos; }
+        set { eventInfos = value; }
     }
 
-    public void registEvent(string eventName)
+    public void RegistEvent(string eventName,Color color)
     {
         if(string.IsNullOrEmpty(eventName))
             return ;
-        if (!m_registEventList.ContainsKey(eventName))
-            m_registEventList[eventName] = eventName;
+        if (!eventInfos.ContainsKey(eventName))
+            eventInfos[eventName] = new List<EventData>();
+        if(!m_eventColors.ContainsKey(eventName))
+        {
+            m_eventColors[eventName] = color;
+        }
     }
 }

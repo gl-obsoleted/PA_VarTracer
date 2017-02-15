@@ -47,56 +47,48 @@ public class VarTracerTool
 #endif
     }
 
-    public static void DefineEvent(string eventName, string variableBody)
+    public static void DefineEvent(string eventName, string variableBody,Color color)
     {
 #if UNITY_EDITOR
         if (string.IsNullOrEmpty(eventName))
             return;
+
         if (!VarTracer.Instance.VariableBodys.ContainsKey(variableBody))
         {
             var body = new GraphItVariableBody(variableBody);
             VarTracer.Instance.VariableBodys[variableBody] = body;
         }
 
-        VarTracer.Instance.VariableBodys[variableBody].registEvent(eventName);
+        foreach (var varBody in VarTracer.Instance.VariableBodys)
+        {
+            foreach (var eName in  varBody.Value.EventInfos.Keys)
+            {
+                if(eventName.Equals(eName))
+                {
+                    Debug.LogErrorFormat("Define Event Name Already Exist!");
+                    return;
+                }
+            }
 
-        if (!VarTracer.Instance.MEventDataDict.ContainsKey(eventName))
-            VarTracer.Instance.MEventDataDict.Add(eventName, new List<EventData>());
+        }
+        VarTracer.Instance.VariableBodys[variableBody].RegistEvent(eventName,color);
 #endif
     }
 
     public static void SendEvent(string eventName)
     {
-        if (VarTracer.Instance.MEventDataDict.ContainsKey(eventName))
+        foreach (var varBody in VarTracer.Instance.VariableBodys)
         {
-            List<EventData> listEvent;
-            VarTracer.Instance.MEventDataDict.TryGetValue(eventName, out listEvent);
-            listEvent.Add(new EventData(VarTracer.Instance.m_frameIndex, eventName));
-        }
-
-        List<string> needChannel = new List<string>();
-#if UNITY_EDITOR
-        if (string.IsNullOrEmpty(eventName))
-            return;
-        foreach (var variableBodys in VarTracer.Instance.VariableBodys.Values)
-        {
-            if (variableBodys.RegistEventList.ContainsKey(eventName))
+            foreach (var eName in varBody.Value.EventInfos.Keys)
             {
-                foreach (var var in variableBodys.VariableDict.Values)
+                if (eventName.Equals(eName))
                 {
-                    foreach (var channelName in var.ChannelDict.Keys)
-                    {
-                        if (!needChannel.Contains(channelName))
-                            needChannel.Add(channelName);
-                    }
+                    List<EventData> listEvent;
+                    varBody.Value.EventInfos.TryGetValue(eventName, out listEvent);
+                    listEvent.Add(new EventData(VarTracer.m_wholeFrameIndex, eventName));
+                    break;
                 }
             }
         }
-
-        foreach (string channelName in needChannel)
-        {
-            VarTracer.SetGraphEvent(channelName, eventName);
-        }
-#endif
     }
 }

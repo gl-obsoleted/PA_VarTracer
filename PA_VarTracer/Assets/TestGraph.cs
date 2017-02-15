@@ -9,10 +9,10 @@ public class TestGraph : MonoBehaviour {
 	void Start () {
         Application.runInBackground = true;
 
-        VarTracerTool.DefineEvent("MOVE", "Camera");
-        VarTracerTool.DefineEvent("NPC_MOVE", "Npc");
-        VarTracerTool.DefineEvent("SPEED_DOWN", "Player");
-        VarTracerTool.DefineEvent("SPEED_UP", "Player");
+        VarTracerTool.DefineEvent("MOVE", "Camera",Color.white);
+        VarTracerTool.DefineEvent("NPC_MOVE", "Npc", Color.yellow);
+        VarTracerTool.DefineEvent("SPEED_DOWN", "Player", Color.white);
+        VarTracerTool.DefineEvent("SPEED_UP", "Player", Color.white);
 
         VarTracerTool.DefineVariable("1", "customer", Color.gray);
         VarTracerTool.DefineVariable("2", "customer", Color.gray);
