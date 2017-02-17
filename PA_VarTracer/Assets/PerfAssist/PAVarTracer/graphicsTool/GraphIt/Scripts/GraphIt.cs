@@ -2,28 +2,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-
-
-public class  VarDataInfo{
-    private float m_value;
-    public float Value
-    {
-        get { return m_value; }
-        set { m_value = value; }
-    }
-    public VarDataInfo(float value)
-    {
-        m_value = value;
-    }
-}
-
+using System.Diagnostics;
 
 public class GraphItDataInternal
 {
     public GraphItDataInternal( int subgraph_index )
     {
         mDataInfos = new List<VarDataInfo>();
-        mCounter = 0.0f;
         mMin = 0.0f;
         mMax = 0.0f;
         mCurrentValue = 0.0f;
@@ -46,7 +31,6 @@ public class GraphItDataInternal
                 break;
         }
     }
-    public float mCounter;
     public float mMin;
     public float mMax;
     public float mCurrentValue;
@@ -58,11 +42,13 @@ public class EventData
 {
     public string m_eventName;
     public int m_eventFrameIndex;
+    public float m_duration;
 
-    public EventData(int eventFrameIndex,string eventName)
+    public EventData(int eventFrameIndex,string eventName,float duration=0)
     {
         m_eventFrameIndex = eventFrameIndex;
         m_eventName = eventName;
+        m_duration  = duration;
     }
 }
 
@@ -75,7 +61,6 @@ public class GraphItData
 
     public string mName;
 
-    public int mCurrentIndex;
     public bool mInclude0;
 
     public bool mReadyForUpdate;
@@ -112,8 +97,6 @@ public class GraphItData
 
         mData = new Dictionary<string, GraphItDataInternal>();
 
-        mCurrentIndex = 0;
-
         mInclude0 = false;
 
         mReadyForUpdate = true;
@@ -129,11 +112,6 @@ public class GraphItData
         {
             SetHeight(PlayerPrefs.GetFloat(mName + "_height"));
         }
-    }
-
-    public int GraphLength()
-    {
-        return mCurrentIndex ;
     }
 
     public float GetMin( string subgraph )
@@ -195,8 +173,40 @@ public class VarTracer : MonoBehaviour
     public Dictionary<string, GraphItVariableBody> VariableBodys = new Dictionary<string, GraphItVariableBody>();
 
     public static VarTracer mInstance = null;
-    public static int m_wholeFrameIndex;
+
+    static bool m_isStart = true;
+    static Stopwatch m_timer = new Stopwatch();
 #endif
+
+    void Start()
+    {
+        if (m_isStart)
+            StartVarTracer();
+    }
+
+
+    public int GetCurrentFrame()
+    {
+        int currentFrame = (int)(m_timer.ElapsedMilliseconds / 1000.0f * VarTracerConst.FPSPerSecond);
+        return currentFrame;
+    }
+
+    public static void StartVarTracer()
+    {
+        m_isStart = true;
+        m_timer.Start();
+    }
+
+    public static void StopVarTracer()
+    {
+        m_isStart = false;
+        m_timer.Stop();
+    }
+
+    public static bool isVarTracerStart()
+    {
+        return m_isStart;
+    }
 
     public static VarTracer Instance
     {
@@ -222,20 +232,13 @@ public class VarTracer : MonoBehaviour
         foreach (KeyValuePair<string, GraphItDataInternal> entry in graph.mData)
         {
             GraphItDataInternal g = entry.Value;
-
-            g.mDataInfos.Add(new VarDataInfo(g.mCounter));
-            
-            g.mCounter = 0.0f;
-        }
-        graph.mCurrentIndex++;
-        foreach (KeyValuePair<string, GraphItDataInternal> entry in graph.mData)
-        {
-            GraphItDataInternal g = entry.Value;
-
+            if (g.mDataInfos.Count <= 0)
+                continue;
+                
             float sum = g.mDataInfos[0].Value;
             float min = g.mDataInfos[0].Value;
             float max = g.mDataInfos[0].Value;
-            for (int i = 1; i < graph.GraphLength(); ++i)
+            for (int i = 1; i < g.mDataInfos.Count; ++i)
             {
                 sum += g.mDataInfos[i].Value;
                 min = Mathf.Min(min, g.mDataInfos[i].Value);
@@ -245,22 +248,6 @@ public class VarTracer : MonoBehaviour
             {
                 min = Mathf.Min(min, 0.0f);
                 max = Mathf.Max(max, 0.0f);
-            }
-
-            //Calculate the recent average
-            int recent_start = graph.mCurrentIndex - GraphItData.RECENT_WINDOW_SIZE;
-            int recent_count = GraphItData.RECENT_WINDOW_SIZE;
-            if (recent_start < 0)
-            {
-                recent_count = graph.GraphLength();
-                recent_start = 0;
-            }
-
-            float recent_sum = 0.0f;
-            for (int i = 0; i < recent_count; ++i)
-            {
-                recent_sum += g.mDataInfos[recent_start].Value;
-                recent_start = (recent_start + 1) % g.mDataInfos.Count;
             }
 
             g.mMin = min;
@@ -281,8 +268,6 @@ public class VarTracer : MonoBehaviour
                 StepGraphInternal(g);
             }
         }
-        if (Graphs.Count>0)
-            m_wholeFrameIndex++;
 #endif
     }
 
@@ -316,11 +301,10 @@ public class VarTracer : MonoBehaviour
         }
 
         GraphItData g = Instance.Graphs[graph];
-        g.mCurrentIndex = m_wholeFrameIndex;
+        //g.mCurrentIndex = m_wholeFrameIndex;
         g.SetHeight(height);
 #endif
     }
-
 
     /// <summary>
     /// Allows you to switch between sharing the y-axis on a graph for all subgraphs, or for them to be independent.
@@ -378,7 +362,6 @@ public class VarTracer : MonoBehaviour
         return null;
     }
 
-
     public static bool IsVariableOnShow(string  variableName)
     {
         if (string.IsNullOrEmpty(variableName))
@@ -434,5 +417,4 @@ public class VarTracer : MonoBehaviour
         }
 #endif
     }
-
 }

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 public class VarTracerTool
 {
-    public static void DefineVariable(string variableName, string variableBody, Color color)
+    public static void DefineVariable(string variableName, string variableBody)
     {
 #if UNITY_EDITOR
         foreach (var varBody in VarTracer.Instance.VariableBodys.Values)
@@ -29,19 +29,20 @@ public class VarTracerTool
         {
             variableDict[variableName] = new GraphItVariable(variableName,variableBody);
         }
-        variableDict[variableName].Color = color;
 #endif
     }
 
     public static void UpdateVariable(string variableName, float value)
     {
+        if (!VarTracer.isVarTracerStart())
+            return ;
 #if UNITY_EDITOR
         foreach (var VarBody in VarTracer.Instance.VariableBodys.Values)
         {
             if (VarBody.VariableDict.ContainsKey(variableName))
             {
                 var var = VarBody.VariableDict[variableName];
-                var.InsertValue(value);
+                var.InsertValue(new VarDataInfo(value,VarTracer.Instance.GetCurrentFrame()));
             }
         }
 #endif
@@ -77,6 +78,8 @@ public class VarTracerTool
 
     public static void SendEvent(string eventName)
     {
+        if (!VarTracer.isVarTracerStart())
+            return;
         foreach (var varBody in VarTracer.Instance.VariableBodys)
         {
             foreach (var eName in varBody.Value.EventInfos.Keys)
@@ -85,10 +88,20 @@ public class VarTracerTool
                 {
                     List<EventData> listEvent;
                     varBody.Value.EventInfos.TryGetValue(eventName, out listEvent);
-                    listEvent.Add(new EventData(VarTracer.m_wholeFrameIndex, eventName));
+                    listEvent.Add(new EventData(VarTracer.Instance.GetCurrentFrame(), eventName));
                     break;
                 }
             }
         }
+    }
+
+    public static void StartVarTracer()
+    {
+        VarTracer.StartVarTracer();
+    }
+
+    public static void StopVarTracer()
+    {
+        VarTracer.StopVarTracer();
     }
 }

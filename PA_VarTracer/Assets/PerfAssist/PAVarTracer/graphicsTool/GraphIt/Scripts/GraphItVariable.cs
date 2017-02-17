@@ -12,7 +12,7 @@ public class GraphItVariable
         get { return m_varBodyName; }
         set { m_varBodyName = value; }
     }
-    private List<float> m_valueList = new List<float>();
+    private List<VarDataInfo> m_dataList = new List<VarDataInfo>();
     Dictionary<string, string> m_channelDict = new Dictionary<string, string>();
     private VariableConfigPopup m_popupWindow;
     private Rect m_popupRect;
@@ -33,12 +33,6 @@ public class GraphItVariable
         get { return m_channelDict; }
         set { m_channelDict = value; }
     }
-    private Color m_color;
-    public Color Color
-    {
-        get { return m_color; }
-        set { m_color = value; }
-    }
 
     public string VarName
     {
@@ -53,9 +47,9 @@ public class GraphItVariable
         m_popupWindow = new VariableConfigPopup(varName);
     }
 
-    public void InsertValue(float value)
+    public void InsertValue(VarDataInfo dataInfo)
     {
-        m_valueList.Add(value);
+        m_dataList.Add(dataInfo);
 
         foreach (var channel in m_channelDict.Keys)
         {
@@ -67,10 +61,8 @@ public class GraphItVariable
                 {
                     g.mData[m_varName] = new GraphItDataInternal(g.mData.Count);
                 }
-                g.mData[m_varName].mColor = m_color;
-
-                g.mData[m_varName].mCurrentValue = value;
-                g.mData[m_varName].mCounter += value;
+                g.mData[m_varName].mCurrentValue = dataInfo.Value;
+                g.mData[m_varName].mDataInfos.Add(dataInfo);
             }
 #endif
         }
@@ -83,28 +75,23 @@ public class GraphItVariable
         if (!m_channelDict.ContainsKey(channel))
         {
             m_channelDict[channel] = channel;
-            if (m_valueList.Count>0)
-            {
 #if UNITY_EDITOR
-                if (VarTracer.Instance.Graphs.ContainsKey(channel))
+            if (VarTracer.Instance.Graphs.ContainsKey(channel))
+            {
+                GraphItData g = VarTracer.Instance.Graphs[channel];
+                if (!g.mData.ContainsKey(m_varName))
                 {
-                    GraphItData g = VarTracer.Instance.Graphs[channel];
-                    if (!g.mData.ContainsKey(m_varName))
-                    {
-                        g.mData[m_varName] = new GraphItDataInternal(g.mData.Count);
-                    }
-
-                    g.mData[m_varName].mDataInfos.Clear();
-                    foreach (float value in m_valueList)
-                    {
-                        g.mData[m_varName].mDataInfos.Add(new VarDataInfo(value));                        
-                    }
-
-                    g.mData[m_varName].mColor = m_color;
-                    g.mCurrentIndex = m_valueList.Count - 1;
+                    g.mData[m_varName] = new GraphItDataInternal(g.mData.Count);
                 }
-#endif
+
+                g.mData[m_varName].mDataInfos.Clear();
+                foreach (var value in m_dataList)
+                {
+                    g.mData[m_varName].mDataInfos.Add(value);
+                }
+
             }
+#endif
         }
     }
 
@@ -128,3 +115,26 @@ public class GraphItVariable
         }
     }
 }
+
+
+public class VarDataInfo
+{
+    private float m_value;
+    private int m_frameIndex;
+    public int FrameIndex
+    {
+        get { return m_frameIndex; }
+        set { m_frameIndex = value; }
+    }
+
+    public float Value
+    {
+        get { return m_value; }
+    }
+    public VarDataInfo(float value, int frameIndex)
+    {
+        m_value = value;
+        m_frameIndex = frameIndex;
+    }
+}
+
