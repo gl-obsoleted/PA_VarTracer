@@ -99,6 +99,7 @@ public class GraphItWindow : EditorWindow
             }
 
         }
+        VarTracer.StartVarTracer();
     }
 
     void OnDisable()
@@ -217,6 +218,7 @@ public class GraphItWindow : EditorWindow
 
             GUILayout.Space(780);
 
+
             string buttonName;
             if (EditorApplication.isPaused)
                 buttonName = "Resume";
@@ -333,6 +335,8 @@ public class GraphItWindow : EditorWindow
             Rect find_y = EditorGUILayout.BeginVertical(GUIStyle.none);
             EditorGUILayout.EndVertical();
 
+            int currentFrameIndex = VarTracer.Instance.GetCurrentFrame();
+
             float scrolled_y_pos = y_offset - mGraphViewScrollPos.y;
             if (Event.current.type == EventType.Repaint)
             {
@@ -378,9 +382,9 @@ public class GraphItWindow : EditorWindow
                         float y_range = Mathf.Max(y_max - y_min, 0.00001f);
 
                         //draw the 0 line
-                        if (y_max > 0.0f && y_min < 0.0f)
+                        if (y_min !=0.0f)
                         {
-                            GL.Color(g.mColor * 0.5f);
+                            GL.Color(Color.white);
                             float y = scrolled_y_pos + height * (1 - (0.0f - y_min) / y_range);
                             Plot(x_offset, y, x_offset + mWidth, y);
                         }
@@ -389,8 +393,7 @@ public class GraphItWindow : EditorWindow
 
                         float previous_value=0,value = 0;
                         int dataInfoIndex=0,frameIndex = 0;
-                        int currentFrameIndex = VarTracer.Instance.GetCurrentFrame();
-                        for (int i = 0; i < currentFrameIndex; ++i)
+                        for (int i = 0; i <= currentFrameIndex; i++)
                         {
                             int dataCount = g.mDataInfos.Count;
                             if (dataCount != 0)
@@ -403,7 +406,7 @@ public class GraphItWindow : EditorWindow
                             else {
                                 value = 0;
                             }
-
+                             
                             if (i >= 1)
                             {
                                 float x0 = x_offset + (i - 1) * kv.Value.XStep - kv.Value.ScrollPos.x;
@@ -471,7 +474,7 @@ public class GraphItWindow : EditorWindow
 
                 mWidth = window.position.width - x_offset;
                 float height = kv.Value.GetHeight();
-                float width = VarTracer.Instance.GetCurrentFrame() * kv.Value.XStep;
+                float width = currentFrameIndex * kv.Value.XStep;
                 if (width < mWidth)
                 {
                     width = mWidth - x_offset;
@@ -508,6 +511,7 @@ public class GraphItWindow : EditorWindow
                     GUILayout.BeginVertical();
                     EditorGUILayout.LabelField("Max:" + kv.Value.m_maxValue.ToString(num_format), NameLabel);
                     GUILayout.Space(170);
+                    //EditorGUILayout.LabelField("Min:" + VarTracer.Instance.GetCurrentFrame().ToString(), NameLabel);
                     EditorGUILayout.LabelField("Min:" + kv.Value.m_minValue.ToString(num_format), NameLabel);
                     GUILayout.Space(10);
                     GUILayout.BeginHorizontal();

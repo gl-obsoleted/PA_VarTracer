@@ -85,11 +85,7 @@ public class GraphItVariable
                 }
 
                 g.mData[m_varName].mDataInfos.Clear();
-                foreach (var value in m_dataList)
-                {
-                    g.mData[m_varName].mDataInfos.Add(value);
-                }
-
+                g.mData[m_varName].mDataInfos.AddRange(m_dataList);
             }
 #endif
         }

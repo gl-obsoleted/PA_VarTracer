@@ -174,7 +174,7 @@ public class VarTracer : MonoBehaviour
 
     public static VarTracer mInstance = null;
 
-    static bool m_isStart = true;
+    static bool m_isStart = false;
     static Stopwatch m_timer = new Stopwatch();
 #endif
 
