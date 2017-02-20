@@ -23,6 +23,8 @@ public class GraphItWindow : EditorWindow
     static GUIStyle SmallLabel;
     static GUIStyle HoverText;
     static GUIStyle FracGS;
+    static GUIStyle EventInstantButtonStyle;
+    static GUIStyle EventDurationButtonStyle;
 
     static Material mLineMaterial;
 
@@ -59,6 +61,16 @@ public class GraphItWindow : EditorWindow
 
             FracGS = new GUIStyle(EditorStyles.whiteLabel);
             FracGS.alignment = TextAnchor.LowerLeft;
+
+            EventInstantButtonStyle = new GUIStyle(EditorStyles.whiteBoldLabel);
+            EventInstantButtonStyle.normal.background = Resources.Load("instantButton") as Texture2D;
+            EventInstantButtonStyle.normal.textColor = Color.white;
+            EventInstantButtonStyle.alignment = TextAnchor.MiddleCenter;
+
+            EventDurationButtonStyle = new GUIStyle(EditorStyles.whiteBoldLabel);
+            EventDurationButtonStyle.normal.background = Resources.Load("durationButton") as Texture2D;
+            EventDurationButtonStyle.normal.textColor = Color.white;
+            EventDurationButtonStyle.alignment = TextAnchor.MiddleCenter;
         }
     }
 
@@ -319,7 +331,6 @@ public class GraphItWindow : EditorWindow
         }
     }
 
-
     public static void DrawGraphs(Rect rect, EditorWindow window)
     {
         if (VarTracer.Instance)
@@ -398,10 +409,19 @@ public class GraphItWindow : EditorWindow
                             int dataCount = g.mDataInfos.Count;
                             if (dataCount != 0)
                             {
-                                value = g.mDataInfos[dataInfoIndex].Value;
+                                int lastFrame = g.mDataInfos[dataCount - 1].FrameIndex;
+                                float lastValue = g.mDataInfos[dataCount - 1].Value;
+
+                                if (dataInfoIndex >= 1)
+                                    value = g.mDataInfos[dataInfoIndex-1].Value;
                                 frameIndex = g.mDataInfos[dataInfoIndex].FrameIndex;
+                                if (dataInfoIndex == 0 && i < frameIndex)
+                                    value = 0;
                                 if (i >= frameIndex && dataInfoIndex < dataCount - 1)
                                     dataInfoIndex++;
+
+                                if (i > lastFrame)
+                                    value = lastValue;
                             }
                             else {
                                 value = 0;
@@ -629,12 +649,24 @@ public class GraphItWindow : EditorWindow
                             if (x >= mWidth + x_offset) break;
                             float y0 = scrolled_y_pos + height;
 
-                            Rect tooltip_r = new Rect(x - 75, y0, 100, 20);
-                            HoverText.normal.textColor = Color.white;
-                            GUI.Label(tooltip_r, data.m_eventName, HoverText);
+                            GUIStyle style=null;
+                            int buttonWidth = 0;
+                            if(data.m_duration == 0)
+                            {
+                                style = EventInstantButtonStyle;
+                                buttonWidth = 70;
+                            }
+                            else
+                            {
+                                style = EventDurationButtonStyle;
+                                buttonWidth =(int)(data.m_duration * VarTracerConst.FPSPerSecond );
+                            }
+
+                            Rect tooltip_r = new Rect(x - buttonWidth/2, y0 - VarTracerConst.EventStartHigh , buttonWidth, VarTracerConst.EventButtonHeight);
+                            style.normal.textColor = varBody.EventColors[data.m_eventName];
+                            GUI.Button(tooltip_r, data.m_eventName, style);
                         }
                     }
-
                 }
             }
             scrolled_y_pos += (height + y_gap);
