@@ -38,20 +38,6 @@ public class GraphItDataInternal
     public List<VarDataInfo> mDataInfos;
 }
 
-public class EventData
-{
-    public string m_eventName;
-    public int m_eventFrameIndex;
-    public float m_duration;
-    private string m_strPara;
-    public EventData(int eventFrameIndex,string eventName,string strPara="",float duration=0)
-    {
-        m_eventFrameIndex = eventFrameIndex;
-        m_eventName = eventName;
-        m_duration  = duration;
-        m_strPara = strPara;
-    }
-}
 
 public class GraphItData
 {

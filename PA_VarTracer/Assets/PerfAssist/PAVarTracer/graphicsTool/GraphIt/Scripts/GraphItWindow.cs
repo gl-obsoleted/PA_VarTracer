@@ -454,10 +454,10 @@ public class GraphItWindow : EditorWindow
                         {
                             foreach (var data in eventInfo)
                             {
-                                GL.Color(varBody.EventColors[data.m_eventName]);
-                                if (data.m_eventFrameIndex > 0)
+                                GL.Color(varBody.EventColors[data.EventName]);
+                                if (data.EventFrameIndex > 0)
                                 {
-                                    float x = x_offset + data.m_eventFrameIndex * kv.Value.XStep - kv.Value.ScrollPos.x;
+                                    float x = x_offset + data.EventFrameIndex * kv.Value.XStep - kv.Value.ScrollPos.x;
                                     if (x <= x_offset - kv.Value.XStep) continue;
                                     if (x >= mWidth + x_offset) break;
 
@@ -546,13 +546,6 @@ public class GraphItWindow : EditorWindow
                     }
                     window.Repaint();
                 }
-                //if (Event.current.type == EventType.MouseDown && r.Contains(Event.current.mousePosition - Event.current.delta))
-                //{
-                //    if (Event.current.button == 1)
-                //    {
-                //        //EditorApplication.isPaused = !EditorApplication.isPaused;
-                //    }
-                //}
                 EditorGUILayout.EndVertical();
             }
             EditorGUILayout.EndScrollView();
@@ -633,17 +626,17 @@ public class GraphItWindow : EditorWindow
                 {
                     foreach (var data in eventInfo)
                     {
-                        GL.Color(varBody.EventColors[data.m_eventName]);
-                        if (data.m_eventFrameIndex > 0)
+                        GL.Color(varBody.EventColors[data.EventName]);
+                        if (data.EventFrameIndex > 0)
                         {
-                            float x = x_offset + data.m_eventFrameIndex * kv.Value.XStep - kv.Value.ScrollPos.x;
+                            float x = x_offset + data.EventFrameIndex * kv.Value.XStep - kv.Value.ScrollPos.x;
                             if (x <= x_offset - kv.Value.XStep) continue;
                             if (x >= mWidth + x_offset) break;
                             float y0 = scrolled_y_pos + height;
 
                             GUIStyle style=null;
                             int buttonWidth = 0;
-                            if(data.m_duration == 0)
+                            if(data.Duration == 0)
                             {
                                 style = EventInstantButtonStyle;
                                 buttonWidth = 70;
@@ -651,12 +644,15 @@ public class GraphItWindow : EditorWindow
                             else
                             {
                                 style = EventDurationButtonStyle;
-                                buttonWidth =(int)(data.m_duration * VarTracerConst.FPS );
+                                buttonWidth =(int)(data.Duration * VarTracerConst.FPS);
                             }
 
                             Rect tooltip_r = new Rect(x - buttonWidth/2, y0 - VarTracerConst.EventStartHigh , buttonWidth, VarTracerConst.EventButtonHeight);
-                            style.normal.textColor = varBody.EventColors[data.m_eventName];
-                            GUI.Button(tooltip_r, data.m_eventName, style);
+                            style.normal.textColor = varBody.EventColors[data.EventName];
+                            if (string.IsNullOrEmpty(data.Desc))
+                                GUI.Button(tooltip_r, data.EventName, style);
+                            else
+                                GUI.Button(tooltip_r, data.EventName + "(" + data.Desc + ")", style);
                         }
                     }
                 }

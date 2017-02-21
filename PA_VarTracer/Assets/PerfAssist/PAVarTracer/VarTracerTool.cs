@@ -76,7 +76,7 @@ public class VarTracerTool
 #endif
     }
 
-    public static void SendEvent(string eventName, float duration = 0, string para = "")
+    public static void SendEvent(string eventName, float duration = 0, string desc = "")
     {
         if (!VarTracer.isVarTracerStart())
             return;
@@ -88,7 +88,7 @@ public class VarTracerTool
                 {
                     List<EventData> listEvent;
                     varBody.Value.EventInfos.TryGetValue(eventName, out listEvent);
-                    listEvent.Add(new EventData(VarTracer.Instance.GetCurrentFrame(), eventName, para , duration));
+                    listEvent.Add(new EventData(VarTracer.Instance.GetCurrentFrame(), eventName, desc, duration));
                     break;
                 }
             }
