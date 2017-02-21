@@ -58,7 +58,7 @@ public class GraphItData
     protected bool mHidden;
     protected float mHeight;
 
-    float m_XStep = 4;
+    float m_XStep = 7;
 
     Vector2 m_scrollPos;
     public Vector2 ScrollPos

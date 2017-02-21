@@ -510,7 +510,7 @@ public class GraphItWindow : EditorWindow
                     GUILayout.EndArea();
                 }
 
-                DrawGraphAttrArea(kv);
+                DrawGraphAttribute(kv);
 
                 ////Respond to mouse input!
                 if (Event.current.type == EventType.MouseDrag && r.Contains(Event.current.mousePosition - Event.current.delta))
@@ -527,7 +527,7 @@ public class GraphItWindow : EditorWindow
         }
     }
 
-    private static void DrawGraphAttrArea(KeyValuePair<string, GraphItData> kv)
+    private static void DrawGraphAttribute(KeyValuePair<string, GraphItData> kv)
     {
         EditorGUILayout.LabelField(kv.Key, NameLabel);
 
@@ -563,7 +563,7 @@ public class GraphItWindow : EditorWindow
         if (kv.Value.mData.Count >= 1)
         {
             HoverText.normal.textColor = Color.white;
-            EditorGUILayout.LabelField("duration/graph:" + (mWidth / kv.Value.XStep / VarTracerConst.FPS).ToString(VarTracerConst.NUM_FORMAT_3) + "(s)", HoverText, GUILayout.Width(160));
+            EditorGUILayout.LabelField("duration:" + (mWidth / kv.Value.XStep / VarTracerConst.FPS).ToString(VarTracerConst.NUM_FORMAT_3) + "(s)", HoverText, GUILayout.Width(160));
             kv.Value.XStep = GUILayout.HorizontalSlider(kv.Value.XStep, 0.1f, 15, GUILayout.Width(160));
         }
     }
@@ -588,12 +588,17 @@ public class GraphItWindow : EditorWindow
         return result;
     }
 
+    private static bool IsEventBtnIntersect(float x1,float x2 , float width1 ,float width2)
+    {
+        return System.Math.Abs(x1 - x2) <= (width1 + width2)/2;
+    }
 
     private static float ShowEventLabel(float scrolled_y_pos)
     {
         foreach (KeyValuePair<string, GraphItData> kv in VarTracer.Instance.Graphs)
         {
             float height = kv.Value.GetHeight();
+            List<EventData> sortedEventList = new List<EventData>();
             foreach (var varBodyName in GetAllVariableBodyFromChannel(kv.Key))
             {
                 var varBody = VarTracer.Instance.VariableBodys[varBodyName];
@@ -601,40 +606,71 @@ public class GraphItWindow : EditorWindow
                 {
                     foreach (var data in eventInfo)
                     {
-                        GL.Color(varBody.EventColors[data.EventName]);
                         if (data.EventFrameIndex > 0)
                         {
                             float x = x_offset + data.EventFrameIndex * kv.Value.XStep - kv.Value.ScrollPos.x;
                             if (x <= x_offset - kv.Value.XStep) continue;
                             if (x >= mWidth + x_offset) break;
-                            float y0 = scrolled_y_pos + height;
 
-                            GUIStyle style=null;
-                            int buttonWidth = 0;
-                            if(data.Duration == 0)
-                            {
-                                style = EventInstantButtonStyle;
-                                buttonWidth =VarTracerConst.INSTANT_EVENT_BTN_WIDTH;
-                            }
-                            else
-                            {
-                                style = EventDurationButtonStyle;
-                                buttonWidth = (int)(data.Duration * VarTracerConst.FPS * kv.Value.XStep);
-                            }
+                            sortedEventList.Add(data);
+                        }
+                    }
+                    sortedEventList.Sort((EventData e1, EventData e2) =>
+                    {
+                        return e1.EventFrameIndex.CompareTo(e2.EventFrameIndex);
+                    });
 
-                            Rect tooltip_r = new Rect(x - buttonWidth/2, y0 - VarTracerConst.EventStartHigh , buttonWidth, VarTracerConst.EventButtonHeight);
-                            style.normal.textColor = varBody.EventColors[data.EventName];
-                            if (string.IsNullOrEmpty(data.Desc))
-                                GUI.Button(tooltip_r, data.EventName, style);
+                    Rect preEventRect = new Rect(scrolled_y_pos + height -VarTracerConst.EventStartHigh, 
+                        scrolled_y_pos + height - VarTracerConst.EventStartHigh,0, VarTracerConst.EventButtonHeight);
+                    float startY = scrolled_y_pos + height - VarTracerConst.EventStartHigh;
+                    for (int i = 0; i < sortedEventList.Count; i++)
+                    {
+                        var currentEvent = sortedEventList[i];
+                        GL.Color(varBody.EventColors[currentEvent.EventName]);
+                        GUIStyle style = null;
+                        int buttonWidth = 0;
+                        if (currentEvent.Duration == 0)
+                        {
+                            style = EventInstantButtonStyle;
+                            buttonWidth = (int)(VarTracerConst.INSTANT_EVENT_BTN_DURATION * VarTracerConst.FPS * kv.Value.XStep);
+                        }
+                        else
+                        {
+                            style = EventDurationButtonStyle;
+                            buttonWidth = (int)(currentEvent.Duration * VarTracerConst.FPS * kv.Value.XStep);
+                        }
+
+                        float x = x_offset + currentEvent.EventFrameIndex * kv.Value.XStep - kv.Value.ScrollPos.x;
+                        Rect tooltip_r;
+                        if (IsEventBtnIntersect(x - buttonWidth / 2, preEventRect.x, buttonWidth, preEventRect.width))
+                        {
+                            if (preEventRect.y > height)
+                                tooltip_r = new Rect(x - buttonWidth / 2, startY, buttonWidth, VarTracerConst.EventButtonHeight);
                             else
-                                GUI.Button(tooltip_r, data.EventName + "(" + data.Desc + ")", style);
+                                tooltip_r = new Rect(x - buttonWidth / 2, preEventRect.y + 20, buttonWidth, VarTracerConst.EventButtonHeight);
+                        }
+                        else
+                            tooltip_r = new Rect(x - buttonWidth / 2, startY, buttonWidth, VarTracerConst.EventButtonHeight);
+                        preEventRect = tooltip_r; 
+                        style.normal.textColor = varBody.EventColors[currentEvent.EventName];
+                      
+                        if (currentEvent.Duration ==0)
+                            GUI.Button(tooltip_r, currentEvent.EventName, style);
+                        else
+                        {
+                            if (string.IsNullOrEmpty(currentEvent.Desc))
+                            {
+                                GUI.Button(tooltip_r, currentEvent.EventName + " (" + currentEvent.Duration + "s)", style);
+                            }
+                            else {
+                                GUI.Button(tooltip_r, currentEvent.EventName + " (" + currentEvent.Duration + "s)" + " [" + currentEvent.Desc + "]", style);                            
+                            }
                         }
                     }
                 }
             }
             scrolled_y_pos += (height + y_gap);
         }
-
         return scrolled_y_pos;
     }
 }
