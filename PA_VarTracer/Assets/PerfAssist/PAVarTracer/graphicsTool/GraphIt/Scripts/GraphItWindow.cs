@@ -16,8 +16,6 @@ public class GraphItWindow : EditorWindow
     static float x_offset = 200.0f;
     static float y_gap = 80.0f;
     static float y_offset = 20;
-    static int precision_slider = 3;
-
 
     static GUIStyle NameLabel;
     static GUIStyle SmallLabel;
@@ -510,12 +508,6 @@ public class GraphItWindow : EditorWindow
                 s.stretchWidth = true;
                 Rect r = EditorGUILayout.BeginVertical(s);
 
-                string num_format = "###,###,##0.";
-                for( int i = 0; i < precision_slider; i++ )
-                {
-                    num_format += "#";
-                }
-
                 //skip subgraph title if only one, and it's the same.
                 NameLabel.normal.textColor = Color.white;
 
@@ -529,10 +521,9 @@ public class GraphItWindow : EditorWindow
                 {
                     GUILayout.BeginArea(r);
                     GUILayout.BeginVertical();
-                    EditorGUILayout.LabelField("Max:" + kv.Value.m_maxValue.ToString(num_format), NameLabel);
+                    EditorGUILayout.LabelField("Max:" + kv.Value.m_maxValue.ToString(VarTracerConst.NUM_FORMAT), NameLabel);
                     GUILayout.Space(170);
-                    //EditorGUILayout.LabelField("Min:" + VarTracer.Instance.GetCurrentFrame().ToString(), NameLabel);
-                    EditorGUILayout.LabelField("Min:" + kv.Value.m_minValue.ToString(num_format), NameLabel);
+                    EditorGUILayout.LabelField("Min:" + kv.Value.m_minValue.ToString(VarTracerConst.NUM_FORMAT), NameLabel);
                     GUILayout.Space(10);
                     GUILayout.BeginHorizontal();
                     GUILayout.Space(70);
@@ -544,45 +535,7 @@ public class GraphItWindow : EditorWindow
                     GUILayout.EndArea();
                 }
 
-                EditorGUILayout.LabelField( kv.Key, NameLabel);
-                
-                foreach (var varBodyName in GetAllVariableBodyFromChannel(kv.Key))
-                {
-                    NameLabel.normal.textColor = Color.white;
-                    EditorGUILayout.LabelField("{" + varBodyName + "}:", NameLabel);
-
-                    foreach (var entry in kv.Value.mData)
-                    {
-                        var variable = VarTracer.GetGraphItVariableByVariableName(entry.Key);
-                        GraphItDataInternal g = entry.Value;
-                        if (variable.VarBodyName.Equals(varBodyName))
-                        {
-                            if (kv.Value.mData.Count >= 1)
-                            {
-                                NameLabel.normal.textColor = g.mColor;
-                            }
-                            EditorGUILayout.LabelField("     [" + entry.Key + "]" + "   Value: " + g.mCurrentValue.ToString(num_format), NameLabel);
-                        }
-                    }
-
-                    var varBody = VarTracer.Instance.VariableBodys[varBodyName];
-
-                    foreach (var eventName in varBody.EventInfos.Keys)
-                    {
-                        NameLabel.normal.textColor = varBody.EventColors[eventName];
-                        EditorGUILayout.LabelField("     <Event>    " + eventName, NameLabel);
-                    }
-
-                }
-
-                if (kv.Value.mData.Count >= 1)
-                {
-                    GUILayout.BeginHorizontal();
-                    HoverText.normal.textColor = Color.white;
-                    EditorGUILayout.LabelField("STEP SCALE:", HoverText, GUILayout.Width(90));
-                    kv.Value.XStep = GUILayout.HorizontalSlider(kv.Value.XStep, 0.1f, 10, GUILayout.Width(100));
-                    GUILayout.EndHorizontal();
-                }
+                DrawGraphAttrArea(kv);
 
                 ////Respond to mouse input!
                 if (Event.current.type == EventType.MouseDrag && r.Contains(Event.current.mousePosition - Event.current.delta))
@@ -593,18 +546,57 @@ public class GraphItWindow : EditorWindow
                     }
                     window.Repaint();
                 }
-
-                if (Event.current.type == EventType.MouseDown && r.Contains(Event.current.mousePosition - Event.current.delta))
-                {
-                    if (Event.current.button == 1)
-                    {
-                        //EditorApplication.isPaused = !EditorApplication.isPaused;
-                    }
-                }
-
+                //if (Event.current.type == EventType.MouseDown && r.Contains(Event.current.mousePosition - Event.current.delta))
+                //{
+                //    if (Event.current.button == 1)
+                //    {
+                //        //EditorApplication.isPaused = !EditorApplication.isPaused;
+                //    }
+                //}
                 EditorGUILayout.EndVertical();
             }
             EditorGUILayout.EndScrollView();
+        }
+    }
+
+    private static void DrawGraphAttrArea(KeyValuePair<string, GraphItData> kv)
+    {
+        EditorGUILayout.LabelField(kv.Key, NameLabel);
+
+        foreach (var varBodyName in GetAllVariableBodyFromChannel(kv.Key))
+        {
+            NameLabel.normal.textColor = Color.white;
+            EditorGUILayout.LabelField("{" + varBodyName + "}:", NameLabel);
+
+            foreach (var entry in kv.Value.mData)
+            {
+                var variable = VarTracer.GetGraphItVariableByVariableName(entry.Key);
+                GraphItDataInternal g = entry.Value;
+                if (variable.VarBodyName.Equals(varBodyName))
+                {
+                    if (kv.Value.mData.Count >= 1)
+                    {
+                        NameLabel.normal.textColor = g.mColor;
+                    }
+                    EditorGUILayout.LabelField("     [" + entry.Key + "]" + "   Value: " + g.mCurrentValue.ToString(VarTracerConst.NUM_FORMAT), NameLabel);
+                }
+            }
+
+            var varBody = VarTracer.Instance.VariableBodys[varBodyName];
+
+            foreach (var eventName in varBody.EventInfos.Keys)
+            {
+                NameLabel.normal.textColor = varBody.EventColors[eventName];
+                EditorGUILayout.LabelField("     <Event>    " + eventName, NameLabel);
+            }
+
+        }
+
+        if (kv.Value.mData.Count >= 1)
+        {
+            HoverText.normal.textColor = Color.white;
+            EditorGUILayout.LabelField("duration/graph:" + (mWidth / kv.Value.XStep / VarTracerConst.FPS).ToString(VarTracerConst.NUM_FORMAT) + "(s)", HoverText, GUILayout.Width(160));
+            kv.Value.XStep = GUILayout.HorizontalSlider(kv.Value.XStep, 0.1f, 15, GUILayout.Width(160));
         }
     }
 
@@ -659,7 +651,7 @@ public class GraphItWindow : EditorWindow
                             else
                             {
                                 style = EventDurationButtonStyle;
-                                buttonWidth =(int)(data.m_duration * VarTracerConst.FPSPerSecond );
+                                buttonWidth =(int)(data.m_duration * VarTracerConst.FPS );
                             }
 
                             Rect tooltip_r = new Rect(x - buttonWidth/2, y0 - VarTracerConst.EventStartHigh , buttonWidth, VarTracerConst.EventButtonHeight);

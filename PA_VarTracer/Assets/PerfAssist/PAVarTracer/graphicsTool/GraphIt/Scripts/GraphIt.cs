@@ -55,9 +55,6 @@ public class EventData
 
 public class GraphItData
 {
-    public static int DEFAULT_SAMPLES = 1048;
-    public const int RECENT_WINDOW_SIZE = 120;
-    
     public Dictionary<string, GraphItDataInternal> mData = new Dictionary<string, GraphItDataInternal>();
 
     public string mName;
@@ -66,8 +63,6 @@ public class GraphItData
 
     public bool mReadyForUpdate;
     public bool mFixedUpdate;
-
-    public int mWindowSize;
 
     public float m_maxValue;
     public float m_minValue;
@@ -102,8 +97,6 @@ public class GraphItData
 
         mReadyForUpdate = true;
         mFixedUpdate = false;
-
-        mWindowSize = DEFAULT_SAMPLES;
 
         mSharedYAxis = false; 
         mHidden = false;
@@ -189,7 +182,7 @@ public class VarTracer : MonoBehaviour
 
     public int GetCurrentFrame()
     {
-        int currentFrame = (int)(m_timer.ElapsedMilliseconds / 1000.0f * VarTracerConst.FPSPerSecond);
+        int currentFrame = (int)(m_timer.ElapsedMilliseconds / 1000.0f * VarTracerConst.FPS);
         return currentFrame;
     }
 
