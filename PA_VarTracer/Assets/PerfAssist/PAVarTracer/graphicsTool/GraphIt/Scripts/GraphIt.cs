@@ -381,6 +381,22 @@ public class VarTracer : MonoBehaviour
         Instance.Graphs.Remove(removeChannelName);
 #endif
     }
+    public static void ClearGraph(string graph)
+    {
+#if UNITY_EDITOR
+        foreach (var VarBody in Instance.VariableBodys.Values)
+        {
+            foreach (var var in VarBody.VariableDict.Values)
+            {
+                foreach (var graphName in VarTracer.Instance.Graphs.Keys)
+                {
+                    if (graph.Equals(graphName))
+                        var.DetachChannel(graphName);
+                }
+            }
+        }
+#endif
+    }
 
     public static void ClearAll()
     {

@@ -42,7 +42,9 @@ public class GraphItWindow : EditorWindow
 
     const int variableLineStartY = 25;
 
-    Rect m_popupWindow = new Rect(235, 0, 70, 18);
+    static List<string> variableCombineList = new List<string>();
+    static string[] graphNumOption = {"0","1","2"};
+    static int graphNumIndex = 0;
 
     static void InitializeStyles()
     {
@@ -171,7 +173,7 @@ public class GraphItWindow : EditorWindow
     void UpdateVariableAreaHight()
     {
         var lineNum = CalculateVariableLineNum();
-        var ry = variableLineStartY + lineNum * variableLineHight;
+        var ry = variableLineStartY *2 + lineNum * variableLineHight;
 
         y_offset = ry;
         m_controlScreenHeight = ry;
@@ -214,6 +216,60 @@ public class GraphItWindow : EditorWindow
     {
         GUILayout.BeginVertical();
             GUILayout.BeginHorizontal();
+            graphNumIndex = GUILayout.SelectionGrid(graphNumIndex, graphNumOption, 3, GUILayout.Width(90));
+
+            GUILayout.Space(20);
+            for (int i = 0; i < variableCombineList.Count; i++)
+            {
+                if (GUILayout.Button(variableCombineList[i], EventInstantButtonStyle, GUILayout.Width(90)))
+                    variableCombineList.Remove(variableCombineList[i]);
+
+                if (GUILayout.Button("  +  ", NameLabel, GUILayout.Width(25))) ;
+            }
+            GUILayout.Space(20);
+            
+            if (GUILayout.Button("Show", GUILayout.Width(50)))
+            {
+                ShowVariableCombine();
+            }
+
+            if (GUILayout.Button("Clear", GUILayout.Width(50)))
+            {
+                variableCombineList.Clear();
+                ShowVariableCombine();
+            }
+            GUILayout.EndHorizontal();
+
+            var lineNum = CalculateVariableLineNum();
+            var varList = GetVariableList();
+
+            for (int i = 0; i < lineNum;i++)
+            {
+                GUILayout.BeginHorizontal();
+                GUILayout.Space(10);
+                for(int j = 0;j < variableNumPerLine;j++)
+                {
+                    if (j + i * variableNumPerLine >= varList.Count)
+                        continue;
+                    var var = varList[j + i * variableNumPerLine];
+                    var saveColor = GUI.color;
+                    if (VarTracer.IsVariableOnShow(var.VarName))
+                        GUI.color = Color.white;
+
+                    if (GUILayout.Button(var.VarName, EditorStyles.toolbarButton, GUILayout.Width(100)))
+                    {
+                        if(!variableCombineList.Contains(var.VarName))
+                        {
+                            variableCombineList.Add(var.VarName);
+                        }
+                    }    
+                  
+                    GUI.color = saveColor;
+                }
+                GUILayout.EndHorizontal();
+            }
+
+            GUILayout.BeginHorizontal();
             GUILayout.Space(10);
 
             if (GUILayout.Button("Clear All", EditorStyles.toolbarButton, GUILayout.Width(100)))
@@ -234,44 +290,16 @@ public class GraphItWindow : EditorWindow
             }
 
             GUILayout.EndHorizontal();
-
-                var lineNum = CalculateVariableLineNum();
-                var varList = GetVariableList();
-
-                for (int i = 0; i < lineNum;i++)
-                {
-                    GUILayout.BeginHorizontal();
-                    GUILayout.Space(10);
-                    int variableNum = 0;
-                    for(int j = 0;j < variableNumPerLine;j++)
-                    {
-                        if (j + i * variableNumPerLine >= varList.Count)
-                            continue;
-                        var var = varList[j + i * variableNumPerLine];
-                        var saveColor = GUI.color;
-                        if (VarTracer.IsVariableOnShow(var.VarName))
-                            GUI.color = Color.green;
-
-                        if (GUILayout.Button(var.VarName, EditorStyles.toolbarDropDown, GUILayout.Width(100)))
-                        {
-                            try
-                            {
-                                m_popupWindow.x = 10 + variableNum * 100;
-                                m_popupWindow.y = i * variableLineHight;
-                                PopupWindow.Show(m_popupWindow, var.PopupWindow);
-                            }
-                            catch (ExitGUIException)
-                            {
-                                // have no idea why Unity throws ExitGUIException() in GUIUtility.ExitGUI()
-                                // so we silently ignore the exception 
-                            }
-                        }                      
-                        GUI.color = saveColor;
-                        variableNum++;
-                    }
-                    GUILayout.EndHorizontal();
-                }
         GUILayout.EndVertical();
+    }
+
+    private static void ShowVariableCombine()
+    {
+        VarTracer.ClearGraph(graphNumIndex.ToString());
+        foreach (var varName in variableCombineList)
+        {
+            VarTracer.AttachVariable(varName, graphNumIndex.ToString());
+        }
     }
 
     static void DrawGraphGridLines(float y_pos, float width, float height, bool draw_mouse_line)
@@ -546,7 +574,7 @@ public class GraphItWindow : EditorWindow
                     {
                         NameLabel.normal.textColor = g.mColor;
                     }
-                    EditorGUILayout.LabelField("     [" + entry.Key + "]" + "   Value: " + g.mCurrentValue.ToString(VarTracerConst.NUM_FORMAT_3), NameLabel);
+                    EditorGUILayout.LabelField("     [" + entry.Key + "]" + "   Value: " + g.mCurrentValue.ToString(VarTracerConst.NUM_FORMAT_2), NameLabel);
                 }
             }
 
@@ -557,13 +585,12 @@ public class GraphItWindow : EditorWindow
                 NameLabel.normal.textColor = varBody.EventColors[eventName];
                 EditorGUILayout.LabelField("     <Event>    " + eventName, NameLabel);
             }
-
         }
 
         if (kv.Value.mData.Count >= 1)
         {
             HoverText.normal.textColor = Color.white;
-            EditorGUILayout.LabelField("duration:" + (mWidth / kv.Value.XStep / VarTracerConst.FPS).ToString(VarTracerConst.NUM_FORMAT_3) + "(s)", HoverText, GUILayout.Width(160));
+            EditorGUILayout.LabelField("duration:" + (mWidth / kv.Value.XStep / VarTracerConst.FPS).ToString(VarTracerConst.NUM_FORMAT_3) + "(s)", HoverText, GUILayout.Width(140));
             kv.Value.XStep = GUILayout.HorizontalSlider(kv.Value.XStep, 0.1f, 15, GUILayout.Width(160));
         }
     }
