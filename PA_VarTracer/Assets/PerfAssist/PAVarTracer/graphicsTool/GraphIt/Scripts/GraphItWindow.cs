@@ -42,6 +42,8 @@ public class GraphItWindow : EditorWindow
 
     const int variableLineStartY = 25;
 
+    string _IPField = VarTracerConst.RemoteIPDefaultText;
+
     static List<string> variableCombineList = new List<string>();
     static string[] graphNumOption = {"0","1","2"};
     static int graphNumIndex = 0;
@@ -216,28 +218,73 @@ public class GraphItWindow : EditorWindow
     {
         GUILayout.BeginVertical();
             GUILayout.BeginHorizontal();
-            graphNumIndex = GUILayout.SelectionGrid(graphNumIndex, graphNumOption, 3, GUILayout.Width(90));
-
-            GUILayout.Space(20);
-            for (int i = 0; i < variableCombineList.Count; i++)
+            GUILayout.Space(10);
+             
+            int currentIndex = GUILayout.SelectionGrid(graphNumIndex, graphNumOption, 3, GUILayout.Width(90));
+            if (graphNumIndex != currentIndex)
             {
-                if (GUILayout.Button(variableCombineList[i], EventInstantButtonStyle, GUILayout.Width(90)))
-                    variableCombineList.Remove(variableCombineList[i]);
-
-                GUILayout.Button("  +  ", NameLabel, GUILayout.Width(25)) ;
-            }
-            GUILayout.Space(20);
-            
-            if (GUILayout.Button("Show", GUILayout.Width(50)))
-            {
+                graphNumIndex = currentIndex;
                 ShowVariableCombine();
             }
 
-            if (GUILayout.Button("Clear", GUILayout.Width(50)))
+            GUILayout.Space(30);
+            for (int i = 0; i < variableCombineList.Count; i++)
+            {
+                if (GUILayout.Button(variableCombineList[i], EventInstantButtonStyle, GUILayout.Width(90)))
+                {
+                    variableCombineList.Remove(variableCombineList[i]);
+                    ShowVariableCombine();
+                }
+            }
+            GUILayout.Space(20);
+
+            if (GUILayout.Button("Clear", EditorStyles.toolbarButton, GUILayout.Width(50), GUILayout.Height(25)))
             {
                 variableCombineList.Clear();
                 ShowVariableCombine();
             }
+
+            if (GUILayout.Button("Clear All", EditorStyles.toolbarButton, GUILayout.Width(100)))
+                VarTracer.ClearAll();
+
+            GUI.SetNextControlName("LoginIPTextField");
+            var currentStr = GUILayout.TextField(_IPField, EditorStyles.toolbarButton, GUILayout.Width(120));
+            if (!_IPField.Equals(currentStr))
+            {
+                _IPField = currentStr;
+            }
+
+            if (GUI.GetNameOfFocusedControl().Equals("LoginIPTextField") && _IPField.Equals(VarTracerConst.RemoteIPDefaultText))
+            {
+                _IPField = "";
+            }
+
+            bool savedState = GUI.enabled;
+
+            bool connected = NetManager.Instance != null && NetManager.Instance.IsConnected;
+
+            GUI.enabled = !connected;
+            if (GUILayout.Button("Connect", EditorStyles.toolbarButton, GUILayout.Width(80)))
+            {
+                //_connectPressed = true;
+            }
+            GUI.enabled = connected;
+            GUI.enabled = savedState;
+
+            string buttonName;
+            if (EditorApplication.isPaused)
+                buttonName = "Resume";
+            else
+                buttonName = "Pause";
+            if (GUILayout.Button(buttonName, EditorStyles.toolbarButton, GUILayout.Width(100)))
+            {
+                EditorApplication.isPaused = !EditorApplication.isPaused;
+                if (EditorApplication.isPaused)
+                    VarTracer.StopVarTracer();
+                else
+                    VarTracer.StartVarTracer();
+            }
+            
             GUILayout.EndHorizontal();
 
             var lineNum = CalculateVariableLineNum();
@@ -261,6 +308,7 @@ public class GraphItWindow : EditorWindow
                         if(!variableCombineList.Contains(var.VarName))
                         {
                             variableCombineList.Add(var.VarName);
+                            ShowVariableCombine();
                         }
                     }    
                   
@@ -269,27 +317,6 @@ public class GraphItWindow : EditorWindow
                 GUILayout.EndHorizontal();
             }
 
-            GUILayout.BeginHorizontal();
-            GUILayout.Space(10);
-
-            if (GUILayout.Button("Clear All", EditorStyles.toolbarButton, GUILayout.Width(100)))
-                VarTracer.ClearAll();
-
-            string buttonName;
-            if (EditorApplication.isPaused)
-                buttonName = "Resume";
-            else
-                buttonName = "Pause";
-            if (GUILayout.Button(buttonName, EditorStyles.toolbarButton, GUILayout.Width(100)))
-            {
-                EditorApplication.isPaused = !EditorApplication.isPaused;
-                if (EditorApplication.isPaused)
-                    VarTracer.StopVarTracer();
-                else
-                    VarTracer.StartVarTracer();
-            }
-
-            GUILayout.EndHorizontal();
         GUILayout.EndVertical();
     }
 
@@ -429,14 +456,28 @@ public class GraphItWindow : EditorWindow
                                 float lastValue = g.mDataInfos[dataCount - 1].Value;
                                 frameIndex = g.mDataInfos[dataInfoIndex].FrameIndex;
 
-                                if (dataInfoIndex >= 1)
-                                    value = g.mDataInfos[dataInfoIndex-1].Value;
-
                                 if (dataInfoIndex == 0 && i < frameIndex)
                                     value = 0;
 
-                                if (i >= frameIndex && dataInfoIndex < dataCount - 1)
-                                    dataInfoIndex++;
+                                if (i >= frameIndex)
+                                {
+                                    while (g.mDataInfos[dataInfoIndex].FrameIndex == frameIndex && dataInfoIndex < dataCount - 1)
+                                    {
+                                        dataInfoIndex++;
+                                    }
+                                }
+
+                                if (dataInfoIndex == 1)
+                                {
+                                    value = g.mDataInfos[dataInfoIndex - 1].Value;
+                                    previous_value = 0;
+                                }
+
+                                if (dataInfoIndex > 1)
+                                {
+                                    value = g.mDataInfos[dataInfoIndex - 1].Value;
+                                    previous_value = g.mDataInfos[dataInfoIndex - 2].Value;
+                                }
 
                                 if (i > lastFrame)
                                     value = lastValue;
@@ -463,7 +504,6 @@ public class GraphItWindow : EditorWindow
 
                                 Plot(x0, y0, x1, y1);
                             }
-                            previous_value = value;
                         }
                     }
 
