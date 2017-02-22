@@ -13,7 +13,7 @@ public class GraphItWindow : EditorWindow
     static int mMouseOverGraphIndex = InValidNum;
     static float mMouseX = 0;
 
-    static float x_offset = 200.0f;
+    static float x_offset = 250.0f;
     static float y_gap = 80.0f;
     static float y_offset = 20;
 
@@ -582,7 +582,8 @@ public class GraphItWindow : EditorWindow
 
             foreach (var eventName in varBody.EventInfos.Keys)
             {
-                NameLabel.normal.textColor = varBody.EventColors[eventName];
+                //NameLabel.normal.textColor = varBody.EventColors[eventName];
+                NameLabel.normal.textColor = Color.white;
                 EditorGUILayout.LabelField("     <Event>    " + eventName, NameLabel);
             }
         }
@@ -652,7 +653,8 @@ public class GraphItWindow : EditorWindow
                     for (int i = 0; i < sortedEventList.Count; i++)
                     {
                         var currentEvent = sortedEventList[i];
-                        GL.Color(varBody.EventColors[currentEvent.EventName]);
+                        GL.Color(Color.white);
+
                         GUIStyle style = null;
                         int buttonWidth = 0;
                         if (currentEvent.Duration == 0)
@@ -678,7 +680,7 @@ public class GraphItWindow : EditorWindow
                         else
                             tooltip_r = new Rect(x - buttonWidth / 2, startY, buttonWidth, VarTracerConst.EventButtonHeight);
                         preEventRect = tooltip_r; 
-                        style.normal.textColor = varBody.EventColors[currentEvent.EventName];
+                        //style.normal.textColor = ;
                       
                         if (currentEvent.Duration ==0)
                             GUI.Button(tooltip_r, currentEvent.EventName, style);

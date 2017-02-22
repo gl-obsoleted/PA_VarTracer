@@ -45,15 +45,11 @@ public class GraphItVariableBody
         set { eventInfos = value; }
     }
 
-    public void RegistEvent(string eventName,Color color)
+    public void RegistEvent(string eventName)
     {
         if(string.IsNullOrEmpty(eventName))
             return ;
         if (!eventInfos.ContainsKey(eventName))
             eventInfos[eventName] = new List<EventData>();
-        if(!m_eventColors.ContainsKey(eventName))
-        {
-            m_eventColors[eventName] = color;
-        }
     }
 }

@@ -48,7 +48,7 @@ public class VarTracerTool
 #endif
     }
 
-    public static void DefineEvent(string eventName, string variableBody,Color color)
+    public static void DefineEvent(string eventName, string variableBody)
     {
 #if UNITY_EDITOR
         if (string.IsNullOrEmpty(eventName))
@@ -72,7 +72,7 @@ public class VarTracerTool
             }
 
         }
-        VarTracer.Instance.VariableBodys[variableBody].RegistEvent(eventName,color);
+        VarTracer.Instance.VariableBodys[variableBody].RegistEvent(eventName);
 #endif
     }
 
