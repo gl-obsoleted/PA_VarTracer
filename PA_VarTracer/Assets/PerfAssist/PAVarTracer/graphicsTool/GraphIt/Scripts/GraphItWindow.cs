@@ -224,7 +224,7 @@ public class GraphItWindow : EditorWindow
                 if (GUILayout.Button(variableCombineList[i], EventInstantButtonStyle, GUILayout.Width(90)))
                     variableCombineList.Remove(variableCombineList[i]);
 
-                if (GUILayout.Button("  +  ", NameLabel, GUILayout.Width(25))) ;
+                GUILayout.Button("  +  ", NameLabel, GUILayout.Width(25)) ;
             }
             GUILayout.Space(20);
             
@@ -647,9 +647,8 @@ public class GraphItWindow : EditorWindow
                         return e1.EventFrameIndex.CompareTo(e2.EventFrameIndex);
                     });
 
-                    Rect preEventRect = new Rect(scrolled_y_pos + height -VarTracerConst.EventStartHigh, 
-                        scrolled_y_pos + height - VarTracerConst.EventStartHigh,0, VarTracerConst.EventButtonHeight);
                     float startY = scrolled_y_pos + height - VarTracerConst.EventStartHigh;
+                    Rect preEventRect = new Rect(0,startY, 0, VarTracerConst.EventButtonHeight);
                     for (int i = 0; i < sortedEventList.Count; i++)
                     {
                         var currentEvent = sortedEventList[i];
@@ -671,7 +670,7 @@ public class GraphItWindow : EditorWindow
                         Rect tooltip_r;
                         if (IsEventBtnIntersect(x - buttonWidth / 2, preEventRect.x, buttonWidth, preEventRect.width))
                         {
-                            if (preEventRect.y > height)
+                            if (preEventRect.y > height + int.Parse(kv.Key)*(height + y_gap))
                                 tooltip_r = new Rect(x - buttonWidth / 2, startY, buttonWidth, VarTracerConst.EventButtonHeight);
                             else
                                 tooltip_r = new Rect(x - buttonWidth / 2, preEventRect.y + 20, buttonWidth, VarTracerConst.EventButtonHeight);
