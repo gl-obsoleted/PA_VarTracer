@@ -3,8 +3,44 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
+[System.Serializable]
+public class VarTracerJsonType
+{
+    public string logicName;
+    public string[] variableName;
+    public float[] variableValue;
+    public string[] eventName;
+    public float[] eventDuration;
+    public string[] eventDesc;
+}
+
 public class VarTracerTool
 {
+    public static void ResoloveJsonMsg(string str)
+    {
+        if(string.IsNullOrEmpty(str))
+            return ;
+        var resolved = JsonUtility.FromJson<VarTracerJsonType>(str);
+        int variableCount = resolved.variableName.Length;
+        if (variableCount != resolved.variableValue.Length)
+            Debug.LogErrorFormat("Resolove Json Error ,msg = {0}",str);
+        int eventCount = resolved.eventName.Length;
+        if (eventCount != resolved.eventDuration.Length || eventCount != resolved.eventDesc.Length)
+            Debug.LogErrorFormat("Resolove Json Error ,msg = {0}", str);
+
+        for (int i = 0; i < variableCount; i++ )
+        {
+            DefineVariable(resolved.variableName[i], resolved.logicName);
+            UpdateVariable(resolved.variableName[i], resolved.variableValue[i]);
+        }
+
+        for (int i = 0; i < eventCount; i++)
+        {
+            DefineEvent(resolved.eventName[i], resolved.logicName);
+            SendEvent(resolved.eventName[i], resolved.eventDuration[i], resolved.eventDesc[i]);
+        }
+    }
+
     public static void DefineVariable(string variableName, string variableBody)
     {
 #if UNITY_EDITOR
@@ -12,7 +48,7 @@ public class VarTracerTool
         {
             if (varBody.VariableDict.ContainsKey(variableName))
             {
-                Debug.LogFormat("variableName {0} ,Already Exsit!", variableName);
+                //Debug.LogFormat("variableName {0} ,Already Exsit!", variableName);
                 return;
             }
         }
@@ -66,7 +102,7 @@ public class VarTracerTool
             {
                 if(eventName.Equals(eName))
                 {
-                    Debug.LogErrorFormat("Define Event Name Already Exist!");
+                    //Debug.LogErrorFormat("Define Event Name Already Exist!");
                     return;
                 }
             }
