@@ -10,10 +10,7 @@ public class VarTracerTools
 
     public VarTracerTools()
     {
-        if (UsNet.Instance != null && UsNet.Instance.CmdExecutor != null)
-        {
-        }
-        else
+        if (UsNet.Instance == null && UsNet.Instance.CmdExecutor == null)
             UnityEngine.Debug.LogError("UsNet not available");
     }
 
@@ -45,9 +42,10 @@ public class VarTracerTools
     public static void DefineEvent(string eventName, string variableBody)
     {
         VarTracerJsonType vtjt = new VarTracerJsonType();
+        vtjt.logicName = variableBody;
         vtjt.eventName = new string[] { eventName };
         vtjt.eventDuration = new float[] { -1 };
-        vtjt.eventDesc = new string[] { "" };
+        vtjt.eventDesc = new string[] {""};
         string json = JsonUtility.ToJson(vtjt);
         SendJsonMsg(json);
     }
@@ -64,7 +62,7 @@ public class VarTracerTools
     public static void StartVarTracer()
     {
         VarTracerJsonType vtjt = new VarTracerJsonType();
-        vtjt.runingState = VarTracerConst.RunningState_Start;
+        vtjt.runingState = (int)VarTracerConst.RunningState.RunningState_Start;
         string json = JsonUtility.ToJson(vtjt);
         SendJsonMsg(json);
     }
@@ -72,7 +70,7 @@ public class VarTracerTools
     public static void StopVarTracer()
     {
         VarTracerJsonType vtjt = new VarTracerJsonType();
-        vtjt.runingState = VarTracerConst.RunningState_Pause;
+        vtjt.runingState = (int)VarTracerConst.RunningState.RunningState_Pause;
         string json = JsonUtility.ToJson(vtjt);
         SendJsonMsg(json);
     }

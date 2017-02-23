@@ -122,7 +122,6 @@ public class GraphItWindow : EditorWindow
         }
     }
 
-
     void OnDisable()
     {
         EditorApplication.update -= Update;
@@ -137,10 +136,8 @@ public class GraphItWindow : EditorWindow
             VarTracerUtils.Connect(_IPField);
             _connectPressed = false;
         }
-
         Repaint();
     }
-
     public void CheckForResizing()
     {
         if (Mathf.Approximately(position.width, m_winWidth) &&

@@ -67,12 +67,27 @@ public class CameraTest : MonoBehaviour {
 
         if (Input.GetKeyUp(KeyCode.U))
         {
-            VarTracerTools.SendEvent("NPC_MOVE");
+            VarTracerJsonType vtjt = new VarTracerJsonType();
+            vtjt.logicName = "Npc";
+            vtjt.eventName = new string[] { "NPC_MOVE" };
+            vtjt.eventDuration = new float[] { 1 };
+            vtjt.eventDesc = new string[] { "NPC" };
+            string json = JsonUtility.ToJson(vtjt);
+            VarTracerTools.SendJsonMsg(json);
+
+           // VarTracerTools.SendEvent("NPC_MOVE");
         }
 
         if (Input.GetKeyUp(KeyCode.I))
         {
-            VarTracerTools.SendEvent("NPC_MOVE", 1);
+            VarTracerJsonType vtjt = new VarTracerJsonType();
+            vtjt.logicName = "Npc";
+            vtjt.eventName = new string[] { "NPC_MOVE" };
+            vtjt.eventDuration = new float[] { 1 };
+            vtjt.eventDesc = new string[] { "NPC" };
+            string json = JsonUtility.ToJson(vtjt);
+            VarTracerTools.SendJsonMsg(json);
+            //VarTracerTools.SendEvent("NPC_MOVE", 1);
         }
 
         if (Input.GetKeyUp(KeyCode.O))

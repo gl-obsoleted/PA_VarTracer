@@ -28,9 +28,24 @@ public class VarTracerConst
 
     public static readonly string LastConnectedIP = "Mem_LastConnectedIP";
 
-    public static readonly string RunningState_Start = "RunningState_Start";
-    public static readonly string RunningState_Pause = "RunningState_Pause";
-    public static readonly string RunningState_Close = "RunningState_Close";
+    public enum ActionType
+    {
+        None,
+        DefineVariable,
+        UpdateVariable,
+        DefineEvent,
+        SendEvent,
+        All,
+    }
+
+    public enum RunningState
+    {
+        None,
+        RunningState_Start,
+        RunningState_Pause,
+        RunningState_Close,
+    }
+
 
     public static GUIStyle NameLabel;
     public static GUIStyle SmallLabel;

@@ -13,10 +13,10 @@ public class DemoMain : MonoBehaviour {
         _usmooth = new UsMain(LogRemotely, LogIntoFile, InGameGui);
         VarTracerTools.Instance = new VarTracerTools();
 
-        VarTracerTools.DefineEvent("MOVE", "Camera");
-        VarTracerTools.DefineEvent("NPC_MOVE", "Npc");
-        VarTracerTools.DefineEvent("SPEED_DOWN", "Player");
-        VarTracerTools.DefineEvent("SPEED_UP", "Player");
+        //VarTracerTools.DefineEvent("MOVE", "Camera");
+        //VarTracerTools.DefineEvent("NPC_MOVE", "Npc");
+        //VarTracerTools.DefineEvent("SPEED_DOWN", "Player");
+        //VarTracerTools.DefineEvent("SPEED_UP", "Player");
     }
 
 	// Update is called once per frame

@@ -12,7 +12,7 @@ public class VarTracerJsonType
     public string[] eventName;
     public float[] eventDuration;
     public string[] eventDesc;
-    public string runingState;
+    public int runingState;
 }
 
 public class VarTracerHandler
@@ -42,19 +42,17 @@ public class VarTracerHandler
         {
             if (hasLogicalName)
                 DefineEvent(resolved.eventName[i], resolved.logicName);
-            if (resolved.eventDuration[i] != -1)
+            if(resolved.eventDuration[i] != -1)
                 SendEvent(resolved.eventName[i], resolved.eventDuration[i], resolved.eventDesc[i]);
         }
-        
-        if(!string.IsNullOrEmpty(resolved.runingState))
+
+        if (resolved.runingState == (int)VarTracerConst.RunningState.RunningState_Start)
         {
-            if(resolved.runingState.Equals(VarTracerConst.RunningState_Start))
-            {
-                StartVarTracer();
-            }else if (resolved.runingState.Equals(VarTracerConst.RunningState_Pause))
-            {
-                StopVarTracer();
-            }
+            StartVarTracer();
+        }
+        else if (resolved.runingState == (int)VarTracerConst.RunningState.RunningState_Pause)
+        {
+            StopVarTracer();
         }
     }
 
