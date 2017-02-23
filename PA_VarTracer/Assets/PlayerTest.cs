@@ -28,21 +28,18 @@ public class PlayerTest : MonoBehaviour {
     void Move()
     {
         if(m_isUp)
-            m_speed+=0.1f;
+            m_speed += 2f * Time.deltaTime;
         else
-            m_speed-=0.1f;
+            m_speed -= 2f * Time.deltaTime;
 
         if(m_speed >=8)
         {
             m_isUp = false;
-            VarTracerTool.SendEvent("SPEED_DOWN");
         }
         if (m_speed <= 0)
         {
             m_isUp = true;
-            VarTracerTool.SendEvent("SPEED_UP");
         }
-
         m_velocity.x = m_speed;
 
         m_velocity.y = m_speed;

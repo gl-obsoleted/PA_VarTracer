@@ -45,6 +45,6 @@ public class NpcTest : MonoBehaviour {
             m_velocity.z = speedz;
         else
             m_velocity.z = 0;
-        VarTracerTool.SendEvent("NPC_MOVE");
+        //VarTracerTool.SendEvent("NPC_MOVE");
     }
 }

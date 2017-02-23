@@ -44,5 +44,63 @@ public class CameraTest : MonoBehaviour {
             VarTracerTool.SendEvent("MOVE");
         }
 
+        if (Input.GetKeyUp(KeyCode.Z))
+        {
+            VarTracerTool.UpdateVariable("NpcV_X", 0);
+        }
+
+        if (Input.GetKeyUp(KeyCode.X))
+        {
+            VarTracerTool.UpdateVariable("NpcV_X", 5);
+        }
+
+        if (Input.GetKeyUp(KeyCode.C))
+        {
+            VarTracerTool.UpdateVariable("NpcV_X", 10);
+        }
+
+        if (Input.GetKeyUp(KeyCode.V))
+        {
+            VarTracerTool.UpdateVariable("NpcV_X", -10);
+        }
+
+
+        if (Input.GetKeyUp(KeyCode.U))
+        {
+            VarTracerTool.SendEvent("NPC_MOVE");
+        }
+
+        if (Input.GetKeyUp(KeyCode.I))
+        {
+            VarTracerTool.SendEvent("NPC_MOVE", 1);
+        }
+
+        if (Input.GetKeyUp(KeyCode.O))
+        {
+            VarTracerTool.SendEvent("NPC_MOVE", 2, "desc");
+        }
+
+        if (Input.GetKeyUp(KeyCode.J))
+        {
+            //Json测试格式
+            //{
+            //"logicName":"Npc",
+            //"variableName":["NpcV_X","NpcV_Y","NpcV_Z","NpcV_T"],
+            //"variableValue":[1,2,3,4],
+            //"eventName":["NPC_MOVE"],
+            //"eventDuration":[1.2],
+            //"eventDesc":["desc"]
+            //}
+
+            VarTracerJsonType vtjt = new VarTracerJsonType();
+            vtjt.logicName = "JSON";
+            vtjt.variableName = new string[] { "JSON_X", "JSON_Y", "JSON_Z", "JSON_T" };
+            vtjt.variableValue = new float[] { 1.0f, 2.0f, 3.0f, 4.0f };
+            vtjt.eventName = new string[] { "JSON_EVENT" };
+            vtjt.eventDuration = new float[] { 0.5f };
+            vtjt.eventDesc = new string[] { "JSON" };
+            string json = JsonUtility.ToJson(vtjt);
+            VarTracerTool.ResoloveJsonMsg(json);
+        }
     }
 }
