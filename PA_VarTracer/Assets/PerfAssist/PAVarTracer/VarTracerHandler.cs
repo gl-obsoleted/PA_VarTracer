@@ -95,7 +95,7 @@ public class VarTracerHandler
             if (VarBody.VariableDict.ContainsKey(variableName))
             {
                 var var = VarBody.VariableDict[variableName];
-                var.InsertValue(new VarDataInfo(value,VarTracer.Instance.GetCurrentFrame()));
+                var.InsertValue(new VarDataInfo(value,VarTracer.Instance.GetCurrentFrameFromTime()));
             }
         }
 #endif
@@ -140,7 +140,7 @@ public class VarTracerHandler
                 {
                     List<EventData> listEvent;
                     varBody.Value.EventInfos.TryGetValue(eventName, out listEvent);
-                    listEvent.Add(new EventData(VarTracer.Instance.GetCurrentFrame(), eventName, desc, duration));
+                    listEvent.Add(new EventData(VarTracer.Instance.GetCurrentFrameFromTime(), eventName, desc, duration));
                     break;
                 }
             }

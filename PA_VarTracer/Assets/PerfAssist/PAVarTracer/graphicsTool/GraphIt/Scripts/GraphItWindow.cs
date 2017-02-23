@@ -396,7 +396,7 @@ public class GraphItWindow : EditorWindow
             Rect find_y = EditorGUILayout.BeginVertical(GUIStyle.none);
             EditorGUILayout.EndVertical();
 
-            int currentFrameIndex = VarTracer.Instance.GetCurrentFrame();
+            int currentFrameIndex = VarTracer.Instance.GetCurrentFrameFromTime();
 
             float scrolled_y_pos = y_offset - mGraphViewScrollPos.y;
             if (Event.current.type == EventType.Repaint)
@@ -528,7 +528,7 @@ public class GraphItWindow : EditorWindow
                 graph_index++;
 
                 float height = kv.Value.GetHeight();
-                float width = VarTracer.Instance.GetCurrentFrame() * kv.Value.XStep;
+                float width = VarTracer.Instance.GetCurrentFrameFromTime() * kv.Value.XStep;
                 if (width < mWidth)
                 {
                     width = mWidth - x_offset;

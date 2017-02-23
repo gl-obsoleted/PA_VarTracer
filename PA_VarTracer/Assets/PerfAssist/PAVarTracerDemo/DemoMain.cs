@@ -30,8 +30,8 @@ public class DemoMain : MonoBehaviour {
         //VarTracerTools.UpdateVariable("CameraV_Z", Camera.main.velocity.z);
         //VarTracerTools.UpdateVariable("CameraV_T", Camera.main.velocity.magnitude);
 
-        var NpcObj = GameObject.Find("Npc");
-        var NpcScript = NpcObj.GetComponent("NpcTest") as NpcTest;
+        //var NpcObj = GameObject.Find("Npc");
+        //var NpcScript = NpcObj.GetComponent("NpcTest") as NpcTest;
         //VarTracerTool.UpdateVariable("NpcV_X", NpcScript.GetVelocity().x);
         //VarTracerTools.UpdateVariable("NpcV_Y", NpcScript.GetVelocity().y);
         //VarTracerTools.UpdateVariable("NpcV_Z", NpcScript.GetVelocity().z);
