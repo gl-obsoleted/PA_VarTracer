@@ -14,7 +14,6 @@ public class GraphItVariable
     }
     private List<VarDataInfo> m_dataList = new List<VarDataInfo>();
     Dictionary<string, string> m_channelDict = new Dictionary<string, string>();
-    private VariableConfigPopup m_popupWindow;
     private Rect m_popupRect;
     public Rect PopupRect
     {
@@ -22,11 +21,6 @@ public class GraphItVariable
         set { m_popupRect = value; }
     }
 
-    public VariableConfigPopup PopupWindow
-    {
-        get { return m_popupWindow; }
-        set { m_popupWindow = value; }
-    }
 
     public Dictionary<string, string> ChannelDict
     {
@@ -44,7 +38,6 @@ public class GraphItVariable
     {
         m_varName = varName;
         m_varBodyName = varBodyName;
-        m_popupWindow = new VariableConfigPopup(varName);
     }
 
     public void InsertValue(VarDataInfo dataInfo)
