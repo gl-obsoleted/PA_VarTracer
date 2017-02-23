@@ -45,7 +45,7 @@ public class GraphItWindow : EditorWindow
     string _IPField = VarTracerConst.RemoteIPDefaultText;
 
     static List<string> variableCombineList = new List<string>();
-    static string[] graphNumOption = {"0","1","2"};
+    static string[] graphNumOption = { "0", "1", "2" };
     static int graphNumIndex = 0;
 
     static void InitializeStyles()
@@ -80,7 +80,7 @@ public class GraphItWindow : EditorWindow
     static void Init()
     {
         // Get existing open window or if none, make a new one:
-        GraphItWindow window = (GraphItWindow)EditorWindow.GetWindow(typeof(GraphItWindow), false,"GraphItVariable");
+        GraphItWindow window = (GraphItWindow)EditorWindow.GetWindow(typeof(GraphItWindow), false, "GraphItVariable");
         window.minSize = new Vector2(230f, 50f);
         window.Show();
     }
@@ -90,11 +90,11 @@ public class GraphItWindow : EditorWindow
         EditorApplication.update += DrawGraph;
         if (VarTracer.Instance != null)
         {
-            if(VarTracer.Instance.Graphs.Count==0)
+            if (VarTracer.Instance.Graphs.Count == 0)
                 VarTracer.AddChannel();
 
             bool constainsCamera = VarTracer.Instance.VariableBodys.ContainsKey("Camera");
-            if (!constainsCamera || VarTracer.Instance.VariableBodys["Camera"].VariableDict.Count==0)
+            if (!constainsCamera || VarTracer.Instance.VariableBodys["Camera"].VariableDict.Count == 0)
             {
                 VarTracerTool.DefineVariable("CameraV_X", "Camera");
                 VarTracerTool.DefineVariable("CameraV_Y", "Camera");
@@ -145,7 +145,7 @@ public class GraphItWindow : EditorWindow
 
         m_controlScreenPosY = 0.0f;
 
-        m_navigationScreenHeight = m_winHeight -  m_controlScreenHeight;
+        m_navigationScreenHeight = m_winHeight - m_controlScreenHeight;
         m_navigationScreenPosY = m_controlScreenHeight;
     }
 
@@ -175,13 +175,13 @@ public class GraphItWindow : EditorWindow
     void UpdateVariableAreaHight()
     {
         var lineNum = CalculateVariableLineNum();
-        var ry = variableLineStartY *2 + lineNum * variableLineHight;
+        var ry = variableLineStartY * 2 + lineNum * variableLineHight;
 
         y_offset = ry;
         m_controlScreenHeight = ry;
     }
 
-    int  CalculateVariableLineNum()
+    int CalculateVariableLineNum()
     {
         List<GraphItVariable> variableList = new List<GraphItVariable>();
         foreach (var varBody in VarTracer.Instance.VariableBodys.Values)
@@ -217,105 +217,105 @@ public class GraphItWindow : EditorWindow
     void DrawVariableBar()
     {
         GUILayout.BeginVertical();
+        GUILayout.BeginHorizontal();
+        GUILayout.Space(10);
+
+        int currentIndex = GUILayout.SelectionGrid(graphNumIndex, graphNumOption, 3, GUILayout.Width(90));
+        if (graphNumIndex != currentIndex)
+        {
+            graphNumIndex = currentIndex;
+            ShowVariableCombine();
+        }
+
+        GUILayout.Space(30);
+        for (int i = 0; i < variableCombineList.Count; i++)
+        {
+            if (GUILayout.Button(variableCombineList[i], EventInstantButtonStyle, GUILayout.Width(90)))
+            {
+                variableCombineList.Remove(variableCombineList[i]);
+                ShowVariableCombine();
+            }
+        }
+        GUILayout.Space(20);
+
+        if (GUILayout.Button("Clear", EditorStyles.toolbarButton, GUILayout.Width(50), GUILayout.Height(25)))
+        {
+            variableCombineList.Clear();
+            ShowVariableCombine();
+        }
+
+        if (GUILayout.Button("Clear All", EditorStyles.toolbarButton, GUILayout.Width(100)))
+            VarTracer.ClearAll();
+
+        GUI.SetNextControlName("LoginIPTextField");
+        var currentStr = GUILayout.TextField(_IPField, EditorStyles.toolbarButton, GUILayout.Width(120));
+        if (!_IPField.Equals(currentStr))
+        {
+            _IPField = currentStr;
+        }
+
+        if (GUI.GetNameOfFocusedControl().Equals("LoginIPTextField") && _IPField.Equals(VarTracerConst.RemoteIPDefaultText))
+        {
+            _IPField = "";
+        }
+
+        bool savedState = GUI.enabled;
+
+        bool connected = NetManager.Instance != null && NetManager.Instance.IsConnected;
+
+        GUI.enabled = !connected;
+        if (GUILayout.Button("Connect", EditorStyles.toolbarButton, GUILayout.Width(80)))
+        {
+            //_connectPressed = true;
+        }
+        GUI.enabled = connected;
+        GUI.enabled = savedState;
+
+        string buttonName;
+        if (EditorApplication.isPaused)
+            buttonName = "Resume";
+        else
+            buttonName = "Pause";
+        if (GUILayout.Button(buttonName, EditorStyles.toolbarButton, GUILayout.Width(100)))
+        {
+            EditorApplication.isPaused = !EditorApplication.isPaused;
+            if (EditorApplication.isPaused)
+                VarTracer.StopVarTracer();
+            else
+                VarTracer.StartVarTracer();
+        }
+
+        GUILayout.EndHorizontal();
+
+        var lineNum = CalculateVariableLineNum();
+        var varList = GetVariableList();
+
+        for (int i = 0; i < lineNum; i++)
+        {
             GUILayout.BeginHorizontal();
             GUILayout.Space(10);
-             
-            int currentIndex = GUILayout.SelectionGrid(graphNumIndex, graphNumOption, 3, GUILayout.Width(90));
-            if (graphNumIndex != currentIndex)
+            for (int j = 0; j < variableNumPerLine; j++)
             {
-                graphNumIndex = currentIndex;
-                ShowVariableCombine();
-            }
+                if (j + i * variableNumPerLine >= varList.Count)
+                    continue;
+                var var = varList[j + i * variableNumPerLine];
+                var saveColor = GUI.color;
+                if (VarTracer.IsVariableOnShow(var.VarName))
+                    GUI.color = Color.white;
 
-            GUILayout.Space(30);
-            for (int i = 0; i < variableCombineList.Count; i++)
-            {
-                if (GUILayout.Button(variableCombineList[i], EventInstantButtonStyle, GUILayout.Width(90)))
+                if (GUILayout.Button(var.VarName, EditorStyles.toolbarButton, GUILayout.Width(100)))
                 {
-                    variableCombineList.Remove(variableCombineList[i]);
-                    ShowVariableCombine();
-                }
-            }
-            GUILayout.Space(20);
-
-            if (GUILayout.Button("Clear", EditorStyles.toolbarButton, GUILayout.Width(50), GUILayout.Height(25)))
-            {
-                variableCombineList.Clear();
-                ShowVariableCombine();
-            }
-
-            if (GUILayout.Button("Clear All", EditorStyles.toolbarButton, GUILayout.Width(100)))
-                VarTracer.ClearAll();
-
-            GUI.SetNextControlName("LoginIPTextField");
-            var currentStr = GUILayout.TextField(_IPField, EditorStyles.toolbarButton, GUILayout.Width(120));
-            if (!_IPField.Equals(currentStr))
-            {
-                _IPField = currentStr;
-            }
-
-            if (GUI.GetNameOfFocusedControl().Equals("LoginIPTextField") && _IPField.Equals(VarTracerConst.RemoteIPDefaultText))
-            {
-                _IPField = "";
-            }
-
-            bool savedState = GUI.enabled;
-
-            bool connected = NetManager.Instance != null && NetManager.Instance.IsConnected;
-
-            GUI.enabled = !connected;
-            if (GUILayout.Button("Connect", EditorStyles.toolbarButton, GUILayout.Width(80)))
-            {
-                //_connectPressed = true;
-            }
-            GUI.enabled = connected;
-            GUI.enabled = savedState;
-
-            string buttonName;
-            if (EditorApplication.isPaused)
-                buttonName = "Resume";
-            else
-                buttonName = "Pause";
-            if (GUILayout.Button(buttonName, EditorStyles.toolbarButton, GUILayout.Width(100)))
-            {
-                EditorApplication.isPaused = !EditorApplication.isPaused;
-                if (EditorApplication.isPaused)
-                    VarTracer.StopVarTracer();
-                else
-                    VarTracer.StartVarTracer();
-            }
-            
-            GUILayout.EndHorizontal();
-
-            var lineNum = CalculateVariableLineNum();
-            var varList = GetVariableList();
-
-            for (int i = 0; i < lineNum;i++)
-            {
-                GUILayout.BeginHorizontal();
-                GUILayout.Space(10);
-                for(int j = 0;j < variableNumPerLine;j++)
-                {
-                    if (j + i * variableNumPerLine >= varList.Count)
-                        continue;
-                    var var = varList[j + i * variableNumPerLine];
-                    var saveColor = GUI.color;
-                    if (VarTracer.IsVariableOnShow(var.VarName))
-                        GUI.color = Color.white;
-
-                    if (GUILayout.Button(var.VarName, EditorStyles.toolbarButton, GUILayout.Width(100)))
+                    if (!variableCombineList.Contains(var.VarName))
                     {
-                        if(!variableCombineList.Contains(var.VarName))
-                        {
-                            variableCombineList.Add(var.VarName);
-                            ShowVariableCombine();
-                        }
-                    }    
-                  
-                    GUI.color = saveColor;
+                        variableCombineList.Add(var.VarName);
+                        ShowVariableCombine();
+                    }
                 }
-                GUILayout.EndHorizontal();
+
+                GUI.color = saveColor;
             }
+            GUILayout.EndHorizontal();
+        }
 
         GUILayout.EndVertical();
     }
@@ -407,10 +407,10 @@ public class GraphItWindow : EditorWindow
                 {
                     float height = kv.Value.GetHeight();
 
-                    GL.Vertex3(x_offset,scrolled_y_pos,0);
-                    GL.Vertex3(x_offset + mWidth, scrolled_y_pos,0);
-                    GL.Vertex3(x_offset + mWidth, scrolled_y_pos + height,0);
-                    GL.Vertex3(x_offset,scrolled_y_pos + height,0);
+                    GL.Vertex3(x_offset, scrolled_y_pos, 0);
+                    GL.Vertex3(x_offset + mWidth, scrolled_y_pos, 0);
+                    GL.Vertex3(x_offset + mWidth, scrolled_y_pos + height, 0);
+                    GL.Vertex3(x_offset, scrolled_y_pos + height, 0);
 
                     scrolled_y_pos += (height + y_gap);
                 }
@@ -423,7 +423,7 @@ public class GraphItWindow : EditorWindow
                 foreach (KeyValuePair<string, GraphItData> kv in VarTracer.Instance.Graphs)
                 {
                     graph_index++;
-                    
+
                     float height = kv.Value.GetHeight();
                     DrawGraphGridLines(scrolled_y_pos, mWidth, height, graph_index == mMouseOverGraphIndex);
 
@@ -436,7 +436,7 @@ public class GraphItWindow : EditorWindow
                         float y_range = Mathf.Max(y_max - y_min, 0.00001f);
 
                         //draw the 0 line
-                        if (y_min !=0.0f)
+                        if (y_min != 0.0f)
                         {
                             GL.Color(Color.white);
                             float y = scrolled_y_pos + height * (1 - (0.0f - y_min) / y_range);
@@ -445,8 +445,8 @@ public class GraphItWindow : EditorWindow
 
                         GL.Color(g.mColor);
 
-                        float previous_value=0,value = 0;
-                        int dataInfoIndex=0,frameIndex = 0;
+                        float previous_value = 0, value = 0;
+                        int dataInfoIndex = 0, frameIndex = 0;
                         for (int i = 0; i <= currentFrameIndex; i++)
                         {
                             int dataCount = g.mDataInfos.Count;
@@ -455,6 +455,9 @@ public class GraphItWindow : EditorWindow
                                 int lastFrame = g.mDataInfos[dataCount - 1].FrameIndex;
                                 float lastValue = g.mDataInfos[dataCount - 1].Value;
                                 frameIndex = g.mDataInfos[dataInfoIndex].FrameIndex;
+
+                                if (dataInfoIndex >= 1)
+                                    value = g.mDataInfos[dataInfoIndex - 1].Value;
 
                                 if (dataInfoIndex == 0 && i < frameIndex)
                                     value = 0;
@@ -467,25 +470,14 @@ public class GraphItWindow : EditorWindow
                                     }
                                 }
 
-                                if (dataInfoIndex == 1)
-                                {
-                                    value = g.mDataInfos[dataInfoIndex - 1].Value;
-                                    previous_value = 0;
-                                }
-
-                                if (dataInfoIndex > 1)
-                                {
-                                    value = g.mDataInfos[dataInfoIndex - 1].Value;
-                                    previous_value = g.mDataInfos[dataInfoIndex - 2].Value;
-                                }
-
                                 if (i > lastFrame)
                                     value = lastValue;
                             }
-                            else {
+                            else
+                            {
                                 value = 0;
                             }
-                             
+
                             if (i >= 1)
                             {
                                 float x0 = x_offset + (i - 1) * kv.Value.XStep - kv.Value.ScrollPos.x;
@@ -493,7 +485,7 @@ public class GraphItWindow : EditorWindow
                                 if (x0 >= mWidth + x_offset) break;
                                 float y0 = scrolled_y_pos + height * (1 - (previous_value - y_min) / y_range);
 
-                                if(i==1)
+                                if (i == 1)
                                 {
                                     x0 = x_offset;
                                     y0 = scrolled_y_pos + height;
@@ -504,23 +496,24 @@ public class GraphItWindow : EditorWindow
 
                                 Plot(x0, y0, x1, y1);
                             }
+                            previous_value = value;
                         }
                     }
 
                     scrolled_y_pos += (height + y_gap);
-                }                
+                }
                 GL.End();
 
                 scrolled_y_pos = y_offset - mGraphViewScrollPos.y;
                 scrolled_y_pos = ShowEventLabel(scrolled_y_pos);
                 GL.PopMatrix();
-            
+
                 GL.Viewport(new Rect(0, 0, rect.width, rect.height));
                 GL.LoadPixelMatrix(0, rect.width, rect.height, 0);
             }
 
             mGraphViewScrollPos = EditorGUILayout.BeginScrollView(mGraphViewScrollPos, GUIStyle.none);
-            
+
             graph_index = 0;
             mWidth = window.position.width - x_offset;
             foreach (KeyValuePair<string, GraphItData> kv in VarTracer.Instance.Graphs)
@@ -536,10 +529,10 @@ public class GraphItWindow : EditorWindow
                 else
                 {
                     if (!EditorApplication.isPaused)
-                        kv.Value.ScrollPos = new Vector2(width - mWidth,kv.Value.ScrollPos.y);
+                        kv.Value.ScrollPos = new Vector2(width - mWidth, kv.Value.ScrollPos.y);
                 }
 
-                GUIStyle s = new GUIStyle();                
+                GUIStyle s = new GUIStyle();
                 s.fixedHeight = height + y_gap;
                 s.stretchWidth = true;
                 Rect r = EditorGUILayout.BeginVertical(s);
@@ -547,9 +540,9 @@ public class GraphItWindow : EditorWindow
                 //skip subgraph title if only one, and it's the same.
                 NameLabel.normal.textColor = Color.white;
 
-                r.height = height+50;
+                r.height = height + 50;
                 r.width = width;
-                r.x = x_offset-35;
+                r.x = x_offset - 35;
                 r.y = (height + y_gap) * (graph_index - 1) - 10;
 
                 if (kv.Value.mData.Count > 0)
@@ -558,9 +551,9 @@ public class GraphItWindow : EditorWindow
                     GUILayout.BeginVertical();
 
                     float GraphGap = kv.Value.m_maxValue - kv.Value.m_minValue;
-                    float unitHeight = GraphGap / VarTracerConst.Graph_Grid_Row_Num; 
+                    float unitHeight = GraphGap / VarTracerConst.Graph_Grid_Row_Num;
 
-                    for (int i = 0; i < VarTracerConst.Graph_Grid_Row_Num+1 ; i++)
+                    for (int i = 0; i < VarTracerConst.Graph_Grid_Row_Num + 1; i++)
                     {
                         GUILayout.Space(6);
                         if (unitHeight == 0)
@@ -568,7 +561,7 @@ public class GraphItWindow : EditorWindow
                         else
                             EditorGUILayout.LabelField((kv.Value.m_maxValue - i * unitHeight).ToString(VarTracerConst.NUM_FORMAT_1), NameLabel);
                     }
-                
+
                     GUILayout.BeginHorizontal();
                     kv.Value.ScrollPos = GUILayout.BeginScrollView(kv.Value.ScrollPos, GUILayout.Width(mWidth), GUILayout.Height(0));
                     GUILayout.Label("", GUILayout.Width(width), GUILayout.Height(0));
@@ -656,9 +649,9 @@ public class GraphItWindow : EditorWindow
         return result;
     }
 
-    private static bool IsEventBtnIntersect(float x1,float x2 , float width1 ,float width2)
+    private static bool IsEventBtnIntersect(float x1, float x2, float width1, float width2)
     {
-        return System.Math.Abs(x1 - x2) <= (width1 + width2)/2;
+        return System.Math.Abs(x1 - x2) <= (width1 + width2) / 2;
     }
 
     private static float ShowEventLabel(float scrolled_y_pos)
@@ -689,7 +682,7 @@ public class GraphItWindow : EditorWindow
                     });
 
                     float startY = scrolled_y_pos + height - VarTracerConst.EventStartHigh;
-                    Rect preEventRect = new Rect(0,startY, 0, VarTracerConst.EventButtonHeight);
+                    Rect preEventRect = new Rect(0, startY, 0, VarTracerConst.EventButtonHeight);
                     for (int i = 0; i < sortedEventList.Count; i++)
                     {
                         var currentEvent = sortedEventList[i];
@@ -712,17 +705,17 @@ public class GraphItWindow : EditorWindow
                         Rect tooltip_r;
                         if (IsEventBtnIntersect(x - buttonWidth / 2, preEventRect.x, buttonWidth, preEventRect.width))
                         {
-                            if (preEventRect.y > height + int.Parse(kv.Key)*(height + y_gap))
+                            if (preEventRect.y > height + int.Parse(kv.Key) * (height + y_gap))
                                 tooltip_r = new Rect(x - buttonWidth / 2, startY, buttonWidth, VarTracerConst.EventButtonHeight);
                             else
                                 tooltip_r = new Rect(x - buttonWidth / 2, preEventRect.y + 20, buttonWidth, VarTracerConst.EventButtonHeight);
                         }
                         else
                             tooltip_r = new Rect(x - buttonWidth / 2, startY, buttonWidth, VarTracerConst.EventButtonHeight);
-                        preEventRect = tooltip_r; 
+                        preEventRect = tooltip_r;
                         //style.normal.textColor = ;
-                      
-                        if (currentEvent.Duration ==0)
+
+                        if (currentEvent.Duration == 0)
                             GUI.Button(tooltip_r, currentEvent.EventName, style);
                         else
                         {
@@ -730,8 +723,9 @@ public class GraphItWindow : EditorWindow
                             {
                                 GUI.Button(tooltip_r, currentEvent.EventName + " (" + currentEvent.Duration + "s)", style);
                             }
-                            else {
-                                GUI.Button(tooltip_r, currentEvent.EventName + " (" + currentEvent.Duration + "s)" + " [" + currentEvent.Desc + "]", style);                            
+                            else
+                            {
+                                GUI.Button(tooltip_r, currentEvent.EventName + " (" + currentEvent.Duration + "s)" + " [" + currentEvent.Desc + "]", style);
                             }
                         }
                     }
