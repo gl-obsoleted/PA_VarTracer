@@ -41,43 +41,43 @@ public class CameraTest : MonoBehaviour {
 
         if (Input.GetKeyUp(KeyCode.E))
         {
-            VarTracerTool.SendEvent("MOVE");
+            VarTracerTools.SendEvent("MOVE");
         }
 
         if (Input.GetKeyUp(KeyCode.Z))
         {
-            VarTracerTool.UpdateVariable("NpcV_X", 0);
+            VarTracerTools.UpdateVariable("NpcV_X", 0);
         }
 
         if (Input.GetKeyUp(KeyCode.X))
         {
-            VarTracerTool.UpdateVariable("NpcV_X", 5);
+            VarTracerTools.UpdateVariable("NpcV_X", 5);
         }
 
         if (Input.GetKeyUp(KeyCode.C))
         {
-            VarTracerTool.UpdateVariable("NpcV_X", 10);
+            VarTracerTools.UpdateVariable("NpcV_X", 10);
         }
 
         if (Input.GetKeyUp(KeyCode.V))
         {
-            VarTracerTool.UpdateVariable("NpcV_X", -10);
+            VarTracerTools.UpdateVariable("NpcV_X", -10);
         }
 
 
         if (Input.GetKeyUp(KeyCode.U))
         {
-            VarTracerTool.SendEvent("NPC_MOVE");
+            VarTracerTools.SendEvent("NPC_MOVE");
         }
 
         if (Input.GetKeyUp(KeyCode.I))
         {
-            VarTracerTool.SendEvent("NPC_MOVE", 1);
+            VarTracerTools.SendEvent("NPC_MOVE", 1);
         }
 
         if (Input.GetKeyUp(KeyCode.O))
         {
-            VarTracerTool.SendEvent("NPC_MOVE", 2, "desc");
+            VarTracerTools.SendEvent("NPC_MOVE", 2, "desc");
         }
 
         if (Input.GetKeyUp(KeyCode.J))
@@ -100,7 +100,7 @@ public class CameraTest : MonoBehaviour {
             vtjt.eventDuration = new float[] { 0.5f };
             vtjt.eventDesc = new string[] { "JSON" };
             string json = JsonUtility.ToJson(vtjt);
-            VarTracerTool.ResoloveJsonMsg(json);
+            VarTracerTools.SendJsonMsg(json);
         }
     }
 }

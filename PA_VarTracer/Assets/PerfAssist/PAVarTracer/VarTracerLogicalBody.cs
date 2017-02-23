@@ -3,7 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-public class GraphItVariableBody
+public class VarTracerLogicalBody
 {
     Dictionary<string, Color> m_eventColors = new Dictionary<string, Color>();
     public Dictionary<string, Color> EventColors
@@ -25,13 +25,13 @@ public class GraphItVariableBody
         set { m_variableBodyName = value; }
     }
 
-    public GraphItVariableBody(string varBodyName)
+    public VarTracerLogicalBody(string varBodyName)
     {
         m_variableBodyName = varBodyName;
     }
 
-    private Dictionary<string, GraphItVariable> m_variableDict = new Dictionary<string, GraphItVariable>();
-    public Dictionary<string, GraphItVariable> VariableDict
+    private Dictionary<string, VarTracerVariable> m_variableDict = new Dictionary<string, VarTracerVariable>();
+    public Dictionary<string, VarTracerVariable> VariableDict
     {
         get { return m_variableDict; }
         set { m_variableDict = value; }

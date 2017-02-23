@@ -12,9 +12,10 @@ public class VarTracerJsonType
     public string[] eventName;
     public float[] eventDuration;
     public string[] eventDesc;
+    public string runingState;
 }
 
-public class VarTracerTool
+public class VarTracerHandler
 {
     public static void ResoloveJsonMsg(string str)
     {
@@ -28,16 +29,32 @@ public class VarTracerTool
         if (eventCount != resolved.eventDuration.Length || eventCount != resolved.eventDesc.Length)
             Debug.LogErrorFormat("Resolove Json Error ,msg = {0}", str);
 
+        bool hasLogicalName = !string.IsNullOrEmpty(resolved.logicName);
+
         for (int i = 0; i < variableCount; i++ )
         {
-            DefineVariable(resolved.variableName[i], resolved.logicName);
+            if (hasLogicalName)
+                DefineVariable(resolved.variableName[i], resolved.logicName);
             UpdateVariable(resolved.variableName[i], resolved.variableValue[i]);
         }
 
         for (int i = 0; i < eventCount; i++)
         {
-            DefineEvent(resolved.eventName[i], resolved.logicName);
-            SendEvent(resolved.eventName[i], resolved.eventDuration[i], resolved.eventDesc[i]);
+            if (hasLogicalName)
+                DefineEvent(resolved.eventName[i], resolved.logicName);
+            if (resolved.eventDuration[i] != -1)
+                SendEvent(resolved.eventName[i], resolved.eventDuration[i], resolved.eventDesc[i]);
+        }
+        
+        if(!string.IsNullOrEmpty(resolved.runingState))
+        {
+            if(resolved.runingState.Equals(VarTracerConst.RunningState_Start))
+            {
+                StartVarTracer();
+            }else if (resolved.runingState.Equals(VarTracerConst.RunningState_Pause))
+            {
+                StopVarTracer();
+            }
         }
     }
 
@@ -55,15 +72,15 @@ public class VarTracerTool
 
         if (!VarTracer.Instance.VariableBodys.ContainsKey(variableBody))
         {
-            var body = new GraphItVariableBody(variableBody);
-            body.VariableDict[variableName] = new GraphItVariable(variableName,variableBody);
+            var body = new VarTracerLogicalBody(variableBody);
+            body.VariableDict[variableName] = new VarTracerVariable(variableName,variableBody);
             VarTracer.Instance.VariableBodys[variableBody] = body;
         }
 
         var variableDict = VarTracer.Instance.VariableBodys[variableBody].VariableDict;
         if (!variableDict.ContainsKey(variableName))
         {
-            variableDict[variableName] = new GraphItVariable(variableName,variableBody);
+            variableDict[variableName] = new VarTracerVariable(variableName,variableBody);
         }
 #endif
     }
@@ -92,7 +109,7 @@ public class VarTracerTool
 
         if (!VarTracer.Instance.VariableBodys.ContainsKey(variableBody))
         {
-            var body = new GraphItVariableBody(variableBody);
+            var body = new VarTracerLogicalBody(variableBody);
             VarTracer.Instance.VariableBodys[variableBody] = body;
         }
 
@@ -106,7 +123,6 @@ public class VarTracerTool
                     return;
                 }
             }
-
         }
         VarTracer.Instance.VariableBodys[variableBody].RegistEvent(eventName);
 #endif

@@ -151,7 +151,7 @@ public class VarTracer : MonoBehaviour
 #if UNITY_EDITOR
     public const string VERSION = "1.2.0";
     public Dictionary<string, GraphItData> Graphs = new Dictionary<string, GraphItData>();
-    public Dictionary<string, GraphItVariableBody> VariableBodys = new Dictionary<string, GraphItVariableBody>();
+    public Dictionary<string, VarTracerLogicalBody> VariableBodys = new Dictionary<string, VarTracerLogicalBody>();
 
     public static VarTracer mInstance = null;
 
@@ -165,8 +165,7 @@ public class VarTracer : MonoBehaviour
             StartVarTracer();
     }
 
-
-    public int GetCurrentFrame()
+    public int GetCurrentFrameFromTime()
     {
         int currentFrame = (int)(m_timer.ElapsedMilliseconds / 1000.0f * VarTracerConst.FPS);
         return currentFrame;
@@ -325,7 +324,7 @@ public class VarTracer : MonoBehaviour
         ShareYAxis(channel, isShareY);
     }
 
-    public static GraphItVariable GetGraphItVariableByVariableName(string variableName)
+    public static VarTracerVariable GetGraphItVariableByVariableName(string variableName)
     {
         if (string.IsNullOrEmpty(variableName))
             return null;

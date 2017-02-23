@@ -3,7 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-public class GraphItVariable
+public class VarTracerVariable
 {
     private string m_varName;
     private string m_varBodyName;
@@ -21,7 +21,6 @@ public class GraphItVariable
         set { m_popupRect = value; }
     }
 
-
     public Dictionary<string, string> ChannelDict
     {
         get { return m_channelDict; }
@@ -34,7 +33,7 @@ public class GraphItVariable
         set { m_varName = value; }
     }
 
-    public GraphItVariable(string varName, string varBodyName)
+    public VarTracerVariable(string varName, string varBodyName)
     {
         m_varName = varName;
         m_varBodyName = varBodyName;
@@ -64,7 +63,7 @@ public class GraphItVariable
     public void AttchChannel(string channel)
     {
         if(string.IsNullOrEmpty(channel))
-            return ;
+            return;
         if (!m_channelDict.ContainsKey(channel))
         {
             m_channelDict[channel] = channel;
