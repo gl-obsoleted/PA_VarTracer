@@ -64,7 +64,6 @@ public class CameraTest : MonoBehaviour {
             VarTracerTools.UpdateVariable("NpcV_X", -10);
         }
 
-
         if (Input.GetKeyUp(KeyCode.U))
         {
             VarTracerJsonType vtjt = new VarTracerJsonType();
@@ -114,6 +113,23 @@ public class CameraTest : MonoBehaviour {
             vtjt.eventName = new string[] { "JSON_EVENT" };
             vtjt.eventDuration = new float[] { 0.5f };
             vtjt.eventDesc = new string[] { "JSON" };
+            string json = JsonUtility.ToJson(vtjt);
+            VarTracerTools.SendJsonMsg(json);
+        }
+
+
+        if (Input.GetKeyUp(KeyCode.K))
+        {
+            VarTracerJsonType vtjt = new VarTracerJsonType();
+            vtjt.runingState = (int)VarTracerConst.RunningState.RunningState_Start;
+            string json = JsonUtility.ToJson(vtjt);
+            VarTracerTools.SendJsonMsg(json);
+        }
+
+        if (Input.GetKeyUp(KeyCode.L))
+        {
+            VarTracerJsonType vtjt = new VarTracerJsonType();
+            vtjt.runingState = (int)VarTracerConst.RunningState.RunningState_Pause;
             string json = JsonUtility.ToJson(vtjt);
             VarTracerTools.SendJsonMsg(json);
         }

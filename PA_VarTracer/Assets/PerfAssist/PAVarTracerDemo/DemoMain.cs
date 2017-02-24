@@ -32,7 +32,7 @@ public class DemoMain : MonoBehaviour {
 
         //var NpcObj = GameObject.Find("Npc");
         //var NpcScript = NpcObj.GetComponent("NpcTest") as NpcTest;
-        //VarTracerTool.UpdateVariable("NpcV_X", NpcScript.GetVelocity().x);
+        ////VarTracerTool.UpdateVariable("NpcV_X", NpcScript.GetVelocity().x);
         //VarTracerTools.UpdateVariable("NpcV_Y", NpcScript.GetVelocity().y);
         //VarTracerTools.UpdateVariable("NpcV_Z", NpcScript.GetVelocity().z);
         //VarTracerTools.UpdateVariable("NpcV_T", NpcScript.GetVelocity().magnitude);

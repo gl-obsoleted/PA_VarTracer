@@ -13,21 +13,27 @@ public class VarTracerJsonType
     public float[] eventDuration;
     public string[] eventDesc;
     public int runingState;
+    public long timeStamp;
 }
 
 public class VarTracerHandler
 {
-    public static void ResoloveJsonMsg(string str)
+    public static void ResoloveJsonMsg(VarTracerJsonType resolved)
     {
-        if(string.IsNullOrEmpty(str))
-            return ;
-        var resolved = JsonUtility.FromJson<VarTracerJsonType>(str);
         int variableCount = resolved.variableName.Length;
         if (variableCount != resolved.variableValue.Length)
-            Debug.LogErrorFormat("Resolove Json Error ,msg = {0}",str);
+            Debug.LogErrorFormat("Parameter Resolove Json Error ,variableCount = {0}", variableCount);
         int eventCount = resolved.eventName.Length;
         if (eventCount != resolved.eventDuration.Length || eventCount != resolved.eventDesc.Length)
-            Debug.LogErrorFormat("Resolove Json Error ,msg = {0}", str);
+            Debug.LogErrorFormat("Parameter Resolove Json Error ,eventCount = {0}", eventCount);
+
+        long timeStamp = resolved.timeStamp;
+        if(VarTracerNet.Instance.StartTimeStamp == 0)
+        {
+            VarTracerNet.Instance.StartTimeStamp = VarTracerUtils.GetTimeStamp();
+            VarTracerNet.Instance.NetDeltaTime = VarTracerNet.Instance.StartTimeStamp - timeStamp;
+        }
+        timeStamp += VarTracerNet.Instance.NetDeltaTime;
 
         bool hasLogicalName = !string.IsNullOrEmpty(resolved.logicName);
 
@@ -35,7 +41,7 @@ public class VarTracerHandler
         {
             if (hasLogicalName)
                 DefineVariable(resolved.variableName[i], resolved.logicName);
-            UpdateVariable(resolved.variableName[i], resolved.variableValue[i]);
+            UpdateVariable(timeStamp,resolved.variableName[i], resolved.variableValue[i]);
         }
 
         for (int i = 0; i < eventCount; i++)
@@ -43,7 +49,7 @@ public class VarTracerHandler
             if (hasLogicalName)
                 DefineEvent(resolved.eventName[i], resolved.logicName);
             if(resolved.eventDuration[i] != -1)
-                SendEvent(resolved.eventName[i], resolved.eventDuration[i], resolved.eventDesc[i]);
+                SendEvent(timeStamp , resolved.eventName[i], resolved.eventDuration[i], resolved.eventDesc[i]);
         }
 
         if (resolved.runingState == (int)VarTracerConst.RunningState.RunningState_Start)
@@ -83,7 +89,7 @@ public class VarTracerHandler
 #endif
     }
 
-    public static void UpdateVariable(string variableName, float value)
+    public static void UpdateVariable(long timeStamp ,string variableName, float value)
     {
         if (!VarTracer.isVarTracerStart())
             return ;
@@ -93,7 +99,7 @@ public class VarTracerHandler
             if (VarBody.VariableDict.ContainsKey(variableName))
             {
                 var var = VarBody.VariableDict[variableName];
-                var.InsertValue(new VarDataInfo(value,VarTracer.Instance.GetCurrentFrameFromTime()));
+                var.InsertValue(new VarDataInfo(value, VarTracerNet.Instance.GetCurrentFrameFromTimestamp(timeStamp)));
             }
         }
 #endif
@@ -126,7 +132,7 @@ public class VarTracerHandler
 #endif
     }
 
-    public static void SendEvent(string eventName, float duration = 0, string desc = "")
+    public static void SendEvent(long timeStamp, string eventName, float duration = 0, string desc = "")
     {
         if (!VarTracer.isVarTracerStart())
             return;
@@ -138,7 +144,7 @@ public class VarTracerHandler
                 {
                     List<EventData> listEvent;
                     varBody.Value.EventInfos.TryGetValue(eventName, out listEvent);
-                    listEvent.Add(new EventData(VarTracer.Instance.GetCurrentFrameFromTime(), eventName, desc, duration));
+                    listEvent.Add(new EventData(VarTracerNet.Instance.GetCurrentFrameFromTimestamp(timeStamp), eventName, desc, duration));
                     break;
                 }
             }

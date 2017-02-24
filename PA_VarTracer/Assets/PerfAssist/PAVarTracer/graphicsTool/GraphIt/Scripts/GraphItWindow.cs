@@ -71,11 +71,12 @@ public class GraphItWindow : EditorWindow
     private bool Handle_VarTracerJsonParameter(eNetCmd cmd, UsCmd c)
     {
         var varTracerInfo = c.ReadString();
-        if (string.IsNullOrEmpty(varTracerInfo))
+        var timeStamp = c.ReadString();
+        if (string.IsNullOrEmpty(varTracerInfo) || string.IsNullOrEmpty(timeStamp))
             return false;
 
+        VarTracerNet.Instance.VartracerJsonMsgList.Add(varTracerInfo + VarTracerConst.SPRLIT_TAG + timeStamp);
         //NetUtil.Log("varTracer info{0}", varTracerInfo);
-        VarTracerHandler.ResoloveJsonMsg(varTracerInfo);
         return true;
     }
 
@@ -136,6 +137,7 @@ public class GraphItWindow : EditorWindow
             VarTracerUtils.Connect(_IPField);
             _connectPressed = false;
         }
+        VarTracerNet.Instance.Upate();
         Repaint();
     }
     public void CheckForResizing()
@@ -393,7 +395,7 @@ public class GraphItWindow : EditorWindow
             Rect find_y = EditorGUILayout.BeginVertical(GUIStyle.none);
             EditorGUILayout.EndVertical();
 
-            int currentFrameIndex = VarTracer.Instance.GetCurrentFrameFromTime();
+            int currentFrameIndex = VarTracerNet.Instance.GetCurrentFrameFromTimestamp(VarTracerUtils.GetTimeStamp());
 
             float scrolled_y_pos = y_offset - mGraphViewScrollPos.y;
             if (Event.current.type == EventType.Repaint)
@@ -525,7 +527,7 @@ public class GraphItWindow : EditorWindow
                 graph_index++;
 
                 float height = kv.Value.GetHeight();
-                float width = VarTracer.Instance.GetCurrentFrameFromTime() * kv.Value.XStep;
+                float width = VarTracerNet.Instance.GetCurrentFrameFromTimestamp(VarTracerUtils.GetTimeStamp()) * kv.Value.XStep;
                 if (width < mWidth)
                 {
                     width = mWidth - x_offset;

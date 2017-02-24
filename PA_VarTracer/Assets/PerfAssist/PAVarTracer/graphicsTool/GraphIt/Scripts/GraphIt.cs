@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using UnityEditor;
 
 public class GraphItDataInternal
 {
@@ -156,31 +157,31 @@ public class VarTracer : MonoBehaviour
     public static VarTracer mInstance = null;
 
     static bool m_isStart = false;
+
     static Stopwatch m_timer = new Stopwatch();
 #endif
 
     void Start()
     {
         if (m_isStart)
+        {
             StartVarTracer();
+        }
     }
 
-    public int GetCurrentFrameFromTime()
-    {
-        int currentFrame = (int)(m_timer.ElapsedMilliseconds / 1000.0f * VarTracerConst.FPS);
-        return currentFrame;
-    }
 
     public static void StartVarTracer()
     {
         m_isStart = true;
         m_timer.Start();
+        EditorApplication.isPaused = false;
     }
 
     public static void StopVarTracer()
     {
         m_isStart = false;
         m_timer.Stop();
+        EditorApplication.isPaused = true;
     }
 
     public static bool isVarTracerStart()

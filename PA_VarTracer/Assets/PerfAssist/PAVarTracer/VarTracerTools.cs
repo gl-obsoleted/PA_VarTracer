@@ -16,9 +16,12 @@ public class VarTracerTools
 
     public static void SendJsonMsg(string json)
     {
+        if (string.IsNullOrEmpty(json))
+            return;
         UsCmd pkt = new UsCmd();
         pkt.WriteNetCmd(eNetCmd.SV_VarTracerJsonParameter);
         pkt.WriteString(json);
+        pkt.WriteString(VarTracerUtils.GetTimeStamp().ToString());
         UsNet.Instance.SendCommand(pkt);
     }
 
