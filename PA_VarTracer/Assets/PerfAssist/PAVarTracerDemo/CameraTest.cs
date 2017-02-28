@@ -41,7 +41,7 @@ public class CameraTest : MonoBehaviour {
 
         if (Input.GetKeyUp(KeyCode.E))
         {
-            VarTracerTools.SendEvent("MOVE");
+            VarTracerTools.Instance.SendEvent("MOVE");
         }
 
         if (Input.GetKeyUp(KeyCode.Z))
@@ -71,7 +71,7 @@ public class CameraTest : MonoBehaviour {
             vtjt.eventName = new string[] { "NPC_MOVE" };
             vtjt.eventDuration = new float[] { 0 };
             vtjt.eventDesc = new string[] { "NPC" };
-            VarTracerTools.SendJsonMsg(vtjt);
+            VarTracerTools.Instance.SendJsonMsg(vtjt);
 
            // VarTracerTools.SendEvent("NPC_MOVE");
         }
@@ -83,13 +83,13 @@ public class CameraTest : MonoBehaviour {
             vtjt.eventName = new string[] { "NPC_MOVE" };
             vtjt.eventDuration = new float[] { 1 };
             vtjt.eventDesc = new string[] { "NPC" };
-            VarTracerTools.SendJsonMsg(vtjt);
+            VarTracerTools.Instance.SendJsonMsg(vtjt);
             //VarTracerTools.SendEvent("NPC_MOVE", 1);
         }
 
         if (Input.GetKeyUp(KeyCode.O))
         {
-            VarTracerTools.SendEvent("NPC_MOVE", 2, "desc");
+            VarTracerTools.Instance.SendEvent("NPC_MOVE", 2, "desc");
         }
 
         if (Input.GetKeyUp(KeyCode.J))
@@ -111,7 +111,7 @@ public class CameraTest : MonoBehaviour {
             vtjt.eventName = new string[] { "JSON_EVENT" };
             vtjt.eventDuration = new float[] { 0.5f };
             vtjt.eventDesc = new string[] { "JSON" };
-            VarTracerTools.SendJsonMsg(vtjt);
+            VarTracerTools.Instance.SendJsonMsg(vtjt);
         }
 
 
@@ -119,14 +119,14 @@ public class CameraTest : MonoBehaviour {
         {
             VarTracerJsonType vtjt = new VarTracerJsonType();
             vtjt.runingState = (int)VarTracerConst.RunningState.RunningState_Start;
-            VarTracerTools.SendJsonMsg(vtjt);
+            VarTracerTools.Instance.SendJsonMsg(vtjt);
         }
 
         if (Input.GetKeyUp(KeyCode.L))
         {
             VarTracerJsonType vtjt = new VarTracerJsonType();
             vtjt.runingState = (int)VarTracerConst.RunningState.RunningState_Pause;
-            VarTracerTools.SendJsonMsg(vtjt);
+            VarTracerTools.Instance.SendJsonMsg(vtjt);
         }
     }
 }

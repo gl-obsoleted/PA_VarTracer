@@ -94,17 +94,18 @@ public class GraphItWindow : EditorWindow
                 VarTracerHandler.DefineVariable("CameraV_X", "Camera");
                 VarTracerHandler.DefineVariable("CameraV_Y", "Camera");
                 VarTracerHandler.DefineVariable("CameraV_Z", "Camera");
-                VarTracerHandler.DefineVariable("CameraV_T", "Camera");
 
-                VarTracerHandler.DefineVariable("NpcV_X", "Npc");
-                VarTracerHandler.DefineVariable("NpcV_Y", "Npc");
-                VarTracerHandler.DefineVariable("NpcV_Z", "Npc");
-                VarTracerHandler.DefineVariable("NpcV_T", "Npc");
 
                 VarTracerHandler.DefineVariable("PlayerV_X", "Player");
                 VarTracerHandler.DefineVariable("PlayerV_Y", "Player");
                 VarTracerHandler.DefineVariable("PlayerV_Z", "Player");
-                VarTracerHandler.DefineVariable("PlayerV_T", "Player");
+
+
+                VarTracerHandler.DefineVariable("FPS", "System");
+                //VarTracerHandler.DefineVariable("NpcV_X", "Npc");
+                //VarTracerHandler.DefineVariable("NpcV_Y", "Npc");
+                //VarTracerHandler.DefineVariable("NpcV_Z", "Npc");
+                //VarTracerHandler.DefineVariable("NpcV_T", "Npc");
             }
         }
 

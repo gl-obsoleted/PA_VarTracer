@@ -72,25 +72,14 @@ public class VarTracerTools : MonoBehaviour
                 _wh.WaitOne();
         }
     }
-    public static void SendJsonMsg(VarTracerJsonType vtjt)
+    public void SendJsonMsg(VarTracerJsonType vtjt)
     {
         lock (_locker)
-            sendMsgList.Add(vtjt);  // 向队列中插入任务 
-        _wh.Set();  // 给工作线程发信号
+            sendMsgList.Add(vtjt); 
+        _wh.Set();  
     }
 
-    //public static void SendJsonMsg(string json)
-    //{
-    //    if (string.IsNullOrEmpty(json))
-    //        return;
-    //    UsCmd pkt = new UsCmd();
-    //    pkt.WriteNetCmd(eNetCmd.SV_VarTracerJsonParameter);
-    //    pkt.WriteString(json);
-    //    //pkt.WriteString(VarTracerUtils.GetTimeStamp().ToString());
-    //    UsNet.Instance.SendCommand(pkt);
-    //}
-
-    public static void DefineVariable(string variableName, string LogicalName)
+    public void DefineVariable(string variableName, string LogicalName)
     {
         VarTracerJsonType vtjt = new VarTracerJsonType();
         vtjt.logicName = LogicalName;
@@ -107,7 +96,7 @@ public class VarTracerTools : MonoBehaviour
         vtjt.timeStamp = VarTracerUtils.GetTimeStamp();
         SendJsonMsg(vtjt);
     }
-    public static void DefineEvent(string eventName, string variableBody)
+    public void DefineEvent(string eventName, string variableBody)
     {
         VarTracerJsonType vtjt = new VarTracerJsonType();
         vtjt.logicName = variableBody;
@@ -117,7 +106,7 @@ public class VarTracerTools : MonoBehaviour
         vtjt.timeStamp = VarTracerUtils.GetTimeStamp();
         SendJsonMsg(vtjt);
     }
-    public static void SendEvent(string eventName, float duration = 0, string desc = "")
+    public void SendEvent(string eventName, float duration = 0, string desc = "")
     {
         VarTracerJsonType vtjt = new VarTracerJsonType();
         vtjt.eventName = new string[] { eventName };
@@ -127,14 +116,14 @@ public class VarTracerTools : MonoBehaviour
         SendJsonMsg(vtjt);
     }
 
-    public static void StartVarTracer()
+    public void StartVarTracer()
     {
         VarTracerJsonType vtjt = new VarTracerJsonType();
         vtjt.runingState = (int)VarTracerConst.RunningState.RunningState_Start;
         SendJsonMsg(vtjt);
     }
 
-    public static void StopVarTracer()
+    public void StopVarTracer()
     {
         VarTracerJsonType vtjt = new VarTracerJsonType();
         vtjt.runingState = (int)VarTracerConst.RunningState.RunningState_Pause;
