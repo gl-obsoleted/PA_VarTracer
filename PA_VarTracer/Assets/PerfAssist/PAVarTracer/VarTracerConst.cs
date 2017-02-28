@@ -6,6 +6,8 @@ using UnityEditor;
 
 public class VarTracerConst
 {
+    public static readonly float HANDLE_JASON_INTERVAL = 0.5f;
+
     public static readonly float FPS =100.0f;
 
     public static readonly int   EventButtonHeight = 20;
@@ -29,7 +31,6 @@ public class VarTracerConst
     public static readonly string LastConnectedIP = "Mem_LastConnectedIP";
 
     public static readonly string SPRLIT_TAG = "$";
-    public static readonly float  HANDLE_JASON_INTERVAL = 1.0f;
 
     public static readonly string[] SPRLIT_TAG_ARRAY = new string[] { VarTracerConst.SPRLIT_TAG };
 

@@ -28,9 +28,9 @@ public class PlayerTest : MonoBehaviour {
     void Move()
     {
         if(m_isUp)
-            m_speed += 2f * Time.deltaTime;
+            m_speed += 1f * Time.deltaTime;
         else
-            m_speed -= 2f * Time.deltaTime;
+            m_speed -= 1f * Time.deltaTime;
 
         if(m_speed >=8)
         {

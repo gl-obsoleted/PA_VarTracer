@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using UnityEditor;
 
-public class GraphItDataInternal
+public class VarTracerDataInternal
 {
-    public GraphItDataInternal( int subgraph_index )
+    public VarTracerDataInternal( int subgraph_index )
     {
         mDataInfos = new List<VarDataInfo>();
         mMin = 0.0f;
@@ -40,9 +40,9 @@ public class GraphItDataInternal
 }
 
 
-public class GraphItData
+public class VarTracerGraphItData
 {
-    public Dictionary<string, GraphItDataInternal> mData = new Dictionary<string, GraphItDataInternal>();
+    public Dictionary<string, VarTracerDataInternal> mData = new Dictionary<string, VarTracerDataInternal>();
 
     public string mName;
 
@@ -74,11 +74,11 @@ public class GraphItData
         set { m_XStep = value; }
     }
 
-    public GraphItData( string name)
+    public VarTracerGraphItData( string name)
     {
         mName = name;
 
-        mData = new Dictionary<string, GraphItDataInternal>();
+        mData = new Dictionary<string, VarTracerDataInternal>();
 
         mInclude0 = false;
 
@@ -118,9 +118,9 @@ public class GraphItData
     {
         bool max_set = false;
         float max = 0;
-        foreach (KeyValuePair<string, GraphItDataInternal> entry in mData)
+        foreach (KeyValuePair<string, VarTracerDataInternal> entry in mData)
         {
-            GraphItDataInternal g = entry.Value;
+            VarTracerDataInternal g = entry.Value;
             if (!max_set)
             {
                 max = g.mMax;
@@ -151,7 +151,7 @@ public class VarTracer : MonoBehaviour
 {
 #if UNITY_EDITOR
     public const string VERSION = "1.2.0";
-    public Dictionary<string, GraphItData> Graphs = new Dictionary<string, GraphItData>();
+    public Dictionary<string, VarTracerGraphItData> Graphs = new Dictionary<string, VarTracerGraphItData>();
     public Dictionary<string, VarTracerLogicalBody> VariableBodys = new Dictionary<string, VarTracerLogicalBody>();
 
     public static VarTracer mInstance = null;
@@ -207,12 +207,12 @@ public class VarTracer : MonoBehaviour
         }
     }
 
-    void StepGraphInternal(GraphItData graph)
+    void StepGraphInternal(VarTracerGraphItData graph)
     {
 #if UNITY_EDITOR
-        foreach (KeyValuePair<string, GraphItDataInternal> entry in graph.mData)
+        foreach (KeyValuePair<string, VarTracerDataInternal> entry in graph.mData)
         {
-            GraphItDataInternal g = entry.Value;
+            VarTracerDataInternal g = entry.Value;
             if (g.mDataInfos.Count <= 0)
                 continue;
                 
@@ -241,9 +241,9 @@ public class VarTracer : MonoBehaviour
     void LateUpdate()
     {
 #if UNITY_EDITOR
-        foreach (KeyValuePair<string, GraphItData> kv in Graphs)
+        foreach (KeyValuePair<string, VarTracerGraphItData> kv in Graphs)
         {
-            GraphItData g = kv.Value;
+            VarTracerGraphItData g = kv.Value;
             if (g.mReadyForUpdate && !g.mFixedUpdate)
             {
                 StepGraphInternal(g);
@@ -256,9 +256,9 @@ public class VarTracer : MonoBehaviour
     void FixedUpdate()
     {
 #if UNITY_EDITOR
-        foreach (KeyValuePair<string, GraphItData> kv in Graphs)
+        foreach (KeyValuePair<string, VarTracerGraphItData> kv in Graphs)
         {
-            GraphItData g = kv.Value;
+            VarTracerGraphItData g = kv.Value;
             if (g.mReadyForUpdate && g.mFixedUpdate )
             {
                 StepGraphInternal(g);
@@ -278,10 +278,10 @@ public class VarTracer : MonoBehaviour
 #if UNITY_EDITOR
         if (!Instance.Graphs.ContainsKey(graph))
         {
-            Instance.Graphs[graph] = new GraphItData(graph);
+            Instance.Graphs[graph] = new VarTracerGraphItData(graph);
         }
 
-        GraphItData g = Instance.Graphs[graph];
+        VarTracerGraphItData g = Instance.Graphs[graph];
         //g.mCurrentIndex = m_wholeFrameIndex;
         g.SetHeight(height);
 #endif
@@ -297,10 +297,10 @@ public class VarTracer : MonoBehaviour
 #if UNITY_EDITOR
         if (!Instance.Graphs.ContainsKey(graph))
         {
-            Instance.Graphs[graph] = new GraphItData(graph);
+            Instance.Graphs[graph] = new VarTracerGraphItData(graph);
         }
 
-        GraphItData g = Instance.Graphs[graph];
+        VarTracerGraphItData g = Instance.Graphs[graph];
         g.mSharedYAxis = shared_y_axis;
 #endif
     }

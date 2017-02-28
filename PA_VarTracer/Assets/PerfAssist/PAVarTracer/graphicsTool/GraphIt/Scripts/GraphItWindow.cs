@@ -65,17 +65,16 @@ public class GraphItWindow : EditorWindow
 
             NetManager.Instance = new NetManager();
             NetManager.Instance.RegisterCmdHandler(eNetCmd.SV_VarTracerJsonParameter, Handle_VarTracerJsonParameter);
+
         }
     }
 
     private bool Handle_VarTracerJsonParameter(eNetCmd cmd, UsCmd c)
     {
         var varTracerInfo = c.ReadString();
-        var timeStamp = c.ReadString();
-        if (string.IsNullOrEmpty(varTracerInfo) || string.IsNullOrEmpty(timeStamp))
+        if (string.IsNullOrEmpty(varTracerInfo))
             return false;
-
-        VarTracerNet.Instance.VartracerJsonMsgList.Add(varTracerInfo + VarTracerConst.SPRLIT_TAG + timeStamp);
+        VarTracerNet.Instance.VartracerJsonMsgList.Add(varTracerInfo);
         //NetUtil.Log("varTracer info{0}", varTracerInfo);
         return true;
     }
@@ -255,7 +254,7 @@ public class GraphItWindow : EditorWindow
             VarTracer.ClearAll();
 
         GUI.SetNextControlName("LoginIPTextField");
-        var currentStr = GUILayout.TextField(_IPField, EditorStyles.toolbarButton, GUILayout.Width(120));
+        var currentStr = GUILayout.TextField(_IPField, GUILayout.Width(120));
         if (!_IPField.Equals(currentStr))
         {
             _IPField = currentStr;
@@ -409,7 +408,7 @@ public class GraphItWindow : EditorWindow
                 GL.Begin(GL.QUADS);
                 GL.Color(new Color(0.2f, 0.2f, 0.2f));
 
-                foreach (KeyValuePair<string, GraphItData> kv in VarTracer.Instance.Graphs)
+                foreach (KeyValuePair<string, VarTracerGraphItData> kv in VarTracer.Instance.Graphs)
                 {
                     float height = kv.Value.GetHeight();
 
@@ -426,16 +425,16 @@ public class GraphItWindow : EditorWindow
                 //Draw Lines
                 GL.Begin(GL.LINES);
 
-                foreach (KeyValuePair<string, GraphItData> kv in VarTracer.Instance.Graphs)
+                foreach (KeyValuePair<string, VarTracerGraphItData> kv in VarTracer.Instance.Graphs)
                 {
                     graph_index++;
 
                     float height = kv.Value.GetHeight();
                     DrawGraphGridLines(scrolled_y_pos, mWidth, height, graph_index == mMouseOverGraphIndex);
 
-                    foreach (KeyValuePair<string, GraphItDataInternal> entry in kv.Value.mData)
+                    foreach (KeyValuePair<string, VarTracerDataInternal> entry in kv.Value.mData)
                     {
-                        GraphItDataInternal g = entry.Value;
+                        VarTracerDataInternal g = entry.Value;
 
                         float y_min = kv.Value.GetMin(entry.Key);
                         float y_max = kv.Value.GetMax(entry.Key);
@@ -522,7 +521,7 @@ public class GraphItWindow : EditorWindow
 
             graph_index = 0;
             mWidth = window.position.width - x_offset;
-            foreach (KeyValuePair<string, GraphItData> kv in VarTracer.Instance.Graphs)
+            foreach (KeyValuePair<string, VarTracerGraphItData> kv in VarTracer.Instance.Graphs)
             {
                 graph_index++;
 
@@ -594,7 +593,7 @@ public class GraphItWindow : EditorWindow
         }
     }
 
-    private static void DrawGraphAttribute(KeyValuePair<string, GraphItData> kv)
+    private static void DrawGraphAttribute(KeyValuePair<string, VarTracerGraphItData> kv)
     {
         EditorGUILayout.LabelField(kv.Key, VarTracerConst.NameLabel);
 
@@ -606,7 +605,7 @@ public class GraphItWindow : EditorWindow
             foreach (var entry in kv.Value.mData)
             {
                 var variable = VarTracer.GetGraphItVariableByVariableName(entry.Key);
-                GraphItDataInternal g = entry.Value;
+                VarTracerDataInternal g = entry.Value;
                 if (variable.VarBodyName.Equals(varBodyName))
                 {
                     if (kv.Value.mData.Count >= 1)
@@ -662,7 +661,7 @@ public class GraphItWindow : EditorWindow
 
     private static float ShowEventLabel(float scrolled_y_pos)
     {
-        foreach (KeyValuePair<string, GraphItData> kv in VarTracer.Instance.Graphs)
+        foreach (KeyValuePair<string, VarTracerGraphItData> kv in VarTracer.Instance.Graphs)
         {
             float height = kv.Value.GetHeight();
             List<EventData> sortedEventList = new List<EventData>();

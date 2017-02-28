@@ -28,7 +28,7 @@ public class VarTracerHandler
             Debug.LogErrorFormat("Parameter Resolove Json Error ,eventCount = {0}", eventCount);
 
         long timeStamp = resolved.timeStamp;
-        if(VarTracerNet.Instance.StartTimeStamp == 0)
+        if (VarTracerNet.Instance.StartTimeStamp == 0)
         {
             VarTracerNet.Instance.StartTimeStamp = VarTracerUtils.GetTimeStamp();
             VarTracerNet.Instance.NetDeltaTime = VarTracerNet.Instance.StartTimeStamp - timeStamp;
@@ -37,19 +37,19 @@ public class VarTracerHandler
 
         bool hasLogicalName = !string.IsNullOrEmpty(resolved.logicName);
 
-        for (int i = 0; i < variableCount; i++ )
+        for (int i = 0; i < variableCount; i++)
         {
             if (hasLogicalName)
                 DefineVariable(resolved.variableName[i], resolved.logicName);
-            UpdateVariable(timeStamp,resolved.variableName[i], resolved.variableValue[i]);
+            UpdateVariable(timeStamp, resolved.variableName[i], resolved.variableValue[i]);
         }
 
         for (int i = 0; i < eventCount; i++)
         {
             if (hasLogicalName)
                 DefineEvent(resolved.eventName[i], resolved.logicName);
-            if(resolved.eventDuration[i] != -1)
-                SendEvent(timeStamp , resolved.eventName[i], resolved.eventDuration[i], resolved.eventDesc[i]);
+            if (resolved.eventDuration[i] != -1)
+                SendEvent(timeStamp, resolved.eventName[i], resolved.eventDuration[i], resolved.eventDesc[i]);
         }
 
         if (resolved.runingState == (int)VarTracerConst.RunningState.RunningState_Start)

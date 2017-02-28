@@ -32,63 +32,7 @@ public class VarTracerNet
         get { return vartracerJsonMsgList; }
     }
 
-    static VartracerJsonObj vartracerJsonObj = new VartracerJsonObj();
-    public class VartracerJsonObj
-    {
-        public bool readerFlag = false;
-        public VarTracerJsonType[] m_resovleResult;
-        public VarTracerJsonType[] readResovleJsonResult()
-        {
-            if (m_resovleResult == null)
-                return null;
-            lock (this)
-            {
-                if (!readerFlag)
-                {
-                    try
-                    {
-                        Monitor.Wait(this);
-                    }
-                    catch (SynchronizationLockException e)
-                    {
-                        Console.WriteLine(e);
-                    }
-                    catch (ThreadInterruptedException e)
-                    {
-                        Console.WriteLine(e);
-                    }
-                }
-                readerFlag = false;
-                Monitor.Pulse(this);
-            }
-            return m_resovleResult;
-        }
-
-        public void writeResovleJsonResult(VarTracerJsonType[] resovleResult)
-        {
-            lock (this)
-            {
-                if (readerFlag)
-                {
-                    try
-                    {
-                        Monitor.Wait(this);
-                    }
-                    catch (SynchronizationLockException e)
-                    {
-                        Console.WriteLine(e);
-                    }
-                    catch (ThreadInterruptedException e)
-                    {
-                        Console.WriteLine(e);
-                    }
-                }
-                m_resovleResult = resovleResult;
-                readerFlag = true;
-                Monitor.Pulse(this);
-            }
-        }
-    }
+    static VartracerJsonAsynObj vartracerJsonObj = new VartracerJsonAsynObj();
 
     public void Upate()
     {
@@ -116,7 +60,6 @@ public class VarTracerNet
         }
     }
 
-
     public void handleMsgAsyn(object o)
     {
         string[] strArray = (string[])o;
@@ -124,14 +67,11 @@ public class VarTracerNet
         for (int i = 0; i < strArray.Length; i++)
 		{
             var str = strArray[i];
-            var splitd = str.Split(VarTracerConst.SPRLIT_TAG_ARRAY, StringSplitOptions.None);
-            var resolved = JsonUtility.FromJson<VarTracerJsonType>(splitd[0]);
-            resolved.timeStamp = long.Parse(splitd[1]);
+            var resolved = JsonUtility.FromJson<VarTracerJsonType>(str);
             writeVjt[i] = resolved;        			 
 		}
         vartracerJsonObj.writeResovleJsonResult(writeVjt);
     }
-
 
     public int GetCurrentFrameFromTimestamp(long timeStamp)
     {
@@ -154,6 +94,62 @@ public class VarTracerNet
 #endif
         }
     }
-
-
 }
+
+public class VartracerJsonAsynObj
+{
+    public bool readerFlag = false;
+    public VarTracerJsonType[] m_resovleResult;
+    public VarTracerJsonType[] readResovleJsonResult()
+    {
+        if (m_resovleResult == null)
+            return null;
+        lock (this)
+        {
+            if (!readerFlag)
+            {
+                try
+                {
+                    Monitor.Wait(this);
+                }
+                catch (SynchronizationLockException e)
+                {
+                    Console.WriteLine(e);
+                }
+                catch (ThreadInterruptedException e)
+                {
+                    Console.WriteLine(e);
+                }
+            }
+            readerFlag = false;
+            Monitor.Pulse(this);
+        }
+        return m_resovleResult;
+    }
+
+    public void writeResovleJsonResult(VarTracerJsonType[] resovleResult)
+    {
+        lock (this)
+        {
+            if (readerFlag)
+            {
+                try
+                {
+                    Monitor.Wait(this);
+                }
+                catch (SynchronizationLockException e)
+                {
+                    Console.WriteLine(e);
+                }
+                catch (ThreadInterruptedException e)
+                {
+                    Console.WriteLine(e);
+                }
+            }
+            m_resovleResult = resovleResult;
+            readerFlag = true;
+            Monitor.Pulse(this);
+        }
+    }
+}
+

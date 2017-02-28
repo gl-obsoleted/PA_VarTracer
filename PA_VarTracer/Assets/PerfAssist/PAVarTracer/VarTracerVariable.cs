@@ -48,10 +48,10 @@ public class VarTracerVariable
 #if UNITY_EDITOR
             if (VarTracer.Instance.Graphs.ContainsKey(channel))
             {
-                GraphItData g = VarTracer.Instance.Graphs[channel];
+                VarTracerGraphItData g = VarTracer.Instance.Graphs[channel];
                 if (!g.mData.ContainsKey(m_varName))
                 {
-                    g.mData[m_varName] = new GraphItDataInternal(g.mData.Count);
+                    g.mData[m_varName] = new VarTracerDataInternal(g.mData.Count);
                 }
                 g.mData[m_varName].mCurrentValue = dataInfo.Value;
                 g.mData[m_varName].mDataInfos.Add(dataInfo);
@@ -70,10 +70,10 @@ public class VarTracerVariable
 #if UNITY_EDITOR
             if (VarTracer.Instance.Graphs.ContainsKey(channel))
             {
-                GraphItData g = VarTracer.Instance.Graphs[channel];
+                VarTracerGraphItData g = VarTracer.Instance.Graphs[channel];
                 if (!g.mData.ContainsKey(m_varName))
                 {
-                    g.mData[m_varName] = new GraphItDataInternal(g.mData.Count);
+                    g.mData[m_varName] = new VarTracerDataInternal(g.mData.Count);
                 }
 
                 g.mData[m_varName].mDataInfos.Clear();
@@ -93,7 +93,7 @@ public class VarTracerVariable
 #if UNITY_EDITOR
             if (VarTracer.Instance.Graphs.ContainsKey(channel))
             {
-                GraphItData g = VarTracer.Instance.Graphs[channel];
+                VarTracerGraphItData g = VarTracer.Instance.Graphs[channel];
                 if (g.mData.ContainsKey(m_varName))
                 {
                     g.mData.Remove(m_varName);

@@ -2,28 +2,93 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using UnityEngine;
 
-public class VarTracerTools
+public class VarTracerTools : MonoBehaviour
 {
-    public static VarTracerTools Instance;
+    public static VarTracerTools mInstance = null;
 
-    public VarTracerTools()
+    static List<VarTracerJsonType> sendMsgList = new List<VarTracerJsonType>();
+    
+    readonly static object _locker = new object();
+
+    static EventWaitHandle _wh = new AutoResetEvent(false);
+    
+    Thread m_MsgThread;
+
+    void Start()
     {
-        if (UsNet.Instance == null && UsNet.Instance.CmdExecutor == null)
-            UnityEngine.Debug.LogError("UsNet not available");
+        m_MsgThread = new Thread(new ThreadStart(SendMsgAsyn));
+        m_MsgThread.Start();
     }
 
-    public static void SendJsonMsg(string json)
+    public static VarTracerTools Instance
     {
-        if (string.IsNullOrEmpty(json))
-            return;
-        UsCmd pkt = new UsCmd();
-        pkt.WriteNetCmd(eNetCmd.SV_VarTracerJsonParameter);
-        pkt.WriteString(json);
-        pkt.WriteString(VarTracerUtils.GetTimeStamp().ToString());
-        UsNet.Instance.SendCommand(pkt);
+        get
+        {
+#if UNITY_EDITOR
+            if (mInstance == null)
+            {
+                if (UsNet.Instance == null && UsNet.Instance.CmdExecutor == null)
+                {
+                    UnityEngine.Debug.LogError("UsNet not available");
+                    return null;
+                }
+
+                GameObject go = new GameObject("VarTracerTools");
+                go.hideFlags = HideFlags.HideAndDontSave;
+                mInstance = go.AddComponent<VarTracerTools>();
+            }
+            return mInstance;
+#else
+            return null;
+#endif
+        }
     }
+
+    void Update()
+    {
+    }
+
+    private void SendMsgAsyn()
+    {
+        while(true)
+        {
+            lock (_locker)
+            {
+
+                if (sendMsgList.Count > 0)
+                {
+                    var vtjt = sendMsgList[0];
+                    UsCmd pkt = new UsCmd();
+                    pkt.WriteNetCmd(eNetCmd.SV_VarTracerJsonParameter);
+                    pkt.WriteString(JsonUtility.ToJson(vtjt));
+                    UsNet.Instance.SendCommand(pkt);
+                    sendMsgList.RemoveAt(0);
+                }
+            }
+            if (sendMsgList.Count ==0)
+                _wh.WaitOne();
+        }
+    }
+    public static void SendJsonMsg(VarTracerJsonType vtjt)
+    {
+        lock (_locker)
+            sendMsgList.Add(vtjt);  // 向队列中插入任务 
+        _wh.Set();  // 给工作线程发信号
+    }
+
+    //public static void SendJsonMsg(string json)
+    //{
+    //    if (string.IsNullOrEmpty(json))
+    //        return;
+    //    UsCmd pkt = new UsCmd();
+    //    pkt.WriteNetCmd(eNetCmd.SV_VarTracerJsonParameter);
+    //    pkt.WriteString(json);
+    //    //pkt.WriteString(VarTracerUtils.GetTimeStamp().ToString());
+    //    UsNet.Instance.SendCommand(pkt);
+    //}
 
     public static void DefineVariable(string variableName, string LogicalName)
     {
@@ -31,16 +96,16 @@ public class VarTracerTools
         vtjt.logicName = LogicalName;
         vtjt.variableName = new string[] { variableName };
         vtjt.variableValue = new float[] { 0 };
-        string json = JsonUtility.ToJson(vtjt);
-        SendJsonMsg(json);
+        vtjt.timeStamp = VarTracerUtils.GetTimeStamp();
+        SendJsonMsg(vtjt);
     }
-    public static void UpdateVariable(string variableName, float value)
+    public void UpdateVariable(string variableName, float value)
     {
         VarTracerJsonType vtjt = new VarTracerJsonType();
         vtjt.variableName = new string[] { variableName };
         vtjt.variableValue = new float[] { value };
-        string json = JsonUtility.ToJson(vtjt);
-        SendJsonMsg(json);
+        vtjt.timeStamp = VarTracerUtils.GetTimeStamp();
+        SendJsonMsg(vtjt);
     }
     public static void DefineEvent(string eventName, string variableBody)
     {
@@ -49,8 +114,8 @@ public class VarTracerTools
         vtjt.eventName = new string[] { eventName };
         vtjt.eventDuration = new float[] { -1 };
         vtjt.eventDesc = new string[] {""};
-        string json = JsonUtility.ToJson(vtjt);
-        SendJsonMsg(json);
+        vtjt.timeStamp = VarTracerUtils.GetTimeStamp();
+        SendJsonMsg(vtjt);
     }
     public static void SendEvent(string eventName, float duration = 0, string desc = "")
     {
@@ -58,23 +123,21 @@ public class VarTracerTools
         vtjt.eventName = new string[] { eventName };
         vtjt.eventDuration = new float[] { duration };
         vtjt.eventDesc = new string[] { desc };
-        string json = JsonUtility.ToJson(vtjt);
-        SendJsonMsg(json);
+        vtjt.timeStamp = VarTracerUtils.GetTimeStamp();
+        SendJsonMsg(vtjt);
     }
 
     public static void StartVarTracer()
     {
         VarTracerJsonType vtjt = new VarTracerJsonType();
         vtjt.runingState = (int)VarTracerConst.RunningState.RunningState_Start;
-        string json = JsonUtility.ToJson(vtjt);
-        SendJsonMsg(json);
+        SendJsonMsg(vtjt);
     }
 
     public static void StopVarTracer()
     {
         VarTracerJsonType vtjt = new VarTracerJsonType();
         vtjt.runingState = (int)VarTracerConst.RunningState.RunningState_Pause;
-        string json = JsonUtility.ToJson(vtjt);
-        SendJsonMsg(json);
+        sendMsgList.Add(vtjt);
     }
 }
