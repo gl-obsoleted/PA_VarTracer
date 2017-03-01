@@ -10,13 +10,16 @@ public class VarTracerTools : MonoBehaviour
     public static VarTracerTools mInstance = null;
 
     static List<VarTracerJsonType> sendMsgList = new List<VarTracerJsonType>();
-    
+    static List<VarTracerJsonType> sendMsgTempList = new List<VarTracerJsonType>();
+
+
     readonly static object _locker = new object();
 
     static EventWaitHandle _wh = new AutoResetEvent(false);
     
     Thread m_MsgThread;
 
+    private float m_lastHandleJsonTime;
     void Start()
     {
         m_MsgThread = new Thread(new ThreadStart(SendMsgAsyn));
@@ -49,16 +52,22 @@ public class VarTracerTools : MonoBehaviour
 
     void Update()
     {
+        if (Time.realtimeSinceStartup - m_lastHandleJsonTime >= VarTracerConst.HANDLE_JASON_INTERVAL)
+        {
+            m_lastHandleJsonTime = Time.realtimeSinceStartup;
+
+            if (sendMsgList.Count > 0)
+                _wh.Set();
+        }
     }
 
     private void SendMsgAsyn()
     {
-        while(true)
+        while (true)
         {
-            lock (_locker)
+            if (sendMsgList.Count > 0)
             {
-
-                if (sendMsgList.Count > 0)
+                lock (_locker)
                 {
                     var vtjt = sendMsgList[0];
                     UsCmd pkt = new UsCmd();
@@ -67,16 +76,32 @@ public class VarTracerTools : MonoBehaviour
                     UsNet.Instance.SendCommand(pkt);
                     sendMsgList.RemoveAt(0);
                 }
+
+                if (sendMsgList.Count == 0)
+                    _wh.WaitOne();
             }
-            if (sendMsgList.Count ==0)
-                _wh.WaitOne();
         }
     }
+
     public void SendJsonMsg(VarTracerJsonType vtjt)
     {
         lock (_locker)
-            sendMsgList.Add(vtjt); 
-        _wh.Set();  
+            sendMsgList.Add(vtjt);
+
+        //if (Monitor.TryEnter(_locker))
+        //{
+        //    lock (_locker)
+        //    {
+        //        sendMsgList.AddRange(sendMsgTempList.ToArray());
+        //        sendMsgTempList.Clear();
+        //        sendMsgList.Add(vtjt);
+        //    }
+        //    _wh.Set();
+        //    Monitor.Exit(_locker);
+        //}
+        //else {
+        //    sendMsgTempList.Add(vtjt);      
+        //}
     }
 
     public void DefineVariable(string variableName, string LogicalName)
@@ -88,6 +113,7 @@ public class VarTracerTools : MonoBehaviour
         vtjt.timeStamp = VarTracerUtils.GetTimeStamp();
         SendJsonMsg(vtjt);
     }
+
     public void UpdateVariable(string variableName, float value)
     {
         VarTracerJsonType vtjt = new VarTracerJsonType();
@@ -96,6 +122,7 @@ public class VarTracerTools : MonoBehaviour
         vtjt.timeStamp = VarTracerUtils.GetTimeStamp();
         SendJsonMsg(vtjt);
     }
+
     public void DefineEvent(string eventName, string variableBody)
     {
         VarTracerJsonType vtjt = new VarTracerJsonType();
@@ -106,6 +133,7 @@ public class VarTracerTools : MonoBehaviour
         vtjt.timeStamp = VarTracerUtils.GetTimeStamp();
         SendJsonMsg(vtjt);
     }
+
     public void SendEvent(string eventName, float duration = 0, string desc = "")
     {
         VarTracerJsonType vtjt = new VarTracerJsonType();

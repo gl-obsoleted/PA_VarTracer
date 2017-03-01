@@ -94,14 +94,16 @@ public class GraphItWindow : EditorWindow
                 VarTracerHandler.DefineVariable("CameraV_X", "Camera");
                 VarTracerHandler.DefineVariable("CameraV_Y", "Camera");
                 VarTracerHandler.DefineVariable("CameraV_Z", "Camera");
-
+                VarTracerHandler.DefineVariable("CameraV_T", "Camera");
 
                 VarTracerHandler.DefineVariable("PlayerV_X", "Player");
                 VarTracerHandler.DefineVariable("PlayerV_Y", "Player");
                 VarTracerHandler.DefineVariable("PlayerV_Z", "Player");
-
+                VarTracerHandler.DefineVariable("CameraV_T", "Camera");
 
                 VarTracerHandler.DefineVariable("FPS", "System");
+
+                VarTracerHandler.DefineEvent("JUMP","Camera");
                 //VarTracerHandler.DefineVariable("NpcV_X", "Npc");
                 //VarTracerHandler.DefineVariable("NpcV_Y", "Npc");
                 //VarTracerHandler.DefineVariable("NpcV_Z", "Npc");
@@ -134,7 +136,7 @@ public class GraphItWindow : EditorWindow
     {
         if (_connectPressed)
         {
-            VarTracerUtils.Connect(_IPField);
+            VarTracerNetUtils.Connect(_IPField);
             _connectPressed = false;
         }
         VarTracerNet.Instance.Upate();
@@ -161,7 +163,7 @@ public class GraphItWindow : EditorWindow
     void OnGUI()
     {
         CheckForResizing();
-        VarTracerConst.InitializeStyles();
+        InitializeStyles();
 
         Handles.BeginGUI();
         Handles.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(1, 1, 1));
@@ -237,7 +239,7 @@ public class GraphItWindow : EditorWindow
         GUILayout.Space(30);
         for (int i = 0; i < variableCombineList.Count; i++)
         {
-            if (GUILayout.Button(variableCombineList[i], VarTracerConst.EventInstantButtonStyle, GUILayout.Width(90)))
+            if (GUILayout.Button(variableCombineList[i],EventInstantButtonStyle, GUILayout.Width(90)))
             {
                 variableCombineList.Remove(variableCombineList[i]);
                 ShowVariableCombine();
@@ -544,7 +546,7 @@ public class GraphItWindow : EditorWindow
                 Rect r = EditorGUILayout.BeginVertical(s);
 
                 //skip subgraph title if only one, and it's the same.
-                VarTracerConst.NameLabel.normal.textColor = Color.white;
+                NameLabel.normal.textColor = Color.white;
 
                 r.height = height + 50;
                 r.width = width;
@@ -563,9 +565,9 @@ public class GraphItWindow : EditorWindow
                     {
                         GUILayout.Space(6);
                         if (unitHeight == 0)
-                            EditorGUILayout.LabelField("", VarTracerConst.NameLabel);
+                            EditorGUILayout.LabelField("",NameLabel);
                         else
-                            EditorGUILayout.LabelField((kv.Value.m_maxValue - i * unitHeight).ToString(VarTracerConst.NUM_FORMAT_1), VarTracerConst.NameLabel);
+                            EditorGUILayout.LabelField((kv.Value.m_maxValue - i * unitHeight).ToString(VarTracerConst.NUM_FORMAT_1),NameLabel);
                     }
 
                     GUILayout.BeginHorizontal();
@@ -596,12 +598,12 @@ public class GraphItWindow : EditorWindow
 
     private static void DrawGraphAttribute(KeyValuePair<string, VarTracerGraphItData> kv)
     {
-        EditorGUILayout.LabelField(kv.Key, VarTracerConst.NameLabel);
+        EditorGUILayout.LabelField(kv.Key,NameLabel);
 
         foreach (var varBodyName in GetAllVariableBodyFromChannel(kv.Key))
         {
-            VarTracerConst.NameLabel.normal.textColor = Color.white;
-            EditorGUILayout.LabelField("{" + varBodyName + "}:", VarTracerConst.NameLabel);
+            NameLabel.normal.textColor = Color.white;
+            EditorGUILayout.LabelField("{" + varBodyName + "}:", NameLabel);
 
             foreach (var entry in kv.Value.mData)
             {
@@ -611,9 +613,9 @@ public class GraphItWindow : EditorWindow
                 {
                     if (kv.Value.mData.Count >= 1)
                     {
-                        VarTracerConst.NameLabel.normal.textColor = g.mColor;
+                        NameLabel.normal.textColor = g.mColor;
                     }
-                    EditorGUILayout.LabelField("     [" + entry.Key + "]" + "   Value: " + g.mCurrentValue.ToString(VarTracerConst.NUM_FORMAT_2), VarTracerConst.NameLabel);
+                    EditorGUILayout.LabelField("     [" + entry.Key + "]" + "   Value: " + g.mCurrentValue.ToString(VarTracerConst.NUM_FORMAT_2),NameLabel);
                 }
             }
 
@@ -622,15 +624,15 @@ public class GraphItWindow : EditorWindow
             foreach (var eventName in varBody.EventInfos.Keys)
             {
                 //NameLabel.normal.textColor = varBody.EventColors[eventName];
-                VarTracerConst.NameLabel.normal.textColor = Color.white;
-                EditorGUILayout.LabelField("     <Event>    " + eventName, VarTracerConst.NameLabel);
+                NameLabel.normal.textColor = Color.white;
+                EditorGUILayout.LabelField("     <Event>    " + eventName,NameLabel);
             }
         }
 
         if (kv.Value.mData.Count >= 1)
         {
-            VarTracerConst.HoverText.normal.textColor = Color.white;
-            EditorGUILayout.LabelField("duration:" + (mWidth / kv.Value.XStep / VarTracerConst.FPS).ToString(VarTracerConst.NUM_FORMAT_3) + "(s)", VarTracerConst.HoverText, GUILayout.Width(140));
+            HoverText.normal.textColor = Color.white;
+            EditorGUILayout.LabelField("duration:" + (mWidth / kv.Value.XStep / VarTracerConst.FPS).ToString(VarTracerConst.NUM_FORMAT_3) + "(s)", HoverText, GUILayout.Width(140));
             kv.Value.XStep = GUILayout.HorizontalSlider(kv.Value.XStep, 0.1f, 15, GUILayout.Width(160));
         }
     }
@@ -698,12 +700,12 @@ public class GraphItWindow : EditorWindow
                         int buttonWidth = 0;
                         if (currentEvent.Duration == 0)
                         {
-                            style = VarTracerConst.EventInstantButtonStyle;
+                            style = EventInstantButtonStyle;
                             buttonWidth = (int)(VarTracerConst.INSTANT_EVENT_BTN_DURATION * VarTracerConst.FPS * kv.Value.XStep);
                         }
                         else
                         {
-                            style = VarTracerConst.EventDurationButtonStyle;
+                            style = EventDurationButtonStyle;
                             buttonWidth = (int)(currentEvent.Duration * VarTracerConst.FPS * kv.Value.XStep);
                         }
 
@@ -740,5 +742,40 @@ public class GraphItWindow : EditorWindow
             scrolled_y_pos += (height + y_gap);
         }
         return scrolled_y_pos;
+    }
+
+    public static GUIStyle NameLabel;
+    public static GUIStyle SmallLabel;
+    public static GUIStyle HoverText;
+    public static GUIStyle FracGS;
+    public static GUIStyle EventInstantButtonStyle;
+    public static GUIStyle EventDurationButtonStyle;
+
+    public static void InitializeStyles()
+    {
+        if (NameLabel == null)
+        {
+            NameLabel = new GUIStyle(EditorStyles.whiteBoldLabel);
+            NameLabel.normal.textColor = Color.white;
+            SmallLabel = new GUIStyle(EditorStyles.whiteLabel);
+            SmallLabel.normal.textColor = Color.white;
+
+            HoverText = new GUIStyle(EditorStyles.whiteLabel);
+            HoverText.alignment = TextAnchor.UpperRight;
+            HoverText.normal.textColor = Color.white;
+
+            FracGS = new GUIStyle(EditorStyles.whiteLabel);
+            FracGS.alignment = TextAnchor.LowerLeft;
+
+            EventInstantButtonStyle = new GUIStyle(EditorStyles.whiteBoldLabel);
+            EventInstantButtonStyle.normal.background = Resources.Load("instantButton") as Texture2D;
+            EventInstantButtonStyle.normal.textColor = Color.white;
+            EventInstantButtonStyle.alignment = TextAnchor.MiddleCenter;
+
+            EventDurationButtonStyle = new GUIStyle(EditorStyles.whiteBoldLabel);
+            EventDurationButtonStyle.normal.background = Resources.Load("durationButton") as Texture2D;
+            EventDurationButtonStyle.normal.textColor = Color.white;
+            EventDurationButtonStyle.alignment = TextAnchor.MiddleCenter;
+        }
     }
 }

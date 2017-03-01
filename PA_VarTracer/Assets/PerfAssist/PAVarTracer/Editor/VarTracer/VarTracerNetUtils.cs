@@ -2,10 +2,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor;
 using System.Text.RegularExpressions;
+using UnityEditor;
 
-public class VarTracerUtils
+public class VarTracerNetUtils
 {
     private static Regex _ipReg = new Regex(@"^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$");
     public static bool ValidateIPString(string ip)
@@ -39,11 +39,5 @@ public class VarTracerUtils
             if (NetManager.Instance.IsConnected)
                 NetManager.Instance.Disconnect();
         }
-    }
-
-    public static long GetTimeStamp()
-    {
-        TimeSpan ts = DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, 0);
-        return Convert.ToInt64(ts.TotalMilliseconds);
     }
 }

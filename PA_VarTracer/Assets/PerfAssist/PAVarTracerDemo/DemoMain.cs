@@ -19,12 +19,12 @@ public class DemoMain : MonoBehaviour {
         if (_usmooth != null)
             _usmooth.Update();
 
-        //var NpcObj = GameObject.Find("Npc");
-        //var NpcScript = NpcObj.GetComponent("NpcTest") as NpcTest;
-        //////VarTracerTool.UpdateVariable("NpcV_X", NpcScript.GetVelocity().x);
-        //VarTracerTools.Instance.UpdateVariable("NpcV_Y", NpcScript.GetVelocity().y);
-        //VarTracerTools.Instance.UpdateVariable("NpcV_Z", NpcScript.GetVelocity().z);
-        //VarTracerTools.Instance.UpdateVariable("NpcV_T", NpcScript.GetVelocity().magnitude);
+        var NpcObj = GameObject.Find("Npc");
+        var NpcScript = NpcObj.GetComponent("NpcTest") as NpcTest;
+        ////VarTracerTool.UpdateVariable("NpcV_X", NpcScript.GetVelocity().x);
+        VarTracerTools.Instance.UpdateVariable("NpcV_Y", NpcScript.GetVelocity().y);
+        VarTracerTools.Instance.UpdateVariable("NpcV_Z", NpcScript.GetVelocity().z);
+        VarTracerTools.Instance.UpdateVariable("NpcV_T", NpcScript.GetVelocity().magnitude);
 
         VarTracerTools.Instance.UpdateVariable("CameraV_X", Camera.main.velocity.x);
         VarTracerTools.Instance.UpdateVariable("CameraV_Y", Camera.main.velocity.y);
@@ -37,9 +37,6 @@ public class DemoMain : MonoBehaviour {
         VarTracerTools.Instance.UpdateVariable("PlayerV_Y", PlayerScript.GetVelocity().y);
         VarTracerTools.Instance.UpdateVariable("PlayerV_Z", PlayerScript.GetVelocity().z);
         VarTracerTools.Instance.UpdateVariable("PlayerV_T", PlayerScript.GetVelocity().magnitude);
-
-        VarTracerTools.Instance.UpdateVariable("FPS", 60);
-
 	}
 
     void OnDestroy()
