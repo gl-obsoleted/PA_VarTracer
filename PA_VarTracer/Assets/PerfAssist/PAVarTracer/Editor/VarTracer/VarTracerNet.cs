@@ -34,6 +34,8 @@ public class VarTracerNet
 
     static VartracerJsonAsynObj vartracerJsonObj = new VartracerJsonAsynObj();
 
+    private readonly  object _locker = new object();
+
     public void Upate()
     {
         if (Time.realtimeSinceStartup - m_lastHandleJsonTime >= VarTracerConst.HANDLE_JASON_INTERVAL)
@@ -42,8 +44,11 @@ public class VarTracerNet
             if(VartracerJsonMsgList.Count > 0)
             {
                 Thread mThread = new Thread(new ParameterizedThreadStart(handleMsgAsyn));
-                mThread.Start(VartracerJsonMsgList.ToArray());
-                VartracerJsonMsgList.Clear();
+                lock (_locker)
+                {
+                    mThread.Start(VartracerJsonMsgList.ToArray());
+                    VartracerJsonMsgList.Clear();
+                }
             }
 
             if (vartracerJsonObj.readerFlag)
@@ -68,6 +73,7 @@ public class VarTracerNet
 		{
             var str = strArray[i];
             var resolved = JsonUtility.FromJson<VarTracerJsonType>(str);
+            //Debug.LogFormat("Rec = {0}",resolved.testIndex);
             writeVjt[i] = resolved;        			 
 		}
         vartracerJsonObj.writeResovleJsonResult(writeVjt);
@@ -78,6 +84,20 @@ public class VarTracerNet
         int currentFrame = (int)((timeStamp - m_startTimeStamp) / 1000.0f * VarTracerConst.FPS);
         return currentFrame;
     }
+
+
+    public bool Handle_VarTracerJsonParameter(eNetCmd cmd, UsCmd c)
+    {
+
+        var varTracerInfo = c.ReadString();
+        if (string.IsNullOrEmpty(varTracerInfo))
+            return false;
+        lock (_locker)
+            VarTracerNet.Instance.VartracerJsonMsgList.Add(varTracerInfo);
+        //NetUtil.Log("varTracer info{0}", varTracerInfo);
+        return true;
+    }
+
     
     public static VarTracerNet Instance
     {

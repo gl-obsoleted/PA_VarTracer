@@ -64,21 +64,9 @@ public class GraphItWindow : EditorWindow
             NetUtil.LogErrorHandler = Debug.LogErrorFormat;
 
             NetManager.Instance = new NetManager();
-            NetManager.Instance.RegisterCmdHandler(eNetCmd.SV_VarTracerJsonParameter, Handle_VarTracerJsonParameter);
-
+            NetManager.Instance.RegisterCmdHandler(eNetCmd.SV_VarTracerJsonParameter, VarTracerNet.Instance.Handle_VarTracerJsonParameter);
         }
     }
-
-    private bool Handle_VarTracerJsonParameter(eNetCmd cmd, UsCmd c)
-    {
-        var varTracerInfo = c.ReadString();
-        if (string.IsNullOrEmpty(varTracerInfo))
-            return false;
-        VarTracerNet.Instance.VartracerJsonMsgList.Add(varTracerInfo);
-        //NetUtil.Log("varTracer info{0}", varTracerInfo);
-        return true;
-    }
-
 
     void OnEnable()
     {

@@ -5,7 +5,8 @@ using System.Collections.Generic;
 
 public class VarTracerConst
 {
-    public static readonly float HANDLE_JASON_INTERVAL = 0.2f;
+    public static readonly float HANDLE_JASON_INTERVAL = 0.001f;
+    public static readonly float SEND_MSG_INTERVAL = 0.001f;
 
     public static readonly float FPS =100.0f;
 

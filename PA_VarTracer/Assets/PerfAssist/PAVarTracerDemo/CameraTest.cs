@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Threading;
 
 public class CameraTest : MonoBehaviour {
     // Use this for initialization
@@ -114,12 +115,18 @@ public class CameraTest : MonoBehaviour {
             VarTracerTools.Instance.SendJsonMsg(vtjt);
         }
 
+        if (Input.GetKeyUp(KeyCode.T))
+        {
+            //UnityEngine.Debug.LogFormat("preCount{0} ={1}", VarTracerTools.reciveCount + VarTracerTools.sendMsgTempList.Count, VarTracerTools.sendCount);
+        }
 
         if (Input.GetKeyUp(KeyCode.K))
         {
+
             VarTracerJsonType vtjt = new VarTracerJsonType();
             vtjt.runingState = (int)VarTracerConst.RunningState.RunningState_Start;
             VarTracerTools.Instance.SendJsonMsg(vtjt);
+
         }
 
         if (Input.GetKeyUp(KeyCode.L))

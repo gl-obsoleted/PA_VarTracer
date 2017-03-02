@@ -1,3 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using UnityEngine;
 
 [System.Serializable]
 public class VarTracerJsonType
