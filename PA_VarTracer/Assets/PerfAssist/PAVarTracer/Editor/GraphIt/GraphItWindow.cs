@@ -104,10 +104,10 @@ public class GraphItWindow : EditorWindow
                 VarTracerHandler.DefineVariable("FPS", "System");
 
                 VarTracerHandler.DefineEvent("JUMP","Camera");
-                //VarTracerHandler.DefineVariable("NpcV_X", "Npc");
-                //VarTracerHandler.DefineVariable("NpcV_Y", "Npc");
-                //VarTracerHandler.DefineVariable("NpcV_Z", "Npc");
-                //VarTracerHandler.DefineVariable("NpcV_T", "Npc");
+                VarTracerHandler.DefineVariable("NpcV_X", "Npc");
+                VarTracerHandler.DefineVariable("NpcV_Y", "Npc");
+                VarTracerHandler.DefineVariable("NpcV_Z", "Npc");
+                VarTracerHandler.DefineVariable("NpcV_T", "Npc");
             }
         }
 
@@ -317,6 +317,10 @@ public class GraphItWindow : EditorWindow
                     if (!variableCombineList.Contains(var.VarName))
                     {
                         variableCombineList.Add(var.VarName);
+                        ShowVariableCombine();
+                    }
+                    else {
+                        variableCombineList.Remove(variableCombineList[i]);
                         ShowVariableCombine();
                     }
                 }
