@@ -101,7 +101,6 @@ public class GraphItWindow : EditorWindow
 
         VarTracer.AddChannel();
         VarTracer.AddChannel();
-        VarTracer.StartVarTracer();
     }
 
     void OnDestroy()
@@ -277,11 +276,10 @@ public class GraphItWindow : EditorWindow
         {
             EditorApplication.isPaused = !EditorApplication.isPaused;
             if (EditorApplication.isPaused)
-                VarTracer.StopVarTracer();
+                VarTracerUtils.StopVarTracer();
             else
-                VarTracer.StartVarTracer();
+                VarTracerUtils.StartVarTracer();
         }
-
         GUILayout.EndHorizontal();
 
         var lineNum = CalculateVariableLineNum();
@@ -379,6 +377,8 @@ public class GraphItWindow : EditorWindow
     {
         if (VarTracer.Instance)
         {
+            bool isEditorPaused = EditorApplication.isPaused;
+
             CreateLineMaterial();
 
             mLineMaterial.SetPass(0);
@@ -390,6 +390,8 @@ public class GraphItWindow : EditorWindow
             EditorGUILayout.EndVertical();
 
             int currentFrameIndex = VarTracerNet.Instance.GetCurrentFrameFromTimestamp(VarTracerUtils.GetTimeStamp());
+            if (isEditorPaused)
+                currentFrameIndex = VarTracerNet.Instance.GetCurrentFrameFromTimestamp(VarTracerUtils.StopTimeStamp);
 
             float scrolled_y_pos = y_offset - mGraphViewScrollPos.y;
             if (Event.current.type == EventType.Repaint)
@@ -521,7 +523,7 @@ public class GraphItWindow : EditorWindow
                 graph_index++;
 
                 float height = kv.Value.GetHeight();
-                float width = VarTracerNet.Instance.GetCurrentFrameFromTimestamp(VarTracerUtils.GetTimeStamp()) * kv.Value.XStep;
+                float width = currentFrameIndex * kv.Value.XStep;
                 if (width < mWidth)
                 {
                     width = mWidth - x_offset;
