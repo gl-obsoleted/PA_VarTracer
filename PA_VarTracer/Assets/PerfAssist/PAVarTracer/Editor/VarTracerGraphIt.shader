@@ -1,4 +1,4 @@
-﻿Shader "Custom/GraphIt"
+﻿Shader "Custom/VarTracerGraphIt"
 {
 	Properties
 	{

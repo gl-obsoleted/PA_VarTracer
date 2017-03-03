@@ -43,6 +43,8 @@ public class GraphItWindow : EditorWindow
 
     bool _connectPressed = false;
 
+
+    public static bool m_isStart = true;
     [MenuItem("Window/PerfAssist" + "/VarTracer")]
     static void Init()
     {
@@ -65,8 +67,10 @@ public class GraphItWindow : EditorWindow
 
             NetManager.Instance = new NetManager();
             NetManager.Instance.RegisterCmdHandler(eNetCmd.SV_VarTracerJsonParameter, VarTracerNet.Instance.Handle_VarTracerJsonParameter);
+            NetManager.Instance.RegisterCmdHandler(eNetCmd.SV_App_Logging, VarTracerNet.Instance.Handle_ServerLogging);
         }
     }
+
 
     void OnEnable()
     {
@@ -101,6 +105,25 @@ public class GraphItWindow : EditorWindow
 
         VarTracer.AddChannel();
         VarTracer.AddChannel();
+    }
+
+
+    public static void StartVarTracer()
+    {
+        m_isStart = true;
+        EditorApplication.isPaused = false;
+    }
+
+    public static void StopVarTracer()
+    {
+        VarTracerUtils.StopTimeStamp = VarTracerUtils.GetTimeStamp();
+        m_isStart = false;
+        EditorApplication.isPaused = true;
+    }
+
+    public static bool isVarTracerStart()
+    {
+        return m_isStart;
     }
 
     void OnDestroy()
@@ -276,9 +299,9 @@ public class GraphItWindow : EditorWindow
         {
             EditorApplication.isPaused = !EditorApplication.isPaused;
             if (EditorApplication.isPaused)
-                VarTracerUtils.StopVarTracer();
+                StopVarTracer();
             else
-                VarTracerUtils.StartVarTracer();
+                StartVarTracer();
         }
         GUILayout.EndHorizontal();
 
@@ -367,7 +390,7 @@ public class GraphItWindow : EditorWindow
     {
         if (!mLineMaterial)
         {
-            mLineMaterial = new Material(Shader.Find("Custom/GraphIt"));
+            mLineMaterial = new Material(Shader.Find("Custom/VarTracerGraphIt"));
             mLineMaterial.hideFlags = HideFlags.HideAndDontSave;
             mLineMaterial.shader.hideFlags = HideFlags.HideAndDontSave;
         }

@@ -3,7 +3,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using UnityEditor;
 
 public class VarTracerUtils
 {
@@ -14,24 +13,6 @@ public class VarTracerUtils
         set { VarTracerUtils.stopTimeStamp = value; }
     }
 
-    public static bool m_isStart = true;
-    public static void StartVarTracer()
-    {
-        m_isStart = true;
-        EditorApplication.isPaused = false;
-    }
-
-    public static void StopVarTracer()
-    {
-        stopTimeStamp = GetTimeStamp();
-        m_isStart = false;
-        EditorApplication.isPaused = true;
-    }
-
-    public static bool isVarTracerStart()
-    {
-        return m_isStart;
-    }
 
     public static long GetTimeStamp()
     {

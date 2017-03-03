@@ -98,6 +98,12 @@ public class VarTracerNet
         return true;
     }
 
+
+    public bool Handle_ServerLogging(eNetCmd cmd, UsCmd c)
+    {
+        return true;
+    }
+
     
     public static VarTracerNet Instance
     {

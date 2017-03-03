@@ -78,7 +78,7 @@ public class VarTracerHandler
 
     public static void UpdateVariable(long timeStamp ,string variableName, float value)
     {
-        if (!VarTracerUtils.isVarTracerStart())
+        if (!GraphItWindow.isVarTracerStart())
             return ;
 #if UNITY_EDITOR
         foreach (var VarBody in VarTracer.Instance.VariableBodys.Values)
@@ -121,7 +121,7 @@ public class VarTracerHandler
 
     public static void SendEvent(long timeStamp, string eventName, float duration = 0, string desc = "")
     {
-        if (!VarTracerUtils.isVarTracerStart())
+        if (!GraphItWindow.isVarTracerStart())
             return;
         foreach (var varBody in VarTracer.Instance.VariableBodys)
         {
@@ -140,11 +140,11 @@ public class VarTracerHandler
 
     public static void StartVarTracer()
     {
-        VarTracerUtils.StartVarTracer();
+        GraphItWindow.StartVarTracer();
     }
 
     public static void StopVarTracer()
     {
-        VarTracerUtils.StopVarTracer();
+        GraphItWindow.StopVarTracer();
     }
 }
