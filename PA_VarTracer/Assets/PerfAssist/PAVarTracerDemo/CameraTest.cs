@@ -65,29 +65,6 @@ public class CameraTest : MonoBehaviour {
             VarTracerTools.UpdateVariable("NpcV_X", -10);
         }
 
-        if (Input.GetKeyUp(KeyCode.U))
-        {
-            VarTracerJsonType vtjt = new VarTracerJsonType();
-            vtjt.logicName = "Npc";
-            vtjt.eventName = new string[] { "NPC_MOVE" };
-            vtjt.eventDuration = new float[] { 0 };
-            vtjt.eventDesc = new string[] { "NPC" };
-            VarTracerTools.SendJsonMsg(vtjt);
-
-           // VarTracerToolsSendEvent("NPC_MOVE");
-        }
-
-        if (Input.GetKeyUp(KeyCode.I))
-        {
-            VarTracerJsonType vtjt = new VarTracerJsonType();
-            vtjt.logicName = "Npc";
-            vtjt.eventName = new string[] { "NPC_MOVE" };
-            vtjt.eventDuration = new float[] { 1 };
-            vtjt.eventDesc = new string[] { "NPC" };
-            VarTracerTools.SendJsonMsg(vtjt);
-            //VarTracerToolsSendEvent("NPC_MOVE", 1);
-        }
-
         if (Input.GetKeyUp(KeyCode.O))
         {
             VarTracerTools.SendEvent("NPC_MOVE", 2, "desc");
@@ -95,45 +72,19 @@ public class CameraTest : MonoBehaviour {
 
         if (Input.GetKeyUp(KeyCode.J))
         {
-            //Json测试格式
-            //{
-            //"logicName":"Npc",
-            //"variableName":["NpcV_X","NpcV_Y","NpcV_Z","NpcV_T"],
-            //"variableValue":[1,2,3,4],
-            //"eventName":["NPC_MOVE"],
-            //"eventDuration":[1.2],
-            //"eventDesc":["desc"]
-            //}
+            VariableParm vp ;
+            vp.VariableName = "ValueName";
+            vp.VariableValue = 1.0f;
 
-            VarTracerJsonType vtjt = new VarTracerJsonType();
-            vtjt.logicName = "JSON";
-            vtjt.variableName = new string[] { "JSON_X", "JSON_Y", "JSON_Z", "JSON_T" };
-            vtjt.variableValue = new float[] { 1.0f, 2.0f, 3.0f, 4.0f };
-            vtjt.eventName = new string[] { "JSON_EVENT" };
-            vtjt.eventDuration = new float[] { 0.5f };
-            vtjt.eventDesc = new string[] { "JSON" };
-            VarTracerTools.SendJsonMsg(vtjt);
-        }
+            EventParm ep;
+            ep.EventName = "EventName";
+            ep.EventDuration = 1.5f;
+            ep.EventDesc = "EventDesc";
 
-        if (Input.GetKeyUp(KeyCode.T))
-        {
-            //UnityEngine.Debug.LogFormat("preCount{0} ={1}", VarTracerToolsreciveCount + VarTracerToolssendMsgTempList.Count, VarTracerToolssendCount);
-        }
-
-        if (Input.GetKeyUp(KeyCode.K))
-        {
-
-            VarTracerJsonType vtjt = new VarTracerJsonType();
-            vtjt.runingState = (int)VarTracerConst.RunningState.RunningState_Start;
-            VarTracerTools.SendJsonMsg(vtjt);
-
-        }
-
-        if (Input.GetKeyUp(KeyCode.L))
-        {
-            VarTracerJsonType vtjt = new VarTracerJsonType();
-            vtjt.runingState = (int)VarTracerConst.RunningState.RunningState_Pause;
-            VarTracerTools.SendJsonMsg(vtjt);
+            VarTracerTools.SendGroupLoop(
+                new Group("Test", new VariableParm[] { vp })
+            );
+       
         }
     }
 }

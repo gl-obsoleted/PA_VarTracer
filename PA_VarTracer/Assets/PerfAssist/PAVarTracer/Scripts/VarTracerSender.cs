@@ -12,7 +12,6 @@ public class VarTracerSender : MonoBehaviour
     private static List<VarTracerJsonType> sendMsgTempList = new List<VarTracerJsonType>();
     private static bool isMainMsgList = true;
     private readonly static object _locker = new object();
-    //public static EventWaitHandle _wh = new AutoResetEvent(false);
     private Thread m_MsgThread;
 
     private float m_lastHandleJsonTime;
@@ -46,7 +45,6 @@ public class VarTracerSender : MonoBehaviour
                     UsNet.Instance.SendCommand(pkt);
                 }
                 msgList.Clear();
-                // _wh.WaitOne();
             }
         }
     }
@@ -66,12 +64,6 @@ public class VarTracerSender : MonoBehaviour
 
     void Update()
     {
-        //if (Time.realtimeSinceStartup - m_lastHandleJsonTime >= VarTracerConst.SEND_MSG_INTERVAL)
-        //{
-        //    m_lastHandleJsonTime = Time.realtimeSinceStartup;
-        //    if (sendMsgList.Count > 0 && sendMsgTempList.Count == 0)
-        //        _wh.Set();
-        //}
     }
 
     public static VarTracerSender Instance

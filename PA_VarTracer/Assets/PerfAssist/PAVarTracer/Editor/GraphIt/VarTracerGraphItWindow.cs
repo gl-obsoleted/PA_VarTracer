@@ -43,6 +43,7 @@ public class GraphItWindow : EditorWindow
 
     bool _connectPressed = false;
 
+    static bool m_isDrawLine = true;
 
     public static bool m_isStart = true;
     [MenuItem("Window/PerfAssist" + "/VarTracer")]
@@ -303,6 +304,15 @@ public class GraphItWindow : EditorWindow
             else
                 StartVarTracer();
         }
+
+        if (m_isDrawLine)
+            buttonName = "Draw Point";
+        else
+            buttonName = "Draw Line";
+        if (GUILayout.Button(buttonName, EditorStyles.toolbarButton, GUILayout.Width(100)))
+        {
+            m_isDrawLine = !m_isDrawLine;
+        }
         GUILayout.EndHorizontal();
 
         var lineNum = CalculateVariableLineNum();
@@ -518,8 +528,11 @@ public class GraphItWindow : EditorWindow
 
                                 float x1 = x_offset + i * kv.Value.XStep - kv.Value.ScrollPos.x;
                                 float y1 = scrolled_y_pos + height * (1 - (value - y_min) / y_range);
-
-                                Plot(x0, y0, x1, y1);
+    
+                                if (m_isDrawLine)
+                                    Plot(x0, y0, x1, y1);
+                                else
+                                    Plot(x0, y0, x0+1, y0+1);
                             }
                             previous_value = value;
                         }
