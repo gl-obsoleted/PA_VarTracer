@@ -82,7 +82,7 @@ public class CameraTest : MonoBehaviour {
             ep.EventDesc = "EventDesc";
 
             VarTracerTools.SendGroupLoop(
-                new Group("Test", new VariableParm[] { vp })
+                new VarGroup("Test", new VariableParm[] { vp })
             );
        
         }

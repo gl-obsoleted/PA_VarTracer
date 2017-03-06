@@ -292,6 +292,16 @@ public class GraphItWindow : EditorWindow
         GUI.enabled = savedState;
 
         string buttonName;
+        if (m_isDrawLine)
+            buttonName = "Draw Point";
+        else
+            buttonName = "Draw Line";
+        if (GUILayout.Button(buttonName, EditorStyles.toolbarButton, GUILayout.Width(100)))
+        {
+            m_isDrawLine = !m_isDrawLine;
+        }
+
+
         if (EditorApplication.isPaused)
             buttonName = "Resume";
         else
@@ -305,14 +315,6 @@ public class GraphItWindow : EditorWindow
                 StartVarTracer();
         }
 
-        if (m_isDrawLine)
-            buttonName = "Draw Point";
-        else
-            buttonName = "Draw Line";
-        if (GUILayout.Button(buttonName, EditorStyles.toolbarButton, GUILayout.Width(100)))
-        {
-            m_isDrawLine = !m_isDrawLine;
-        }
         GUILayout.EndHorizontal();
 
         var lineNum = CalculateVariableLineNum();

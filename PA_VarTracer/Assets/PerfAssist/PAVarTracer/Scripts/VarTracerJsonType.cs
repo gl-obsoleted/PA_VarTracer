@@ -6,21 +6,21 @@ using UnityEngine;
 
 
 [System.Serializable]
-public class Group 
+public class VarGroup 
 {
-    public Group(string name ,VariableParm[] vp =null)
+    public VarGroup(string name ,VariableParm[] vp =null)
     {
         Name = name;
         VarItems = vp;       
     }
 
-    public Group(string name, EventParm[] ep = null)
+    public VarGroup(string name, EventParm[] ep = null)
     {
         Name = name;
         EventItems = ep;
     }
 
-    public Group(string name, VariableParm[] vp,EventParm[] ep)
+    public VarGroup(string name, VariableParm[] vp,EventParm[] ep)
     {
         Name = name;
         VarItems = vp;
