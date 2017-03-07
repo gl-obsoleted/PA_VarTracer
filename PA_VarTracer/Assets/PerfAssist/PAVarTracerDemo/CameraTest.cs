@@ -77,14 +77,30 @@ public class CameraTest : MonoBehaviour {
             vp.VariableValue = 1.0f;
 
             EventParm ep;
-            ep.EventName = "EventName";
+            ep.EventName = "JUMP";
             ep.EventDuration = 1.5f;
             ep.EventDesc = "EventDesc";
 
             VarTracerTools.SendGroupLoop(
-                new VarGroup("Test", new VariableParm[] { vp })
+                new VarGroup("Camera", new VariableParm[] { vp }, new EventParm[] { ep })
             );
-       
         }
+
+        if (Input.GetKeyUp(KeyCode.K))
+        {
+            VariableParm vp;
+            vp.VariableName = "ValueName";
+            vp.VariableValue = 5.0f;
+
+            EventParm ep;
+            ep.EventName = "ATTACK";
+            ep.EventDuration = 0;
+            ep.EventDesc = "";
+
+            VarTracerTools.SendGroupLoop(
+                new VarGroup("Camera", new VariableParm[] { vp }, new EventParm[] { ep })
+            );
+        }
+
     }
 }
