@@ -65,7 +65,7 @@ public class VarTracerTools
         VarTracerSender.Instance.SendJsonMsg(vtjt);
     }
 
-    public static void SendGroupLoop(VarGroup vjp)
+    public static void SendGroup(VarGroup vjp)
     {
         if (vjp == null)
             return;

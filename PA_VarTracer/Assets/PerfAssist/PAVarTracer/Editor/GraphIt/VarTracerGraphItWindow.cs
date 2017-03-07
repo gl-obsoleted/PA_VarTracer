@@ -255,7 +255,7 @@ public class GraphItWindow : EditorWindow
         GUILayout.Space(30);
         for (int i = 0; i < variableCombineList.Count; i++)
         {
-            if (GUILayout.Button(variableCombineList[i],EventInstantButtonStyle, GUILayout.Width(90)))
+            if (GUILayout.Button(variableCombineList[i],VarSelectedBtnStyle, GUILayout.Width(90)))
             {
                 variableCombineList.Remove(variableCombineList[i]);
                 ShowVariableCombine();
@@ -748,7 +748,7 @@ public class GraphItWindow : EditorWindow
                         int buttonWidth = 0;
                         if (currentEvent.Duration == 0)
                         {
-                            style = EventInstantButtonStyle;
+                            style = VarSelectedBtnStyle;
                             buttonWidth = (int)(VarTracerConst.INSTANT_EVENT_BTN_DURATION * VarTracerConst.FPS * kv.Value.XStep);
                         }
                         else
@@ -769,10 +769,16 @@ public class GraphItWindow : EditorWindow
                         else
                             tooltip_r = new Rect(x - buttonWidth / 2, startY, buttonWidth, VarTracerConst.EventButtonHeight);
                         preEventRect = tooltip_r;
-
                         GUI.backgroundColor = Color.green;
                         if (currentEvent.Duration == 0)
-                            GUI.Button(tooltip_r, currentEvent.EventName, style);
+                        {
+                            GUI.Button(tooltip_r,"");
+                            if(Event.current.type == EventType.Repaint && GUILayoutUtility.GetLastRect().Contains(Event.current.mousePosition )) {
+                                GUI.Label(new Rect(tooltip_r.x, tooltip_r.y, tooltip_r.width, tooltip_r.height), "xxxxxxxxxxxxxxxxxxxxxxxxx");
+                                //GUI.Window(0,tooltip_r, "xxxxxxxxxxxxxxxxxxxxxxxxx", "");
+                            }
+                        }
+                            //GUI.Button(tooltip_r, currentEvent.EventName, style,new GUIContent("Box", "这是Box的提示信息"));
                         else
                         {
                             if (string.IsNullOrEmpty(currentEvent.Desc))
@@ -796,7 +802,7 @@ public class GraphItWindow : EditorWindow
     public static GUIStyle SmallLabel;
     public static GUIStyle HoverText;
     public static GUIStyle FracGS;
-    public static GUIStyle EventInstantButtonStyle;
+    public static GUIStyle VarSelectedBtnStyle;
     public static GUIStyle EventDurationButtonStyle;
 
     public static void InitializeStyles()
@@ -815,10 +821,10 @@ public class GraphItWindow : EditorWindow
             FracGS = new GUIStyle(EditorStyles.whiteLabel);
             FracGS.alignment = TextAnchor.LowerLeft;
 
-            EventInstantButtonStyle = new GUIStyle(EditorStyles.whiteBoldLabel);
-            EventInstantButtonStyle.normal.background = Resources.Load("durationButton") as Texture2D;
-            EventInstantButtonStyle.normal.textColor = Color.white;
-            EventInstantButtonStyle.alignment = TextAnchor.MiddleCenter;
+            VarSelectedBtnStyle = new GUIStyle(EditorStyles.whiteBoldLabel);
+            VarSelectedBtnStyle.normal.background = Resources.Load("VariableButton") as Texture2D;
+            VarSelectedBtnStyle.normal.textColor = Color.white;
+            VarSelectedBtnStyle.alignment = TextAnchor.MiddleCenter;
 
             EventDurationButtonStyle = new GUIStyle(EditorStyles.whiteBoldLabel);
             EventDurationButtonStyle.normal.background = Resources.Load("durationButton") as Texture2D;

@@ -81,7 +81,7 @@ public class CameraTest : MonoBehaviour {
             ep.EventDuration = 1.5f;
             ep.EventDesc = "EventDesc";
 
-            VarTracerTools.SendGroupLoop(
+            VarTracerTools.SendGroup(
                 new VarGroup("Camera", new VariableParm[] { vp }, new EventParm[] { ep })
             );
         }
@@ -97,7 +97,7 @@ public class CameraTest : MonoBehaviour {
             ep.EventDuration = 0;
             ep.EventDesc = "";
 
-            VarTracerTools.SendGroupLoop(
+            VarTracerTools.SendGroup(
                 new VarGroup("Camera", new VariableParm[] { vp }, new EventParm[] { ep })
             );
         }

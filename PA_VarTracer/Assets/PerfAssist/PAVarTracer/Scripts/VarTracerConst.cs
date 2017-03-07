@@ -16,13 +16,15 @@ public class VarTracerConst
 
     public static readonly int EventButtonBaseWidth = 70;
 
+    public static readonly int EventButtonFixGap = 30;
+
     public static int DEFAULT_SAMPLES = 1048;
 
     public static string NUM_FORMAT_3 = "###,###,##0.###";
     public static string NUM_FORMAT_2 = "###,##0.##";
     public static string NUM_FORMAT_1 = "###,##0.#";
 
-    public static float INSTANT_EVENT_BTN_DURATION = 0.5f;
+    public static float INSTANT_EVENT_BTN_DURATION = 0.1f;
 
     public static readonly int Graph_Grid_Row_Num = 8;
 
