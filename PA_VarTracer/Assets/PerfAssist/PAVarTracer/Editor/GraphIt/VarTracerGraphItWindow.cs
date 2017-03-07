@@ -569,7 +569,7 @@ public class GraphItWindow : EditorWindow
                 }
                 else
                 {
-                    if (!EditorApplication.isPaused)
+                    if (!m_isPaused)
                         kv.Value.ScrollPos = new Vector2(width - mWidth, kv.Value.ScrollPos.y);
                 }
 
@@ -764,12 +764,13 @@ public class GraphItWindow : EditorWindow
                             if (preEventRect.y > height + int.Parse(kv.Key) * (height + y_gap))
                                 tooltip_r = new Rect(x - buttonWidth / 2, startY, buttonWidth, VarTracerConst.EventButtonHeight);
                             else
-                                tooltip_r = new Rect(x - buttonWidth / 2, preEventRect.y + 20, buttonWidth, VarTracerConst.EventButtonHeight);
+                                tooltip_r = new Rect(x - buttonWidth / 2, preEventRect.y + VarTracerConst.EventButtonFixGap, buttonWidth, VarTracerConst.EventButtonHeight);
                         }
                         else
                             tooltip_r = new Rect(x - buttonWidth / 2, startY, buttonWidth, VarTracerConst.EventButtonHeight);
                         preEventRect = tooltip_r;
 
+                        GUI.backgroundColor = Color.green;
                         if (currentEvent.Duration == 0)
                             GUI.Button(tooltip_r, currentEvent.EventName, style);
                         else
@@ -815,7 +816,7 @@ public class GraphItWindow : EditorWindow
             FracGS.alignment = TextAnchor.LowerLeft;
 
             EventInstantButtonStyle = new GUIStyle(EditorStyles.whiteBoldLabel);
-            EventInstantButtonStyle.normal.background = Resources.Load("instantButton") as Texture2D;
+            EventInstantButtonStyle.normal.background = Resources.Load("durationButton") as Texture2D;
             EventInstantButtonStyle.normal.textColor = Color.white;
             EventInstantButtonStyle.alignment = TextAnchor.MiddleCenter;
 
