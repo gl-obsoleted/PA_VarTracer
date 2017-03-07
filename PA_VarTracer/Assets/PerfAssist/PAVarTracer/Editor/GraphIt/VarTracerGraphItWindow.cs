@@ -46,6 +46,7 @@ public class GraphItWindow : EditorWindow
     static bool m_isDrawLine = true;
 
     public static bool m_isStart = true;
+    public static bool m_isPaused = false;
     [MenuItem("Window/PerfAssist" + "/VarTracer")]
     static void Init()
     {
@@ -97,6 +98,8 @@ public class GraphItWindow : EditorWindow
                 VarTracerHandler.DefineVariable("FPS", "System");
 
                 VarTracerHandler.DefineEvent("JUMP","Camera");
+                VarTracerHandler.DefineEvent("ATTACK", "Camera");
+
                 VarTracerHandler.DefineVariable("NpcV_X", "Npc");
                 VarTracerHandler.DefineVariable("NpcV_Y", "Npc");
                 VarTracerHandler.DefineVariable("NpcV_Z", "Npc");
@@ -112,14 +115,16 @@ public class GraphItWindow : EditorWindow
     public static void StartVarTracer()
     {
         m_isStart = true;
-        EditorApplication.isPaused = false;
+        //EditorApplication.isPaused = false;
+        m_isPaused = false;
     }
 
     public static void StopVarTracer()
     {
         VarTracerUtils.StopTimeStamp = VarTracerUtils.GetTimeStamp();
-        m_isStart = false;
-        EditorApplication.isPaused = true;
+        //m_isStart = false;
+        //EditorApplication.isPaused = true;
+        m_isPaused = true;
     }
 
     public static bool isVarTracerStart()
@@ -301,20 +306,18 @@ public class GraphItWindow : EditorWindow
             m_isDrawLine = !m_isDrawLine;
         }
 
-
-        if (EditorApplication.isPaused)
+        if (m_isPaused)
             buttonName = "Resume";
         else
             buttonName = "Pause";
         if (GUILayout.Button(buttonName, EditorStyles.toolbarButton, GUILayout.Width(100)))
         {
-            EditorApplication.isPaused = !EditorApplication.isPaused;
-            if (EditorApplication.isPaused)
+            m_isPaused = !m_isPaused;
+            if (m_isPaused)
                 StopVarTracer();
             else
                 StartVarTracer();
         }
-
         GUILayout.EndHorizontal();
 
         var lineNum = CalculateVariableLineNum();
@@ -412,8 +415,6 @@ public class GraphItWindow : EditorWindow
     {
         if (VarTracer.Instance)
         {
-            bool isEditorPaused = EditorApplication.isPaused;
-
             CreateLineMaterial();
 
             mLineMaterial.SetPass(0);
@@ -425,7 +426,7 @@ public class GraphItWindow : EditorWindow
             EditorGUILayout.EndVertical();
 
             int currentFrameIndex = VarTracerNet.Instance.GetCurrentFrameFromTimestamp(VarTracerUtils.GetTimeStamp());
-            if (isEditorPaused)
+            if (m_isPaused)
                 currentFrameIndex = VarTracerNet.Instance.GetCurrentFrameFromTimestamp(VarTracerUtils.StopTimeStamp);
 
             float scrolled_y_pos = y_offset - mGraphViewScrollPos.y;
@@ -657,7 +658,16 @@ public class GraphItWindow : EditorWindow
             {
                 //NameLabel.normal.textColor = varBody.EventColors[eventName];
                 NameLabel.normal.textColor = Color.white;
-                EditorGUILayout.LabelField("     <Event>    " + eventName,NameLabel);
+                EditorGUILayout.BeginHorizontal();
+                var flag = EditorGUILayout.Toggle(varBody.EventInfos[eventName].IsCutFlag, GUILayout.Width(10));
+                if (flag != varBody.EventInfos[eventName].IsCutFlag)
+                {
+                    varBody.EventInfos[eventName].IsCutFlag = flag;
+                    if(flag)
+                        varBody.EventInfos[eventName].TimeStamp = VarTracerUtils.GetTimeStamp();
+                }
+                EditorGUILayout.LabelField("     <Event>    " + eventName, NameLabel);
+                EditorGUILayout.EndHorizontal();
             }
         }
 
@@ -705,8 +715,14 @@ public class GraphItWindow : EditorWindow
                 var varBody = VarTracer.Instance.VariableBodys[varBodyName];
                 foreach (var eventInfo in varBody.EventInfos.Values)
                 {
-                    foreach (var data in eventInfo)
+                    foreach (var data in eventInfo.EventDataList)
                     {
+                        if (eventInfo.IsCutFlag && data.TimeStamp > eventInfo.TimeStamp)
+                        {
+                            eventInfo.TimeStamp = data.TimeStamp;
+                            StopVarTracer();
+                            break;
+                        }
                         if (data.EventFrameIndex > 0)
                         {
                             float x = x_offset + data.EventFrameIndex * kv.Value.XStep - kv.Value.ScrollPos.x;
@@ -753,7 +769,6 @@ public class GraphItWindow : EditorWindow
                         else
                             tooltip_r = new Rect(x - buttonWidth / 2, startY, buttonWidth, VarTracerConst.EventButtonHeight);
                         preEventRect = tooltip_r;
-                        //style.normal.textColor = ;
 
                         if (currentEvent.Duration == 0)
                             GUI.Button(tooltip_r, currentEvent.EventName, style);

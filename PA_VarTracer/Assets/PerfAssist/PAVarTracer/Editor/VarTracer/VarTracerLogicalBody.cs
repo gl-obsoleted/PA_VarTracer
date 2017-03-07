@@ -3,14 +3,30 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
+public class EventInfoData 
+{
+    List<EventData> eventDataList = new List<EventData>();
+    public List<EventData> EventDataList
+    {
+        get { return eventDataList; }
+        set { eventDataList = value; }
+    }
+    private bool isCutFlag = false;
+    public bool IsCutFlag
+    {
+        get { return isCutFlag; }
+        set { isCutFlag = value; }
+    }
+    private long timeStamp;
+    public long TimeStamp
+    {
+        get { return timeStamp; }
+        set { timeStamp = value; }
+    }
+}
+
 public class VarTracerLogicalBody
 {
-    Dictionary<string, Color> m_eventColors = new Dictionary<string, Color>();
-    public Dictionary<string, Color> EventColors
-    {
-        get { return m_eventColors; }
-        set { m_eventColors = value; }
-    }
     private string channelName;
     public string ChannelName
     {
@@ -38,8 +54,9 @@ public class VarTracerLogicalBody
     }
 
     //eventName  eventData
-    Dictionary<string, List<EventData>> eventInfos = new Dictionary<string, List<EventData>>();
-    public Dictionary<string, List<EventData>> EventInfos
+    Dictionary<string, EventInfoData> eventInfos = new Dictionary<string, EventInfoData>();
+
+    public Dictionary<string, EventInfoData> EventInfos
     {
         get { return eventInfos; }
         set { eventInfos = value; }
@@ -50,6 +67,6 @@ public class VarTracerLogicalBody
         if(string.IsNullOrEmpty(eventName))
             return ;
         if (!eventInfos.ContainsKey(eventName))
-            eventInfos[eventName] = new List<EventData>();
+            eventInfos[eventName] = new EventInfoData();
     }
 }

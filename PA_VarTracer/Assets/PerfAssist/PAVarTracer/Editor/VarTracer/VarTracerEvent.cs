@@ -5,6 +5,13 @@ using System.Collections.Generic;
 
 public class EventData
 {
+    private long m_timeStamp;
+    public long TimeStamp
+    {
+        get { return m_timeStamp; }
+        set { m_timeStamp = value; }
+    }
+
     private string m_eventName;
     public string EventName
     {
@@ -32,12 +39,12 @@ public class EventData
         set { m_desc = value; }
     }
 
-
-    public EventData(int eventFrameIndex, string eventName, string desc = "", float duration = 0)
+    public EventData(long eventTimeStamp, string eventName, string desc = "", float duration = 0)
     {
-        m_eventFrameIndex = eventFrameIndex;
+        m_timeStamp = eventTimeStamp;
         m_eventName = eventName;
         m_duration = duration;
         m_desc = desc;
+        m_eventFrameIndex = VarTracerNet.Instance.GetCurrentFrameFromTimestamp(m_timeStamp);
     }
 }

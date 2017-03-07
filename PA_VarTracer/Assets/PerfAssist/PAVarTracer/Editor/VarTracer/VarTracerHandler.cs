@@ -129,9 +129,7 @@ public class VarTracerHandler
             {
                 if (eventName.Equals(eName))
                 {
-                    List<EventData> listEvent;
-                    varBody.Value.EventInfos.TryGetValue(eventName, out listEvent);
-                    listEvent.Add(new EventData(VarTracerNet.Instance.GetCurrentFrameFromTimestamp(timeStamp), eventName, desc, duration));
+                    varBody.Value.EventInfos[eventName].EventDataList.Add(new EventData(timeStamp, eventName, desc, duration));
                     break;
                 }
             }
