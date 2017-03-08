@@ -632,7 +632,7 @@ public class GraphItWindow : EditorWindow
     private static void DrawGraphAttribute(KeyValuePair<string, VarTracerGraphItData> kv)
     {
         EditorGUILayout.LabelField(kv.Key,NameLabel);
-
+        int colorIndex = kv.Value.mData.Count;
         foreach (var varBodyName in GetAllVariableBodyFromChannel(kv.Key))
         {
             NameLabel.normal.textColor = Color.white;
@@ -657,7 +657,8 @@ public class GraphItWindow : EditorWindow
             foreach (var eventName in varBody.EventInfos.Keys)
             {
                 //NameLabel.normal.textColor = varBody.EventColors[eventName];
-                NameLabel.normal.textColor = Color.white;
+                colorIndex++;
+                NameLabel.normal.textColor = VarTracerUtils.GetColorByIndex(colorIndex);
                 EditorGUILayout.BeginHorizontal();
                 var flag = EditorGUILayout.Toggle(varBody.EventInfos[eventName].IsCutFlag, GUILayout.Width(10));
                 if (flag != varBody.EventInfos[eventName].IsCutFlag)
@@ -704,6 +705,7 @@ public class GraphItWindow : EditorWindow
         return System.Math.Abs(x1 - x2) <= (width1 + width2) / 2;
     }
 
+
     private static float ShowEventLabel(float scrolled_y_pos)
     {
         foreach (KeyValuePair<string, VarTracerGraphItData> kv in VarTracer.Instance.Graphs)
@@ -744,19 +746,13 @@ public class GraphItWindow : EditorWindow
                         var currentEvent = sortedEventList[i];
                         GL.Color(Color.white);
 
-                        GUIStyle style = null;
                         int buttonWidth = 0;
                         if (currentEvent.Duration == 0)
-                        {
-                            style = VarSelectedBtnStyle;
                             buttonWidth = (int)(VarTracerConst.INSTANT_EVENT_BTN_DURATION * VarTracerConst.FPS * kv.Value.XStep);
-                        }
                         else
-                        {
-                            style = EventDurationButtonStyle;
                             buttonWidth = (int)(currentEvent.Duration * VarTracerConst.FPS * kv.Value.XStep);
-                        }
 
+                        GUIStyle style = EventButtonStyle;
                         float x = x_offset + currentEvent.EventFrameIndex * kv.Value.XStep - kv.Value.ScrollPos.x;
                         Rect tooltip_r;
                         if (IsEventBtnIntersect(x - buttonWidth / 2, preEventRect.x, buttonWidth, preEventRect.width))
@@ -769,27 +765,18 @@ public class GraphItWindow : EditorWindow
                         else
                             tooltip_r = new Rect(x - buttonWidth / 2, startY, buttonWidth, VarTracerConst.EventButtonHeight);
                         preEventRect = tooltip_r;
+                        var saveColor = GUI.backgroundColor;
                         GUI.backgroundColor = Color.green;
-                        if (currentEvent.Duration == 0)
+                        GUI.Button(tooltip_r, currentEvent.EventName, style);
+
+                        if (Event.current.type == EventType.Repaint && tooltip_r.Contains(Event.current.mousePosition + new Vector2(0, m_controlScreenHeight)))
                         {
-                            GUI.Button(tooltip_r,"");
-                            if(Event.current.type == EventType.Repaint && GUILayoutUtility.GetLastRect().Contains(Event.current.mousePosition )) {
-                                GUI.Label(new Rect(tooltip_r.x, tooltip_r.y, tooltip_r.width, tooltip_r.height), "xxxxxxxxxxxxxxxxxxxxxxxxx");
-                                //GUI.Window(0,tooltip_r, "xxxxxxxxxxxxxxxxxxxxxxxxx", "");
-                            }
+                            GUI.backgroundColor = Color.white;
+                            GUI.Label(new Rect(tooltip_r.x - 20, tooltip_r.y - 30, 110,30), "name:" + currentEvent.EventName + "\n"
+                                + "duration:" + currentEvent.Duration + "\n" ,EditorStyles.textArea);
                         }
-                            //GUI.Button(tooltip_r, currentEvent.EventName, style,new GUIContent("Box", "这是Box的提示信息"));
-                        else
-                        {
-                            if (string.IsNullOrEmpty(currentEvent.Desc))
-                            {
-                                GUI.Button(tooltip_r, currentEvent.EventName + " (" + currentEvent.Duration + "s)", style);
-                            }
-                            else
-                            {
-                                GUI.Button(tooltip_r, currentEvent.EventName + " (" + currentEvent.Duration + "s)" + " [" + currentEvent.Desc + "]", style);
-                            }
-                        }
+
+                        GUI.backgroundColor = saveColor;
                     }
                 }
             }
@@ -803,7 +790,7 @@ public class GraphItWindow : EditorWindow
     public static GUIStyle HoverText;
     public static GUIStyle FracGS;
     public static GUIStyle VarSelectedBtnStyle;
-    public static GUIStyle EventDurationButtonStyle;
+    public static GUIStyle EventButtonStyle;
 
     public static void InitializeStyles()
     {
@@ -826,10 +813,10 @@ public class GraphItWindow : EditorWindow
             VarSelectedBtnStyle.normal.textColor = Color.white;
             VarSelectedBtnStyle.alignment = TextAnchor.MiddleCenter;
 
-            EventDurationButtonStyle = new GUIStyle(EditorStyles.whiteBoldLabel);
-            EventDurationButtonStyle.normal.background = Resources.Load("durationButton") as Texture2D;
-            EventDurationButtonStyle.normal.textColor = Color.white;
-            EventDurationButtonStyle.alignment = TextAnchor.MiddleCenter;
+            EventButtonStyle = new GUIStyle(EditorStyles.textArea);
+            EventButtonStyle.normal.background = Resources.Load("durationButton") as Texture2D;
+            EventButtonStyle.normal.textColor = Color.white;
+            EventButtonStyle.alignment = TextAnchor.MiddleCenter;
         }
     }
 }

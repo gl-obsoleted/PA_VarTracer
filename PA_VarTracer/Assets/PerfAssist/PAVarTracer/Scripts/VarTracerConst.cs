@@ -12,7 +12,7 @@ public class VarTracerConst
 
     public static readonly int   EventButtonHeight = 20;
 
-    public static readonly int   EventStartHigh = 200;
+    public static readonly int   EventStartHigh = 180;
 
     public static readonly int EventButtonBaseWidth = 70;
 

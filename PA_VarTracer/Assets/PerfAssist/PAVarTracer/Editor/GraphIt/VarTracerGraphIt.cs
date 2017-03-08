@@ -13,24 +13,8 @@ public class VarTracerDataInternal
         mMin = 0.0f;
         mMax = 0.0f;
         mCurrentValue = 0.0f;
-        switch(subgraph_index)
-        {
-            case 0:
-                mColor = new Color( 0, 0.85f, 1, 1);
-                break;
-            case 1:
-                mColor = Color.yellow;
-                break;
-            case 2:
-                mColor = Color.green;
-                break;
-            case 3:
-                mColor = Color.cyan;
-                break;
-            default:
-                mColor = Color.gray;
-                break;
-        }
+
+        mColor = VarTracerUtils.GetColorByIndex(subgraph_index);
     }
     public float mMin;
     public float mMax;
