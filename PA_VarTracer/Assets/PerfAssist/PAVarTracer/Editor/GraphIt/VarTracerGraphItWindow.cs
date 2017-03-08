@@ -712,11 +712,16 @@ public class GraphItWindow : EditorWindow
         {
             float height = kv.Value.GetHeight();
             List<EventData> sortedEventList = new List<EventData>();
+            int colorIndex =kv.Value.mData.Count;
+            Dictionary<string,int> colorIndexDict = new Dictionary<string,int>();
             foreach (var varBodyName in GetAllVariableBodyFromChannel(kv.Key))
             {
                 var varBody = VarTracer.Instance.VariableBodys[varBodyName];
-                foreach (var eventInfo in varBody.EventInfos.Values)
+                foreach (var eventName in varBody.EventInfos.Keys)
                 {
+                    var eventInfo = varBody.EventInfos[eventName];
+                    colorIndex++;
+                    colorIndexDict.Add(eventName, colorIndex);
                     foreach (var data in eventInfo.EventDataList)
                     {
                         if (eventInfo.IsCutFlag && data.TimeStamp > eventInfo.TimeStamp)
@@ -766,12 +771,12 @@ public class GraphItWindow : EditorWindow
                             tooltip_r = new Rect(x - buttonWidth / 2, startY, buttonWidth, VarTracerConst.EventButtonHeight);
                         preEventRect = tooltip_r;
                         var saveColor = GUI.backgroundColor;
-                        GUI.backgroundColor = Color.green;
+                        GUI.backgroundColor = VarTracerUtils.GetColorByIndex(colorIndexDict[currentEvent.EventName]);
                         GUI.Button(tooltip_r, currentEvent.EventName, style);
 
                         if (Event.current.type == EventType.Repaint && tooltip_r.Contains(Event.current.mousePosition + new Vector2(0, m_controlScreenHeight)))
                         {
-                            GUI.backgroundColor = Color.white;
+                            GUI.backgroundColor = Color.grey;
                             GUI.Label(new Rect(tooltip_r.x - 20, tooltip_r.y - 30, 110,30), "name:" + currentEvent.EventName + "\n"
                                 + "duration:" + currentEvent.Duration + "\n" ,EditorStyles.textArea);
                         }
