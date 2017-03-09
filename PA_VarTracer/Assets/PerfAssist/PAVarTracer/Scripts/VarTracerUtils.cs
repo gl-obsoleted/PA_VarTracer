@@ -24,20 +24,19 @@ public class VarTracerUtils
         switch (index)
         {
             case 0:
-                return new Color(65 / 255, 105 / 255, 255 / 255);
+                return new Color(0 / 255, 255 / 255, 255 / 255);
             case 1:
                 return new Color(227.0f / 255.0f, 207.0f / 255.0f, 87.0f / 255.0f);
             case 2:
                 return new Color(0 / 255.0f, 255 / 255.0f, 0 / 255.0f);
             case 3:
-                return new Color(160 / 255.0f, 32 / 255.0f, 240 / 255.0f);
-
+                return new Color(209 / 255.0f, 238 / 255.0f, 238 / 255.0f);
             case 4:
-                return new Color(128 / 255.0f, 42 / 255.0f, 42 / 255.0f);
+                return new Color(227 / 255.0f, 240 / 255.0f, 202 / 255.0f);
             case 5:
                 return new Color(255 / 255.0f, 127 / 255.0f, 80 / 255.0f);
             case 6:
-                return new Color(0, 0, 255 / 255.0f);
+                return new Color(176 / 255.0f, 226 / 255.0f, 255 / 255.0f);
             case 7:
                 return new Color(255 / 255.0f, 192 / 255.0f, 203 / 255.0f);
             case 8:
@@ -69,7 +68,7 @@ public class VarTracerUtils
             case 20:
                 return new Color(51 / 255.0f, 161 / 255.0f, 201 / 255.0f);
             default:
-                return new Color(30 / 255.0f, 144 / 255.0f, 255 / 255.0f);
+                return new Color(255 / 255.0f, 52 / 255.0f, 179 / 255.0f);
         }
     }
 }
