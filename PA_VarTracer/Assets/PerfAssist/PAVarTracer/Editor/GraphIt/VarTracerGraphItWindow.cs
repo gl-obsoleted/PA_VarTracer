@@ -749,7 +749,7 @@ public class GraphItWindow : EditorWindow
                     for (int i = 0; i < sortedEventList.Count; i++)
                     {
                         var currentEvent = sortedEventList[i];
-                        GL.Color(Color.white);
+                        GL.Color(Color.gray);
 
                         int buttonWidth = 0;
                         if (currentEvent.Duration == 0)
@@ -776,7 +776,7 @@ public class GraphItWindow : EditorWindow
 
                         if (Event.current.type == EventType.Repaint && tooltip_r.Contains(Event.current.mousePosition + new Vector2(0, m_controlScreenHeight)))
                         {
-                            GUI.backgroundColor = Color.grey;
+                            //GUI.backgroundColor = Color.grey;
                             GUI.Label(new Rect(tooltip_r.x - 20, tooltip_r.y - 30, 110,30), "name:" + currentEvent.EventName + "\n"
                                 + "duration:" + currentEvent.Duration + "\n" ,EditorStyles.textArea);
                         }

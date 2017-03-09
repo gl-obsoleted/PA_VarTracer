@@ -43,7 +43,6 @@ public class VarTracerUtils
                 return new Color(244 / 255.0f, 164 / 255.0f, 96 / 255.0f);
             case 9:
                 return new Color(218 / 255.0f, 112 / 255.0f, 214 / 255.0f);
-
             case 10:
                 return new Color(210 / 255.0f, 105 / 255.0f, 30 / 255.0f);
             case 11:
@@ -58,7 +57,6 @@ public class VarTracerUtils
                 return new Color(50 / 255.0f, 205 / 255.0f, 50 / 255.0f);
             case 16:
                 return new Color(160 / 255.0f, 102 / 255.0f, 211 / 255.0f);
-
             case 17:
                 return new Color(240 / 255.0f, 230 / 255.0f, 140 / 255.0f);
             case 18:
