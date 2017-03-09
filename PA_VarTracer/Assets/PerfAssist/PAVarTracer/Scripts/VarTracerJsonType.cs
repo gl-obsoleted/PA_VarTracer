@@ -44,7 +44,6 @@ public struct EventParm
 {
     public string EventName;
     public float EventDuration;
-    public string EventDesc;
 };
 
 [System.Serializable]
@@ -55,7 +54,6 @@ public class VarTracerJsonType
     public float[] variableValue;
     public string[] eventName;
     public float[] eventDuration;
-    public string[] eventDesc;
     public int runingState;
     public long timeStamp;
 }

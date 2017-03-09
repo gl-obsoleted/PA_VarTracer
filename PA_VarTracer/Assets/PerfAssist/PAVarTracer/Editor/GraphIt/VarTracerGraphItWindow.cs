@@ -11,7 +11,6 @@ public class GraphItWindow : EditorWindow
     static float mWidth;
 
     static int mMouseOverGraphIndex = InValidNum;
-    static float mMouseX = 0;
 
     static float x_offset = 250.0f;
     static float y_gap = 80.0f;
@@ -366,7 +365,7 @@ public class GraphItWindow : EditorWindow
         }
     }
 
-    static void DrawGraphGridLines(float y_pos, float width, float height, bool draw_mouse_line)
+    static void DrawGraphGridLines(float y_pos, float width, float height ,bool isMouseOverGraph)
     {
         GL.Color(new Color(0.3f, 0.3f, 0.3f));
         float steps = 8;
@@ -378,22 +377,20 @@ public class GraphItWindow : EditorWindow
             Plot(x_offset, y_pos + y_step * i, x_offset + width, y_pos + y_step * i);
         }
 
-        GL.Color(new Color(0.4f, 0.4f, 0.4f));
         steps = 4;
         x_step = width / steps;
         y_step = height / steps;
         for (int i = 0; i < steps + 1; ++i)
         {
+            if ((i == 0 || i == 4) && isMouseOverGraph)
+                GL.Color(new Color(1, 1, 1));
+            else
+                GL.Color(new Color(0.4f, 0.4f, 0.4f));
             Plot(x_offset + x_step * i, y_pos, x_offset + x_step * i, y_pos + height);
             Plot(x_offset, y_pos + y_step * i, x_offset + width, y_pos + y_step * i);
         }
-
-        if (draw_mouse_line)
-        {
-            GL.Color(new Color(0.8f, 0.8f, 0.8f));
-            Plot(mMouseX, y_pos, mMouseX, y_pos + height);
-        }
     }
+
 
     static void Plot(float x0, float y0, float x1, float y1)
     {
@@ -441,6 +438,7 @@ public class GraphItWindow : EditorWindow
                 GL.Begin(GL.QUADS);
                 GL.Color(new Color(0.2f, 0.2f, 0.2f));
 
+
                 foreach (KeyValuePair<string, VarTracerGraphItData> kv in VarTracer.Instance.Graphs)
                 {
                     float height = kv.Value.GetHeight();
@@ -463,7 +461,7 @@ public class GraphItWindow : EditorWindow
                     graph_index++;
 
                     float height = kv.Value.GetHeight();
-                    DrawGraphGridLines(scrolled_y_pos, mWidth, height, graph_index == mMouseOverGraphIndex);
+                    DrawGraphGridLines(scrolled_y_pos, mWidth, height,graph_index == mMouseOverGraphIndex);
 
                     foreach (KeyValuePair<string, VarTracerDataInternal> entry in kv.Value.mData)
                     {
@@ -623,6 +621,13 @@ public class GraphItWindow : EditorWindow
                     }
                     window.Repaint();
                 }
+                else if (Event.current.type != EventType.Layout && r.Contains(Event.current.mousePosition))
+                {
+                    if (Event.current.type == EventType.Repaint)
+                    {
+                        mMouseOverGraphIndex = graph_index;
+                    }
+                }
                 EditorGUILayout.EndVertical();
             }
             EditorGUILayout.EndScrollView();
@@ -631,12 +636,12 @@ public class GraphItWindow : EditorWindow
 
     private static void DrawGraphAttribute(KeyValuePair<string, VarTracerGraphItData> kv)
     {
-        EditorGUILayout.LabelField(kv.Key,NameLabel);
+        EditorGUILayout.LabelField("Graph:" +kv.Key,NameLabel);
         int colorIndex = kv.Value.mData.Count;
         foreach (var varBodyName in GetAllVariableBodyFromChannel(kv.Key))
         {
             NameLabel.normal.textColor = Color.white;
-            EditorGUILayout.LabelField("{" + varBodyName + "}:", NameLabel);
+            EditorGUILayout.LabelField("LogicName:" + varBodyName, NameLabel);
 
             foreach (var entry in kv.Value.mData)
             {
@@ -656,7 +661,6 @@ public class GraphItWindow : EditorWindow
 
             foreach (var eventName in varBody.EventInfos.Keys)
             {
-                //NameLabel.normal.textColor = varBody.EventColors[eventName];
                 colorIndex++;
                 NameLabel.normal.textColor = VarTracerUtils.GetColorByIndex(colorIndex);
                 EditorGUILayout.BeginHorizontal();

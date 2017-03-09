@@ -46,22 +46,20 @@ public class VarTracerTools
         VarTracerSender.Instance.SendJsonMsg(vtjt);
     }
 
-    public static void DefineEvent(string eventName, string variableBody)
+    public static void DefineEvent(string eventName, string LogicalName)
     {
         VarTracerJsonType vtjt = new VarTracerJsonType();
-        vtjt.logicName = variableBody;
+        vtjt.logicName = LogicalName;
         vtjt.eventName = new string[] { eventName };
         vtjt.eventDuration = new float[] { -1 };
-        vtjt.eventDesc = new string[] { "" };
         VarTracerSender.Instance.SendJsonMsg(vtjt);
     }
 
-    public static void SendEvent(string eventName, float duration = 0, string desc = "")
+    public static void SendEvent(string eventName, float duration = 0)
     {
         VarTracerJsonType vtjt = new VarTracerJsonType();
         vtjt.eventName = new string[] { eventName };
         vtjt.eventDuration = new float[] { duration };
-        vtjt.eventDesc = new string[] { desc };
         VarTracerSender.Instance.SendJsonMsg(vtjt);
     }
 
@@ -91,12 +89,10 @@ public class VarTracerTools
             int count = vjp.EventItems.Length;
             vtjt.eventName = new string[count];
             vtjt.eventDuration = new float[count];
-            vtjt.eventDesc = new string[count];
             for (int i = 0; i < count; i++)
             {
                 vtjt.eventName[i] = vjp.EventItems[i].EventName;
                 vtjt.eventDuration[i] = vjp.EventItems[i].EventDuration;
-                vtjt.eventDesc[i] = vjp.EventItems[i].EventDesc;
             }
         }
 

@@ -11,7 +11,7 @@ public class VarTracerHandler
         if (variableCount != resolved.variableValue.Length)
             Debug.LogErrorFormat("Parameter Resolove Json Error ,variableCount = {0}", variableCount);
         int eventCount = resolved.eventName.Length;
-        if (eventCount != resolved.eventDuration.Length || eventCount != resolved.eventDesc.Length)
+        if (eventCount != resolved.eventDuration.Length )
             Debug.LogErrorFormat("Parameter Resolove Json Error ,eventCount = {0}", eventCount);
 
         long timeStamp = resolved.timeStamp;
@@ -36,7 +36,7 @@ public class VarTracerHandler
             if (hasLogicalName)
                 DefineEvent(resolved.eventName[i], resolved.logicName);
             if (resolved.eventDuration[i] != -1)
-                SendEvent(timeStamp, resolved.eventName[i], resolved.eventDuration[i], resolved.eventDesc[i]);
+                SendEvent(timeStamp, resolved.eventName[i], resolved.eventDuration[i]);
         }
 
         if (resolved.runingState == (int)VarTracerConst.RunningState.RunningState_Start)
