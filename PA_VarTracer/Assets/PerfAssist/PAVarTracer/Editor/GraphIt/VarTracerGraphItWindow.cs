@@ -10,8 +10,7 @@ public class GraphItWindow : EditorWindow
 
     static float mWidth;
 
-    static int mMouseSelectedGraphNum=1;
-
+    public static int mMouseSelectedGraphNum=1;
 
     static float x_offset = 2.0f;
     static float y_gap = 80.0f;
@@ -624,23 +623,26 @@ public class GraphItWindow : EditorWindow
                 GL.Viewport(new Rect(0, 0, rect.width, rect.height));
                 GL.LoadPixelMatrix(0, rect.width, rect.height, 0);
             }
-            
-            //(y_offset - mGraphViewScrollPos.y) +
-            Rect rec = new Rect(10,  (VarTracerConst.DefaultChannelHieght + y_gap) * VarTracer.Instance.Graphs.Count - y_gap, 100, 50);
+
+            float allGraphHieght = (VarTracerConst.DefaultChannelHieght + y_gap) * VarTracer.Instance.Graphs.Count -y_gap- mGraphViewScrollPos.y;
+            Rect rec = new Rect(10, allGraphHieght, 100,1000);
             GUILayout.BeginArea(rec);
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("+", GUILayout.Width(20), GUILayout.Height(20)))
+            {
                 VarTracer.AddChannel();
+            }
 
             if (GUILayout.Button("-", GUILayout.Width(20), GUILayout.Height(20)))
+            {
                 VarTracer.RemoveChannel();
+            }
 
             GUILayout.EndHorizontal();
             GUILayout.EndArea();
 
-
             mGraphViewScrollPos = EditorGUILayout.BeginScrollView(mGraphViewScrollPos, GUIStyle.none);
-
+            GUILayout.Label("", GUILayout.Height((VarTracerConst.DefaultChannelHieght + y_gap) * VarTracer.Instance.Graphs.Count + y_offset + m_controlScreenHeight));
             graph_index = 0;
             mWidth = window.position.width - VarTracerConst.NavigationAreaRWidth;
             foreach (KeyValuePair<string, VarTracerGraphItData> kv in VarTracer.Instance.Graphs)

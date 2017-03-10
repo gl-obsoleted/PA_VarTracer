@@ -326,6 +326,7 @@ public class VarTracer : MonoBehaviour
     {
         string newChannelName = Instance.Graphs.Count.ToString();
         DefineVisualChannel(newChannelName,VarTracerConst.DefaultChannelHieght, true);
+        GraphItWindow.mMouseSelectedGraphNum = VarTracer.Instance.Graphs.Count;
     }
 
     public static void RemoveChannel()
@@ -344,6 +345,7 @@ public class VarTracer : MonoBehaviour
         }
         Instance.Graphs.Remove(removeChannelName);
 #endif
+        GraphItWindow.mMouseSelectedGraphNum = VarTracer.Instance.Graphs.Count;
     }
     public static void ClearGraph(string graph)
     {
