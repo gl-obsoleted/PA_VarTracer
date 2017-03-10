@@ -14,7 +14,6 @@ public class VarTracerSender : MonoBehaviour
     private readonly static object _locker = new object();
     private Thread m_MsgThread;
 
-    private float m_lastHandleJsonTime;
     void Start()
     {
         m_MsgThread = new Thread(new ThreadStart(SendMsgAsyn));

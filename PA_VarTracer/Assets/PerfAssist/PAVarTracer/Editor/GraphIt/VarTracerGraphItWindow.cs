@@ -10,9 +10,10 @@ public class GraphItWindow : EditorWindow
 
     static float mWidth;
 
-    static int mMouseOverGraphIndex = InValidNum;
+    static int mMouseSelectedGraphNum=1;
 
-    static float x_offset = 250.0f;
+
+    static float x_offset = 2.0f;
     static float y_gap = 80.0f;
     static float y_offset = 20;
 
@@ -36,16 +37,22 @@ public class GraphItWindow : EditorWindow
 
     string _IPField = VarTracerConst.RemoteIPDefaultText;
 
-    static List<string> variableCombineList = new List<string>();
-    static string[] graphNumOption = { "0", "1", "2" };
-    static int graphNumIndex = 0;
-
     bool _connectPressed = false;
 
     static bool m_isDrawLine = true;
 
     public static bool m_isStart = true;
     public static bool m_isPaused = false;
+
+    
+    public static GUIStyle NameLabel;
+    public static GUIStyle SmallLabel;
+    public static GUIStyle HoverText;
+    public static GUIStyle FracGS;
+    public static GUIStyle VarSelectedBtnStyle;
+    public static GUIStyle EventButtonStyle;
+
+
     [MenuItem("Window/PerfAssist" + "/VarTracer")]
     static void Init()
     {
@@ -71,7 +78,6 @@ public class GraphItWindow : EditorWindow
             NetManager.Instance.RegisterCmdHandler(eNetCmd.SV_App_Logging, VarTracerNet.Instance.Handle_ServerLogging);
         }
     }
-
 
     void OnEnable()
     {
@@ -105,8 +111,6 @@ public class GraphItWindow : EditorWindow
                 VarTracerHandler.DefineVariable("NpcV_T", "Npc");
             }
         }
-
-        VarTracer.AddChannel();
         VarTracer.AddChannel();
     }
 
@@ -155,6 +159,7 @@ public class GraphItWindow : EditorWindow
             _connectPressed = false;
         }
         VarTracerNet.Instance.Upate();
+
         Repaint();
     }
     public void CheckForResizing()
@@ -188,10 +193,24 @@ public class GraphItWindow : EditorWindow
             DrawVariableBar();
         }
         GUILayout.EndArea();
-        ////navigation窗口内容
-        GUILayout.BeginArea(new Rect(0, m_navigationScreenPosY, m_winWidth, m_winHeight));
+        //navigation窗口内容
+        GUILayout.BeginArea(new Rect(VarTracerConst.NavigationAreaStartX, m_navigationScreenPosY, m_winWidth, m_winHeight));
         {
             DrawGraphs(position, this);
+        }
+        GUILayout.EndArea();
+
+        //Attribute窗口内容
+        GUILayout.BeginArea(new Rect(VarTracerConst.AttributeAreaStartX, m_navigationScreenPosY, m_winWidth, m_winHeight));
+        {
+            DrawAttributeArea(position, this);
+        }
+        GUILayout.EndArea();
+
+        //刻度线窗口内容
+        GUILayout.BeginArea(new Rect(VarTracerConst.TickMarkAreaStartX, m_navigationScreenPosY-8, m_winWidth, m_winHeight));
+        {
+            DrawTickMark(position, this);
         }
         GUILayout.EndArea();
         Handles.EndGUI();
@@ -244,14 +263,7 @@ public class GraphItWindow : EditorWindow
         GUILayout.BeginHorizontal();
         GUILayout.Space(10);
 
-        int currentIndex = GUILayout.SelectionGrid(graphNumIndex, graphNumOption, 3, GUILayout.Width(90));
-        if (graphNumIndex != currentIndex)
-        {
-            graphNumIndex = currentIndex;
-            ShowVariableCombine();
-        }
-
-        GUILayout.Space(30);
+        var variableCombineList = VarTracer.Instance.Graphs[(mMouseSelectedGraphNum-1).ToString()].VariableCombineList;
         for (int i = 0; i < variableCombineList.Count; i++)
         {
             if (GUILayout.Button(variableCombineList[i],VarSelectedBtnStyle, GUILayout.Width(90)))
@@ -358,10 +370,11 @@ public class GraphItWindow : EditorWindow
 
     private static void ShowVariableCombine()
     {
-        VarTracer.ClearGraph(graphNumIndex.ToString());
-        foreach (var varName in variableCombineList)
+        var targetGraphName = (mMouseSelectedGraphNum - 1).ToString();
+        VarTracer.ClearGraph(targetGraphName);
+        foreach (var varName in VarTracer.Instance.Graphs[targetGraphName].VariableCombineList)
         {
-            VarTracer.AttachVariable(varName, graphNumIndex.ToString());
+            VarTracer.AttachVariable(varName,targetGraphName);
         }
     }
 
@@ -408,6 +421,70 @@ public class GraphItWindow : EditorWindow
         }
     }
 
+    public static void DrawTickMark(Rect rect, EditorWindow window)
+    {
+        int graph_index = 0;
+        foreach (KeyValuePair<string, VarTracerGraphItData> kv in VarTracer.Instance.Graphs)
+        {
+			graph_index++;	
+            float height = kv.Value.GetHeight();
+
+            GUIStyle s = new GUIStyle();
+            s.fixedHeight = height + y_gap;
+            s.stretchWidth = true;
+            EditorGUILayout.BeginVertical(s);
+
+            //skip subgraph title if only one, and it's the same.
+            NameLabel.normal.textColor = Color.white;
+
+            if (kv.Value.mData.Count > 0)
+            {
+                GUILayout.BeginVertical();
+
+                float GraphGap = kv.Value.m_maxValue - kv.Value.m_minValue;
+                float unitHeight = GraphGap / VarTracerConst.Graph_Grid_Row_Num;
+
+                for (int i = 0; i < VarTracerConst.Graph_Grid_Row_Num + 1; i++)
+                {
+                    GUILayout.Space(6);
+                    if (unitHeight == 0)
+                        EditorGUILayout.LabelField("",NameLabel);
+                    else
+                        EditorGUILayout.LabelField((kv.Value.m_maxValue - i * unitHeight).ToString(VarTracerConst.NUM_FORMAT_1),NameLabel);
+                }
+                GUILayout.EndVertical();
+            }
+            EditorGUILayout.EndVertical();
+        }
+    }
+
+
+    public static void DrawAttributeArea(Rect rect, EditorWindow window)
+    {
+        int graph_index = 0;
+        foreach (KeyValuePair<string, VarTracerGraphItData> kv in VarTracer.Instance.Graphs)
+        {
+            graph_index++;
+            bool isSelected = graph_index == mMouseSelectedGraphNum;
+            if (isSelected)
+            {
+                try
+                {
+                    DrawGraphAttribute(kv);
+                }
+                catch (System.Exception)
+                {
+                    Debug.Log("");                    
+                }
+                break;
+            }
+            else
+            {
+                continue;
+            }
+        }
+    }
+
     public static void DrawGraphs(Rect rect, EditorWindow window)
     {
         if (VarTracer.Instance)
@@ -438,7 +515,6 @@ public class GraphItWindow : EditorWindow
                 GL.Begin(GL.QUADS);
                 GL.Color(new Color(0.2f, 0.2f, 0.2f));
 
-
                 foreach (KeyValuePair<string, VarTracerGraphItData> kv in VarTracer.Instance.Graphs)
                 {
                     float height = kv.Value.GetHeight();
@@ -458,10 +534,9 @@ public class GraphItWindow : EditorWindow
 
                 foreach (KeyValuePair<string, VarTracerGraphItData> kv in VarTracer.Instance.Graphs)
                 {
-                    graph_index++;
-
+					graph_index++;
                     float height = kv.Value.GetHeight();
-                    DrawGraphGridLines(scrolled_y_pos, mWidth, height,graph_index == mMouseOverGraphIndex);
+                    DrawGraphGridLines(scrolled_y_pos, mWidth, height,graph_index == mMouseSelectedGraphNum);
 
                     foreach (KeyValuePair<string, VarTracerDataInternal> entry in kv.Value.mData)
                     {
@@ -538,7 +613,6 @@ public class GraphItWindow : EditorWindow
                             previous_value = value;
                         }
                     }
-
                     scrolled_y_pos += (height + y_gap);
                 }
                 GL.End();
@@ -550,15 +624,28 @@ public class GraphItWindow : EditorWindow
                 GL.Viewport(new Rect(0, 0, rect.width, rect.height));
                 GL.LoadPixelMatrix(0, rect.width, rect.height, 0);
             }
+            
+            //(y_offset - mGraphViewScrollPos.y) +
+            Rect rec = new Rect(10,  (VarTracerConst.DefaultChannelHieght + y_gap) * VarTracer.Instance.Graphs.Count - y_gap, 100, 50);
+            GUILayout.BeginArea(rec);
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("+", GUILayout.Width(20), GUILayout.Height(20)))
+                VarTracer.AddChannel();
+
+            if (GUILayout.Button("-", GUILayout.Width(20), GUILayout.Height(20)))
+                VarTracer.RemoveChannel();
+
+            GUILayout.EndHorizontal();
+            GUILayout.EndArea();
+
 
             mGraphViewScrollPos = EditorGUILayout.BeginScrollView(mGraphViewScrollPos, GUIStyle.none);
 
             graph_index = 0;
-            mWidth = window.position.width - x_offset;
+            mWidth = window.position.width - VarTracerConst.NavigationAreaRWidth;
             foreach (KeyValuePair<string, VarTracerGraphItData> kv in VarTracer.Instance.Graphs)
             {
-                graph_index++;
-
+				graph_index++;	
                 float height = kv.Value.GetHeight();
                 float width = currentFrameIndex * kv.Value.XStep;
                 if (width < mWidth)
@@ -588,19 +675,11 @@ public class GraphItWindow : EditorWindow
                 {
                     GUILayout.BeginArea(r);
                     GUILayout.BeginVertical();
-
-                    float GraphGap = kv.Value.m_maxValue - kv.Value.m_minValue;
-                    float unitHeight = GraphGap / VarTracerConst.Graph_Grid_Row_Num;
-
                     for (int i = 0; i < VarTracerConst.Graph_Grid_Row_Num + 1; i++)
                     {
                         GUILayout.Space(6);
-                        if (unitHeight == 0)
-                            EditorGUILayout.LabelField("",NameLabel);
-                        else
-                            EditorGUILayout.LabelField((kv.Value.m_maxValue - i * unitHeight).ToString(VarTracerConst.NUM_FORMAT_1),NameLabel);
-                    }
-
+                        EditorGUILayout.LabelField("");
+                    }                    
                     GUILayout.BeginHorizontal();
                     kv.Value.ScrollPos = GUILayout.BeginScrollView(kv.Value.ScrollPos, GUILayout.Width(mWidth), GUILayout.Height(0));
                     GUILayout.Label("", GUILayout.Width(width), GUILayout.Height(0));
@@ -609,9 +688,6 @@ public class GraphItWindow : EditorWindow
                     GUILayout.EndVertical();
                     GUILayout.EndArea();
                 }
-
-                DrawGraphAttribute(kv);
-
                 ////Respond to mouse input!
                 if (Event.current.type == EventType.MouseDrag && r.Contains(Event.current.mousePosition - Event.current.delta))
                 {
@@ -621,13 +697,11 @@ public class GraphItWindow : EditorWindow
                     }
                     window.Repaint();
                 }
-                else if (Event.current.type != EventType.Layout && r.Contains(Event.current.mousePosition))
+                else if (Event.current.type == EventType.MouseDown && r.Contains(Event.current.mousePosition))
                 {
-                    if (Event.current.type == EventType.Repaint)
-                    {
-                        mMouseOverGraphIndex = graph_index;
-                    }
+                        mMouseSelectedGraphNum = graph_index;
                 }
+
                 EditorGUILayout.EndVertical();
             }
             EditorGUILayout.EndScrollView();
@@ -636,12 +710,13 @@ public class GraphItWindow : EditorWindow
 
     private static void DrawGraphAttribute(KeyValuePair<string, VarTracerGraphItData> kv)
     {
-        EditorGUILayout.LabelField("Graph:" +kv.Key,NameLabel);
+        GUILayout.Label("Graph:" + kv.Key, NameLabel);
         int colorIndex = kv.Value.mData.Count;
         foreach (var varBodyName in GetAllVariableBodyFromChannel(kv.Key))
         {
             NameLabel.normal.textColor = Color.white;
-            EditorGUILayout.LabelField("LogicName:" + varBodyName, NameLabel);
+
+            GUILayout.Label("LogicName:" + varBodyName, NameLabel);
 
             foreach (var entry in kv.Value.mData)
             {
@@ -653,7 +728,7 @@ public class GraphItWindow : EditorWindow
                     {
                         NameLabel.normal.textColor = g.mColor;
                     }
-                    EditorGUILayout.LabelField("     [" + entry.Key + "]" + "   Value: " + g.mCurrentValue.ToString(VarTracerConst.NUM_FORMAT_2),NameLabel);
+                    GUILayout.Label("     [Variable]   " + entry.Key + ":" + g.mCurrentValue.ToString(VarTracerConst.NUM_FORMAT_2), NameLabel);
                 }
             }
 
@@ -663,23 +738,28 @@ public class GraphItWindow : EditorWindow
             {
                 colorIndex++;
                 NameLabel.normal.textColor = VarTracerUtils.GetColorByIndex(colorIndex);
-                EditorGUILayout.BeginHorizontal();
-                var flag = EditorGUILayout.Toggle(varBody.EventInfos[eventName].IsCutFlag, GUILayout.Width(10));
+                GUILayout.BeginHorizontal();
+
+                Color saveColor = GUI.backgroundColor;
+                GUI.backgroundColor = NameLabel.normal.textColor;
+                GUILayout.Button("",EventButtonStyle,GUILayout.Width(10));
+                GUI.backgroundColor = saveColor;
+                var flag = EditorGUILayout.Toggle(varBody.EventInfos[eventName].IsCutFlag,GUILayout.Width(10));
                 if (flag != varBody.EventInfos[eventName].IsCutFlag)
                 {
                     varBody.EventInfos[eventName].IsCutFlag = flag;
-                    if(flag)
+                    if (flag)
                         varBody.EventInfos[eventName].TimeStamp = VarTracerUtils.GetTimeStamp();
                 }
-                EditorGUILayout.LabelField("     <Event>    " + eventName, NameLabel);
-                EditorGUILayout.EndHorizontal();
+                GUILayout.Label("     <Event>    " + eventName, NameLabel);
+                GUILayout.EndHorizontal();
             }
         }
 
         if (kv.Value.mData.Count >= 1)
         {
             HoverText.normal.textColor = Color.white;
-            EditorGUILayout.LabelField("duration:" + (mWidth / kv.Value.XStep / VarTracerConst.FPS).ToString(VarTracerConst.NUM_FORMAT_3) + "(s)", HoverText, GUILayout.Width(140));
+            GUILayout.Label("duration:" + (mWidth / kv.Value.XStep / VarTracerConst.FPS).ToString(VarTracerConst.NUM_FORMAT_3) + "(s)", HoverText, GUILayout.Width(140));
             kv.Value.XStep = GUILayout.HorizontalSlider(kv.Value.XStep, 0.1f, 15, GUILayout.Width(160));
         }
     }
@@ -759,7 +839,8 @@ public class GraphItWindow : EditorWindow
                         if (currentEvent.Duration == 0)
                             buttonWidth = (int)(VarTracerConst.INSTANT_EVENT_BTN_DURATION * VarTracerConst.FPS * kv.Value.XStep);
                         else
-                            buttonWidth = (int)(currentEvent.Duration * VarTracerConst.FPS * kv.Value.XStep);
+                            buttonWidth = (int)(VarTracerConst.INSTANT_EVENT_BTN_DURATION * VarTracerConst.FPS * kv.Value.XStep);
+                            //buttonWidth = (int)(currentEvent.Duration * VarTracerConst.FPS * kv.Value.XStep);
 
                         GUIStyle style = EventButtonStyle;
                         float x = x_offset + currentEvent.EventFrameIndex * kv.Value.XStep - kv.Value.ScrollPos.x;
@@ -778,13 +859,12 @@ public class GraphItWindow : EditorWindow
                         GUI.backgroundColor = VarTracerUtils.GetColorByIndex(colorIndexDict[currentEvent.EventName]);
                         GUI.Button(tooltip_r, currentEvent.EventName, style);
 
-                        if (Event.current.type == EventType.Repaint && tooltip_r.Contains(Event.current.mousePosition + new Vector2(0, m_controlScreenHeight)))
+                        if (Event.current.type == EventType.Repaint && tooltip_r.Contains(Event.current.mousePosition + new Vector2(0,m_controlScreenHeight)))
                         {
-                            //GUI.backgroundColor = Color.grey;
+                            GUI.backgroundColor = Color.white;
                             GUI.Label(new Rect(tooltip_r.x - 20, tooltip_r.y - 30, 110,30), "name:" + currentEvent.EventName + "\n"
                                 + "duration:" + currentEvent.Duration + "\n" ,EditorStyles.textArea);
                         }
-
                         GUI.backgroundColor = saveColor;
                     }
                 }
@@ -793,14 +873,6 @@ public class GraphItWindow : EditorWindow
         }
         return scrolled_y_pos;
     }
-
-    public static GUIStyle NameLabel;
-    public static GUIStyle SmallLabel;
-    public static GUIStyle HoverText;
-    public static GUIStyle FracGS;
-    public static GUIStyle VarSelectedBtnStyle;
-    public static GUIStyle EventButtonStyle;
-
     public static void InitializeStyles()
     {
         if (NameLabel == null)

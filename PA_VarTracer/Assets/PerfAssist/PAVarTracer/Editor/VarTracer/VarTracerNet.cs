@@ -85,7 +85,6 @@ public class VarTracerNet
         return currentFrame;
     }
 
-
     public bool Handle_VarTracerJsonParameter(eNetCmd cmd, UsCmd c)
     {
 
@@ -97,7 +96,6 @@ public class VarTracerNet
         //NetUtil.Log("varTracer info{0}", varTracerInfo);
         return true;
     }
-
 
     public bool Handle_ServerLogging(eNetCmd cmd, UsCmd c)
     {

@@ -36,15 +36,17 @@ public class VarTracerConst
 
     public static readonly string[] SPRLIT_TAG_ARRAY = new string[] { VarTracerConst.SPRLIT_TAG };
 
-    public enum ActionType
-    {
-        None,
-        DefineVariable,
-        UpdateVariable,
-        DefineEvent,
-        SendEvent,
-        All,
-    }
+
+    //varTracerGraphItWindow
+    public static float NavigationAreaStartX = 0;
+    public static float AttributeAreaStartX = 1220;
+    public static float TickMarkAreaStartX = 1180;
+
+    public static float NavigationAreaRWidth = 250;
+    //varTracerGraphItWindow
+
+
+    public static readonly int  DefaultChannelHieght= 200;
 
     public enum RunningState
     {

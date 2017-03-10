@@ -27,6 +27,12 @@ public class VarTracerDataInternal
 public class VarTracerGraphItData
 {
     public Dictionary<string, VarTracerDataInternal> mData = new Dictionary<string, VarTracerDataInternal>();
+    private List<string> m_variableCombineList = new List<string>();
+    public List<string> VariableCombineList
+    {
+        get { return m_variableCombineList; }
+        set { m_variableCombineList = value; }
+    }
 
     public string mName;
 
@@ -319,7 +325,7 @@ public class VarTracer : MonoBehaviour
     public static void AddChannel()
     {
         string newChannelName = Instance.Graphs.Count.ToString();
-        DefineVisualChannel(newChannelName,200,true);
+        DefineVisualChannel(newChannelName,VarTracerConst.DefaultChannelHieght, true);
     }
 
     public static void RemoveChannel()
@@ -356,6 +362,16 @@ public class VarTracer : MonoBehaviour
 #endif
     }
 
+    public static void ClearAllCombineList()
+    {
+#if UNITY_EDITOR
+        foreach (var graphData in VarTracer.Instance.Graphs.Values)
+        {
+            graphData.VariableCombineList.Clear();
+        }
+#endif
+    }
+
     public static void ClearAll()
     {
 #if UNITY_EDITOR
@@ -370,6 +386,8 @@ public class VarTracer : MonoBehaviour
                 }
             }
         }
+        ClearAllCombineList();
 #endif
     }
+
 }
