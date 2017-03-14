@@ -5,6 +5,8 @@ using System.Collections.Generic;
 
 public class VarTracerConst
 {
+    public static string DEFAULT_GROUP_NAME = "_default";
+
     public static readonly float HANDLE_JASON_INTERVAL = 0.001f;
     public static readonly float SEND_MSG_INTERVAL = 0.001f;
 

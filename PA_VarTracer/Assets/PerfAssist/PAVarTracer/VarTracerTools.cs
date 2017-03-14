@@ -22,94 +22,66 @@ using UnityEngine;
 //    ep.EventDuration = 1.5f;
 //    ep.EventDesc = "EventDesc";
 
-//    VarTracerTools.SendGroupLoop(
+//    VarTracerTools.SendGroup(
 //        new Group("Test", new VariableParm[] { vp }, new EventParm[] { ep })
 //    );
 //}
 
 public class VarTracerTools
 {
-    public static void DefineVariable(string variableName, string LogicalName)
-    {
-        VarTracerJsonType vtjt = new VarTracerJsonType();
-        vtjt.logicName = LogicalName;
-        vtjt.variableName = new string[] { variableName };
-        vtjt.variableValue = new float[] { 0 };
-        VarTracerSender.Instance.SendJsonMsg(vtjt);
-    }
 
     public static void UpdateVariable(string variableName, float value)
     {
-        VarTracerJsonType vtjt = new VarTracerJsonType();
-        vtjt.variableName = new string[] { variableName };
-        vtjt.variableValue = new float[] { value };
-        VarTracerSender.Instance.SendJsonMsg(vtjt);
+        UpdateVariable(VarTracerConst.DEFAULT_GROUP_NAME,variableName,value);
     }
 
-    public static void DefineEvent(string eventName, string LogicalName)
+    public static void UpdateVariable(string groupName,string variableName, float value)
     {
-        VarTracerJsonType vtjt = new VarTracerJsonType();
-        vtjt.logicName = LogicalName;
-        vtjt.eventName = new string[] { eventName };
-        vtjt.eventDuration = new float[] { -1 };
-        VarTracerSender.Instance.SendJsonMsg(vtjt);
+        VarTracerSender.Instance.CmdCacher.SendVariable(groupName,variableName,value);
     }
 
     public static void SendEvent(string eventName, float duration = 0)
     {
-        VarTracerJsonType vtjt = new VarTracerJsonType();
-        vtjt.eventName = new string[] { eventName };
-        vtjt.eventDuration = new float[] { duration };
-        VarTracerSender.Instance.SendJsonMsg(vtjt);
+        SendEvent(VarTracerConst.DEFAULT_GROUP_NAME, eventName,duration);
     }
 
-    public static void SendGroup(VarGroup vjp)
+    public static void SendEvent(string groupName, string eventName, float duration = 0)
     {
-        if (vjp == null)
-            return;
-
-        VarTracerJsonType vtjt = new VarTracerJsonType();
-        vtjt.logicName = vjp.Name;
-        vtjt.runingState = vjp.RuningState;
-
-        if(vjp.VarItems !=null)
-        {
-            int count = vjp.VarItems.Length;
-            vtjt.variableName  = new string [count];
-            vtjt.variableValue = new float[count];
-            for (int i = 0; i < count; i++)
-            {
-                vtjt.variableName[i] = vjp.VarItems[i].VariableName;
-                vtjt.variableValue[i] = vjp.VarItems[i].VariableValue;
-            }
-        }
-
-        if(vjp.EventItems !=null)
-        {
-            int count = vjp.EventItems.Length;
-            vtjt.eventName = new string[count];
-            vtjt.eventDuration = new float[count];
-            for (int i = 0; i < count; i++)
-            {
-                vtjt.eventName[i] = vjp.EventItems[i].EventName;
-                vtjt.eventDuration[i] = vjp.EventItems[i].EventDuration;
-            }
-        }
-
-        VarTracerSender.Instance.SendJsonMsg(vtjt);
+        VarTracerSender.Instance.CmdCacher.SendEvent(groupName, eventName, duration);
     }
 
-    //public void StartVarTracer()
+    //public static void SendGroup(VarGroup vjp)
     //{
-    //    VarTracerJsonType vtjt = new VarTracerJsonType();
-    //    vtjt.runingState = (int)VarTracerConst.RunningState.RunningState_Start;
-    //    SendJsonMsg(vtjt);
-    //}
+    //    if (vjp == null)
+    //        return;
 
-    //public void StopVarTracer()
-    //{
-    //    VarTracerJsonType vtjt = new VarTracerJsonType();
-    //    vtjt.runingState = (int)VarTracerConst.RunningState.RunningState_Pause;
-    //    sendMsgList.Add(vtjt);
+    //    NamePackage vtjt = new NamePackage();
+    //    vtjt.logicName = vjp.Name;
+    //    vtjt.runingState = vjp.RuningState;
+
+    //    if(vjp.VarItems !=null)
+    //    {
+    //        int count = vjp.VarItems.Length;
+    //        vtjt.variableName  = new string [count];
+    //        vtjt.variableValue = new float[count];
+    //        for (int i = 0; i < count; i++)
+    //        {
+    //            vtjt.variableName[i] = vjp.VarItems[i].VariableName;
+    //            vtjt.variableValue[i] = vjp.VarItems[i].VariableValue;
+    //        }
+    //    }
+
+    //    if(vjp.EventItems !=null)
+    //    {
+    //        int count = vjp.EventItems.Length;
+    //        vtjt.eventName = new string[count];
+    //        vtjt.eventDuration = new float[count];
+    //        for (int i = 0; i < count; i++)
+    //        {
+    //            vtjt.eventName[i] = vjp.EventItems[i].EventName;
+    //            vtjt.eventDuration[i] = vjp.EventItems[i].EventDuration;
+    //        }
+    //    }
+    //    VarTracerSender.Instance.SendJsonMsg(vtjt);
     //}
 }

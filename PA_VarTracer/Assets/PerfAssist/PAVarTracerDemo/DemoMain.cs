@@ -8,6 +8,12 @@ public class DemoMain : MonoBehaviour {
     public bool LogIntoFile = false;
     public bool InGameGui = false;
 
+    public float updateInterval = 0.5F;
+
+    private float accum = 0; // FPS accumulated over the interval
+    private int frames = 0; // Frames drawn over the interval
+    private float timeleft; // Left time for current interval
+
     void Start()
     {
         _usmooth = new UsMain(LogRemotely, LogIntoFile, InGameGui);
@@ -31,35 +37,44 @@ public class DemoMain : MonoBehaviour {
         //VarTracerTools.UpdateVariable("CameraV_Z", float.Parse(Camera.main.velocity.z.ToString("F1")));
         //VarTracerTools.UpdateVariable("CameraV_T", float.Parse(Camera.main.velocity.magnitude.ToString("F1")));
 
-        //VarTracerTools.UpdateVariable("CameraV_X", Camera.main.velocity.x);
-        //VarTracerTools.UpdateVariable("CameraV_Y", Camera.main.velocity.y);
-        //VarTracerTools.UpdateVariable("CameraV_Z", Camera.main.velocity.z);
-        //VarTracerTools.UpdateVariable("CameraV_T", Camera.main.velocity.magnitude);
-
-
-        //VarTracerTools.UpdateVariable("CameraV_X", Camera.main.velocity.x);
-        //VarTracerTools.UpdateVariable("CameraV_Y", Camera.main.velocity.y);
-        //VarTracerTools.UpdateVariable("CameraV_Z", Camera.main.velocity.z);
-        //VarTracerTools.UpdateVariable("CameraV_T", Camera.main.velocity.magnitude);
-
-
-        //VarTracerTools.UpdateVariable("CameraV_X", Camera.main.velocity.x);
-        //VarTracerTools.UpdateVariable("CameraV_Y", Camera.main.velocity.y);
-        //VarTracerTools.UpdateVariable("CameraV_Z", Camera.main.velocity.z);
-        //VarTracerTools.UpdateVariable("CameraV_T", Camera.main.velocity.magnitude);
-
         var PlayerObj = GameObject.Find("Player");
         var PlayerScript = PlayerObj.GetComponent("PlayerTest") as PlayerTest;
-        VarTracerTools.UpdateVariable("PlayerV_X", PlayerScript.GetVelocity().x);
-        VarTracerTools.UpdateVariable("PlayerV_Y", PlayerScript.GetVelocity().y);
-        VarTracerTools.UpdateVariable("PlayerV_Z", PlayerScript.GetVelocity().z);
-        VarTracerTools.UpdateVariable("PlayerV_T", PlayerScript.GetVelocity().magnitude);
+
+
+        for (int i = 0; i <5000; i++)
+        {
+            VarTracerTools.UpdateVariable("Player", "PlayerV_X", PlayerScript.GetVelocity().x);
+            VarTracerTools.UpdateVariable("Player", "PlayerV_Y", PlayerScript.GetVelocity().y);
+            VarTracerTools.UpdateVariable("Player", "PlayerV_Z", PlayerScript.GetVelocity().z);
+            VarTracerTools.UpdateVariable("Player", "PlayerV_T", PlayerScript.GetVelocity().magnitude);
+        }
+
+        timeleft -= Time.deltaTime;
+        accum += Time.timeScale / Time.deltaTime;
+        ++frames;
+        float fps = 0;
+        // Interval ended - update GUI text and start new interval
+        if (timeleft <= 0.0)
+        {
+            // display two fractional digits (f2 format)
+            fps = accum / frames;
+            //string format = System.String.Format("{0:F2} FPS", fps);
+            //	DebugConsole.Log(format,level);
+            timeleft = updateInterval;
+            accum = 0.0F;
+            frames = 0;
+            VarTracerTools.UpdateVariable("System","FPS", fps);
+            UnityEngine.Debug.LogFormat("FPS= {0}",fps);
+        }
+        VarTracerSender.Instance.CmdCacher.Clear();
 	}
 
     void OnDestroy()
     {
         if (_usmooth != null)
             _usmooth.Dispose();
+
+        VarTracerSender.Instance.Destroy();        
     }
 
     void OnGUI()

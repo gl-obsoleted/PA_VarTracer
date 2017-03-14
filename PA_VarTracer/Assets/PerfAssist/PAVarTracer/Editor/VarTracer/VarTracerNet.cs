@@ -87,12 +87,11 @@ public class VarTracerNet
 
     public bool Handle_VarTracerJsonParameter(eNetCmd cmd, UsCmd c)
     {
-
         var varTracerInfo = c.ReadString();
-        if (string.IsNullOrEmpty(varTracerInfo))
-            return false;
-        lock (_locker)
-            VarTracerNet.Instance.VartracerJsonMsgList.Add(varTracerInfo);
+        //if (string.IsNullOrEmpty(varTracerInfo))
+        //    return false;
+        //lock (_locker)
+        //    VarTracerNet.Instance.VartracerJsonMsgList.Add(varTracerInfo);
         //NetUtil.Log("varTracer info{0}", varTracerInfo);
         return true;
     }

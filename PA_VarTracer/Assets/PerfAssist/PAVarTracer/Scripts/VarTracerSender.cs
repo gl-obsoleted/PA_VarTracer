@@ -4,65 +4,75 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Text;
 
 public class VarTracerSender : MonoBehaviour
 {
     public static VarTracerSender mInstance;
-    private static List<VarTracerJsonType> sendMsgList = new List<VarTracerJsonType>();
-    private static List<VarTracerJsonType> sendMsgTempList = new List<VarTracerJsonType>();
-    private static bool isMainMsgList = true;
-    private readonly static object _locker = new object();
-    private Thread m_MsgThread;
+    private VarTracerCmdCacher _cmdCacher = new VarTracerCmdCacher();
+    public VarTracerCmdCacher CmdCacher
+    {
+        get { return _cmdCacher; }
+    }
 
     void Start()
     {
-        m_MsgThread = new Thread(new ThreadStart(SendMsgAsyn));
-        m_MsgThread.Start();
     }
-
-    private void SendMsgAsyn()
+    
+    public void Destroy()
     {
-        while (true)
-        {
-            if (sendMsgList.Count > 0 || sendMsgTempList.Count>0)
-            {
-                List<VarTracerJsonType> msgList;
-                lock (_locker)
-                {
-                    if (isMainMsgList)
-                        msgList = sendMsgList;
-                    else
-                        msgList = sendMsgTempList;
-                    isMainMsgList = !isMainMsgList;
-                }
-
-                foreach (var vtjt in msgList)
-                {
-                    UsCmd pkt = new UsCmd();
-                    pkt.WriteNetCmd(eNetCmd.SV_VarTracerJsonParameter);
-                    pkt.WriteString(JsonUtility.ToJson(vtjt));
-                    UsNet.Instance.SendCommand(pkt);
-                }
-                msgList.Clear();
-            }
-        }
-    }
-
-    public void SendJsonMsg(VarTracerJsonType vtjt)
-    {
-        if (vtjt.timeStamp == 0)
-            vtjt.timeStamp = VarTracerUtils.GetTimeStamp();
-        lock (_locker)
-        {
-            if (isMainMsgList)
-                sendMsgList.Add(vtjt);
-            else
-                sendMsgTempList.Add(vtjt);
-        }
+        mInstance = null;
     }
 
     void Update()
     {
+        _cmdCacher.Clear();
+        //_sendNetCmdWatch.Reset();
+        //var msg = _sendMsgList.Dequeue();
+        //_sendNetCmdWatch.Start();
+        //byte[] b = new Byte[1024 * 1024];
+
+        //string vtjtJson = JsonUtility.ToJson(msg);
+        //if (_sendNetCmdWatch.ElapsedMilliseconds > 0)
+        //    UnityEngine.Debug.LogFormat("json time = {0}", _sendNetCmdWatch.ElapsedMilliseconds);
+
+        //while (_sendMsgList.Count > 0)
+        //{
+        //    _sendNetCmdWatch.Reset();
+        //    var msg = _sendMsgList.Dequeue();
+        //    _sendNetCmdWatch.Start();
+        //    string vtjtJson = JsonUtility.ToJson(msg);
+        //    if (_sendNetCmdWatch.ElapsedMilliseconds > 0)
+        //        UnityEngine.Debug.LogFormat("json time = {0}", _sendNetCmdWatch.ElapsedMilliseconds);
+        //    _sendNetCmdWatch.Reset();
+        //    byte[] b = new Byte[Encoding.Default.GetBytes(vtjtJson).Length+4];
+        //    _sendNetCmdWatch.Start();
+        //    //byte[] b = new Byte[50];
+        //    UsCmd pkt = new UsCmd(b);
+        //    //_sendNetCmdWatch.Stop();
+        //    if (_sendNetCmdWatch.ElapsedMilliseconds > 0)
+        //        UnityEngine.Debug.LogFormat("init time = {0}", _sendNetCmdWatch.ElapsedMilliseconds);
+        //    _sendNetCmdWatch.Reset();
+
+        //    //UsCmd pkt = new UsCmd();
+        //    _sendNetCmdWatch.Start();
+        //    pkt.WriteNetCmd(eNetCmd.SV_VarTracerJsonParameter);
+        //    pkt.WriteString(vtjtJson);
+        //    //pkt.WriteString("xxxxxxxffffxx");
+        //    if (_sendNetCmdWatch.ElapsedMilliseconds > 0)
+        //        UnityEngine.Debug.LogFormat("write time = {0}", _sendNetCmdWatch.ElapsedMilliseconds);
+        //    _sendNetCmdWatch.Reset();
+
+        //    //pkt.WriteString(vtjtJson);
+        //    _sendNetCmdWatch.Start();
+        //    UsNet.Instance.SendCommand(pkt);
+        //    if (_sendNetCmdWatch.ElapsedMilliseconds > 0)
+        //        //UnityEngine.Debug.LogFormat("send time = {0}", _sendNetCmdWatch.ElapsedMilliseconds);
+        //    _sendNetCmdWatch.Reset();
+        //}
+        //_sendNetCmdWatch.Reset();
     }
 
     public static VarTracerSender Instance
