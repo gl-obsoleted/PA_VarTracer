@@ -26,9 +26,64 @@ public class VarTracerSender : MonoBehaviour
         mInstance = null;
     }
 
+    public void SendVarTracerCmd()
+    {
+        int byteSize =0,groupCount =0;
+        //Cmd Count 
+        byteSize += VarTracerConst.ByteSize_Int;
+        //group Count
+        byteSize += VarTracerConst.ByteSize_Int;
+        foreach (var package in _cmdCacher.GroupCmdPackage)
+        {
+            if (package.Value.IsUse())
+            {
+                byteSize +=Encoding.Default.GetByteCount(package.Key);
+                groupCount++;
+
+                //variable count
+                byteSize += VarTracerConst.ByteSize_Int;
+                foreach(var list in package.Value.VariableDict.Values){
+                    if(list.IsUse())
+                    {
+                        //cacheList count
+                        byteSize += VarTracerConst.ByteSize_Int;
+                        
+                        //use VariableParm size
+                        byteSize += list.UseIndex * VarTracerConst.ByteSize_VariableParm;    
+                    }
+                }
+
+                //event count
+                byteSize += VarTracerConst.ByteSize_Int;
+                foreach (var list in package.Value.EventDict.Values)
+                {
+                    if (list.IsUse())
+                    {
+                        //cacheList count
+                        byteSize += VarTracerConst.ByteSize_Int;
+
+                        //use EventParm size
+                        byteSize += list.UseIndex * VarTracerConst.ByteSize_EventParm;
+                    }
+                }
+            }
+        }
+
+        byte[] b = new Byte[byteSize];
+        //var test = byteSize;
+        //UsCmd pkt = new UsCmd();
+        //pkt.WriteNetCmd(eNetCmd.SV_VarTracerJsonParameter);
+        //pkt.WriteString(JsonUtility.ToJson(vtjt));
+        //UsNet.Instance.SendCommand(pkt);
+
+        //_cmdCacher.GroupCmdPackage
+        //string vtjtJson = JsonUtility.ToJson(_cmdCacher.GroupCmdPackage);
+        _cmdCacher.Clear();
+    }
+
     void Update()
     {
-        _cmdCacher.Clear();
+        SendVarTracerCmd();
         //_sendNetCmdWatch.Reset();
         //var msg = _sendMsgList.Dequeue();
         //_sendNetCmdWatch.Start();

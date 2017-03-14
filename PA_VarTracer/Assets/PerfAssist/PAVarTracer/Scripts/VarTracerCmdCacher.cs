@@ -46,8 +46,12 @@ public struct EventParm
 
 public class VarTracerCmdCacher
 {
-    private Dictionary<string, NamePackage> _groupCmdPackage 
+    private Dictionary<string, NamePackage> _groupCmdPackage
         = new Dictionary<string, NamePackage>();
+    public Dictionary<string, NamePackage> GroupCmdPackage
+    {
+        get { return _groupCmdPackage; }
+    }
 
     public void SendEvent(string groupName, string eventName, float duration)
     {
@@ -112,7 +116,6 @@ public class VarTracerCmdCacher
         if(reuseObj != null)
             return reuseObj as VariableCmdParam;
             
-            
         var parm = new VariableCmdParam();
         group.VariableDict[name].VarChacheList.Add(parm);
         group.VariableDict[name].UseIndex++;
@@ -165,6 +168,21 @@ public class NamePackage
         foreach (var list in _eventDict.Values)
             list.UseIndex = 0;
     }
+
+    public bool IsUse()
+    {
+        foreach (var list in _variableDict.Values)
+        {
+            if (list.UseIndex > 0)
+                return true;
+        }
+        foreach (var list in _eventDict.Values)
+        {
+            if (list.UseIndex > 0)
+                return true;
+        }
+        return false;
+    }
 }
 
 public class CacheList<T>
@@ -194,6 +212,11 @@ public class CacheList<T>
         if (_varChacheList.Count > UseIndex)
             return _varChacheList[UseIndex++];
         return null;        
+    }
+
+    public bool IsUse()
+    {
+        return _useIndex >0;
     }
 }
 

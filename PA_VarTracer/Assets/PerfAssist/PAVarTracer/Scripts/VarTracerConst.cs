@@ -38,6 +38,16 @@ public class VarTracerConst
 
     public static readonly string[] SPRLIT_TAG_ARRAY = new string[] { VarTracerConst.SPRLIT_TAG };
 
+    public static readonly int ByteSize_Int = sizeof(int);
+
+    public static readonly int ByteSize_Long = sizeof(long);
+
+    public static readonly int ByteSize_float = sizeof(float);
+
+    public static readonly int ByteSize_VariableParm = ByteSize_Long + ByteSize_float;
+
+    public static readonly int ByteSize_EventParm = ByteSize_Long + ByteSize_float; 
+
 
     //varTracerGraphItWindow
     public static float NavigationAreaStartX = 0;

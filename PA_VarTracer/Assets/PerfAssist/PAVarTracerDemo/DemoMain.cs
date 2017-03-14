@@ -40,8 +40,7 @@ public class DemoMain : MonoBehaviour {
         var PlayerObj = GameObject.Find("Player");
         var PlayerScript = PlayerObj.GetComponent("PlayerTest") as PlayerTest;
 
-
-        for (int i = 0; i <5000; i++)
+        for (int i = 0; i <2500; i++)
         {
             VarTracerTools.UpdateVariable("Player", "PlayerV_X", PlayerScript.GetVelocity().x);
             VarTracerTools.UpdateVariable("Player", "PlayerV_Y", PlayerScript.GetVelocity().y);
@@ -66,7 +65,6 @@ public class DemoMain : MonoBehaviour {
             VarTracerTools.UpdateVariable("System","FPS", fps);
             UnityEngine.Debug.LogFormat("FPS= {0}",fps);
         }
-        VarTracerSender.Instance.CmdCacher.Clear();
 	}
 
     void OnDestroy()
