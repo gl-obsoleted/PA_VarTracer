@@ -87,7 +87,7 @@ public class VarTracerNet
 
     public bool Handle_VarTracerJsonParameter(eNetCmd cmd, UsCmd c)
     {
-        var varTracerInfo = c.ReadString();
+        //var varTracerInfo = c.ReadString();
         //if (string.IsNullOrEmpty(varTracerInfo))
         //    return false;
         //lock (_locker)

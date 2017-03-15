@@ -140,6 +140,45 @@ public class VarTracerCmdCacher
             package.Value.Reset();
         }
     }
+
+    public int GetUsedGroupCount()
+    {
+        int groupCount = 0;
+        foreach (var package in _groupCmdPackage)
+        {
+            if (package.Value.IsUse())
+            {
+                groupCount++;
+            }
+        }
+        return groupCount;
+    }
+
+    public int GetUsedVariableCount(NamePackage packet)
+    {
+        int variableCount = 0;
+        foreach (var list in packet.VariableDict.Values)
+        {
+            if (list.IsUse())
+            {
+                variableCount++;
+            }
+        }
+        return variableCount;
+    }
+
+    public int GetUsedEventCount(NamePackage packet)
+    {
+        int eventCount = 0;
+        foreach (var list in packet.VariableDict.Values)
+        {
+            if (list.IsUse())
+            {
+                eventCount++;
+            }
+        }
+        return eventCount;
+    }
 }
 
 public class NamePackage

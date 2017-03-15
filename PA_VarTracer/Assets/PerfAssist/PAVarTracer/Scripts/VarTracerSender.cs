@@ -16,7 +16,8 @@ public class VarTracerSender : MonoBehaviour
     {
         get { return _cmdCacher; }
     }
-
+    private UsCmd _uscmd = new UsCmd(new Byte[VarTracerConst.DefaultCmdByteSize]);
+    
     void Start()
     {
     }
@@ -28,7 +29,91 @@ public class VarTracerSender : MonoBehaviour
 
     public void SendVarTracerCmd()
     {
-        int byteSize =0,groupCount =0;
+        int newSize = CalculateCmdSize();
+        int currentSize = _uscmd.Buffer.Length;
+        int preSize = currentSize;
+        while (newSize > currentSize)
+        {
+            currentSize *= 2;
+        }
+        if (currentSize > preSize)
+            _uscmd = new UsCmd(new byte[currentSize]);
+
+        writeNetCmd(_uscmd);
+        
+        _cmdCacher.Clear();
+    }
+
+    private void writeNetCmd(UsCmd uscmd)
+    {
+        uscmd.clearUsCmd();
+        uscmd.WriteNetCmd(eNetCmd.SV_VarTracerJsonParameter);
+        //group count
+        uscmd.WriteInt32(_cmdCacher.GetUsedGroupCount());
+        var e = _cmdCacher.GroupCmdPackage.GetEnumerator();
+        //while (e.MoveNext())
+        //{
+        //    e.Current.Value
+        //    //Debug.Log(e.Current);
+        //}
+        foreach (var package in _cmdCacher.GroupCmdPackage)
+        {
+            if (package.Value.IsUse())
+            {
+                //group name
+                uscmd.WriteString(package.Key);
+
+                //variable count 
+                uscmd.WriteInt32(_cmdCacher.GetUsedVariableCount(package.Value));
+                foreach (var list in package.Value.VariableDict)
+                {
+                    if (list.Value.IsUse())
+                    {
+                        //variable name 
+                        uscmd.WriteString(list.Key);
+                        //stamp count
+                        uscmd.WriteInt32(list.Value.UseIndex);
+                        var cacheList = list.Value;
+                        int usedCount = cacheList.UseIndex;
+                        for (int i = 0; i < usedCount; i++)
+                        {
+                            //stamp
+                            uscmd.WriteLong(list.Value.VarChacheList[i]._stamp);
+                            //value
+                            uscmd.WriteFloat(list.Value.VarChacheList[i]._value);
+                        }
+                    }
+                }
+
+                //event count 
+                uscmd.WriteInt32(_cmdCacher.GetUsedEventCount(package.Value));
+                foreach (var list in package.Value.EventDict)
+                {
+                    if (list.Value.IsUse())
+                    {
+                        //event name 
+                        uscmd.WriteString(list.Key);
+                        //stamp count
+                        uscmd.WriteInt32(list.Value.UseIndex);
+                        var cacheList = list.Value;
+                        int usedCount = cacheList.UseIndex;
+                        for (int i = 0; i < usedCount; i++)
+                        {
+                            //stamp
+                            uscmd.WriteLong(list.Value.VarChacheList[i]._stamp);
+                            //duration
+                            uscmd.WriteFloat(list.Value.VarChacheList[i]._duration);
+                        }
+                    }
+                }
+            }
+        }
+        UsNet.Instance.SendCommand(uscmd);
+    }
+
+    private int CalculateCmdSize()
+    {
+        int byteSize = 0, groupCount = 0;
         //Cmd Count 
         byteSize += VarTracerConst.ByteSize_Int;
         //group Count
@@ -37,19 +122,20 @@ public class VarTracerSender : MonoBehaviour
         {
             if (package.Value.IsUse())
             {
-                byteSize +=Encoding.Default.GetByteCount(package.Key);
+                byteSize += Encoding.Default.GetByteCount(package.Key);
                 groupCount++;
 
                 //variable count
                 byteSize += VarTracerConst.ByteSize_Int;
-                foreach(var list in package.Value.VariableDict.Values){
-                    if(list.IsUse())
+                foreach (var list in package.Value.VariableDict.Values)
+                {
+                    if (list.IsUse())
                     {
                         //cacheList count
                         byteSize += VarTracerConst.ByteSize_Int;
-                        
+
                         //use VariableParm size
-                        byteSize += list.UseIndex * VarTracerConst.ByteSize_VariableParm;    
+                        byteSize += list.UseIndex * VarTracerConst.ByteSize_VariableParm;
                     }
                 }
 
@@ -68,66 +154,12 @@ public class VarTracerSender : MonoBehaviour
                 }
             }
         }
-
-        byte[] b = new Byte[byteSize];
-        //var test = byteSize;
-        //UsCmd pkt = new UsCmd();
-        //pkt.WriteNetCmd(eNetCmd.SV_VarTracerJsonParameter);
-        //pkt.WriteString(JsonUtility.ToJson(vtjt));
-        //UsNet.Instance.SendCommand(pkt);
-
-        //_cmdCacher.GroupCmdPackage
-        //string vtjtJson = JsonUtility.ToJson(_cmdCacher.GroupCmdPackage);
-        _cmdCacher.Clear();
+        return byteSize;
     }
 
     void Update()
     {
         SendVarTracerCmd();
-        //_sendNetCmdWatch.Reset();
-        //var msg = _sendMsgList.Dequeue();
-        //_sendNetCmdWatch.Start();
-        //byte[] b = new Byte[1024 * 1024];
-
-        //string vtjtJson = JsonUtility.ToJson(msg);
-        //if (_sendNetCmdWatch.ElapsedMilliseconds > 0)
-        //    UnityEngine.Debug.LogFormat("json time = {0}", _sendNetCmdWatch.ElapsedMilliseconds);
-
-        //while (_sendMsgList.Count > 0)
-        //{
-        //    _sendNetCmdWatch.Reset();
-        //    var msg = _sendMsgList.Dequeue();
-        //    _sendNetCmdWatch.Start();
-        //    string vtjtJson = JsonUtility.ToJson(msg);
-        //    if (_sendNetCmdWatch.ElapsedMilliseconds > 0)
-        //        UnityEngine.Debug.LogFormat("json time = {0}", _sendNetCmdWatch.ElapsedMilliseconds);
-        //    _sendNetCmdWatch.Reset();
-        //    byte[] b = new Byte[Encoding.Default.GetBytes(vtjtJson).Length+4];
-        //    _sendNetCmdWatch.Start();
-        //    //byte[] b = new Byte[50];
-        //    UsCmd pkt = new UsCmd(b);
-        //    //_sendNetCmdWatch.Stop();
-        //    if (_sendNetCmdWatch.ElapsedMilliseconds > 0)
-        //        UnityEngine.Debug.LogFormat("init time = {0}", _sendNetCmdWatch.ElapsedMilliseconds);
-        //    _sendNetCmdWatch.Reset();
-
-        //    //UsCmd pkt = new UsCmd();
-        //    _sendNetCmdWatch.Start();
-        //    pkt.WriteNetCmd(eNetCmd.SV_VarTracerJsonParameter);
-        //    pkt.WriteString(vtjtJson);
-        //    //pkt.WriteString("xxxxxxxffffxx");
-        //    if (_sendNetCmdWatch.ElapsedMilliseconds > 0)
-        //        UnityEngine.Debug.LogFormat("write time = {0}", _sendNetCmdWatch.ElapsedMilliseconds);
-        //    _sendNetCmdWatch.Reset();
-
-        //    //pkt.WriteString(vtjtJson);
-        //    _sendNetCmdWatch.Start();
-        //    UsNet.Instance.SendCommand(pkt);
-        //    if (_sendNetCmdWatch.ElapsedMilliseconds > 0)
-        //        //UnityEngine.Debug.LogFormat("send time = {0}", _sendNetCmdWatch.ElapsedMilliseconds);
-        //    _sendNetCmdWatch.Reset();
-        //}
-        //_sendNetCmdWatch.Reset();
     }
 
     public static VarTracerSender Instance

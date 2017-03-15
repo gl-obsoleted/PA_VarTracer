@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 public class VarTracerConst
 {
-    public static string DEFAULT_GROUP_NAME = "_default";
+    public static string DEFAULT_GROUP_NAME = "_";
 
     public static readonly float HANDLE_JASON_INTERVAL = 0.001f;
     public static readonly float SEND_MSG_INTERVAL = 0.001f;
@@ -46,7 +46,9 @@ public class VarTracerConst
 
     public static readonly int ByteSize_VariableParm = ByteSize_Long + ByteSize_float;
 
-    public static readonly int ByteSize_EventParm = ByteSize_Long + ByteSize_float; 
+    public static readonly int ByteSize_EventParm = ByteSize_Long + ByteSize_float;
+
+    public static readonly int DefaultCmdByteSize = 1024 * 200; 
 
 
     //varTracerGraphItWindow
