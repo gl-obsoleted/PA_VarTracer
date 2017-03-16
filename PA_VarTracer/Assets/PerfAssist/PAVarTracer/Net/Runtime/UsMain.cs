@@ -9,10 +9,9 @@ namespace VariableTracer
 
         private long _currentTimeInMilliseconds = 0;
         private long _tickNetLast = 0;
-        //private long _tickNetInterval = 200;
         private long _tickNetInterval = 0;
 
-        public UsMain(bool LogRemotely, bool LogIntoFile, bool InGameGui)
+        public UsMain()
         {
             Application.runInBackground = true;
 

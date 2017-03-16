@@ -19,7 +19,7 @@ namespace VariableTracer
 
         void Start()
         {
-            _usmooth = new UsMain(LogRemotely, LogIntoFile, InGameGui);
+            _usmooth = new UsMain();
         }
 
         // Update is called once per frame
@@ -44,7 +44,7 @@ namespace VariableTracer
             var PlayerObj = GameObject.Find("Player");
             var PlayerScript = PlayerObj.GetComponent("PlayerTest") as PlayerTest;
 
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < 200; i++)
             {
                 VarTracerTools.UpdateVariable("Player", "PlayerV_X", PlayerScript.GetVelocity().x);
                 VarTracerTools.UpdateVariable("Player", "PlayerV_Y", PlayerScript.GetVelocity().y);

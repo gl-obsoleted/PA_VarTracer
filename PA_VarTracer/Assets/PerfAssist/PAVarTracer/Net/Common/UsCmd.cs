@@ -156,7 +156,7 @@ namespace VariableTracer
         private int _readOffset = 0;
         private byte[] _buffer;
 
-        public void clearUsCmd()
+        public void ClearCmd()
         {
             Array.Clear(_buffer, 0, _buffer.Length);
             _writeOffset = 0;

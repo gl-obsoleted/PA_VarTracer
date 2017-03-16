@@ -52,7 +52,7 @@ namespace VariableTracer
 
         private void writeNetCmd(UsCmd uscmd)
         {
-            uscmd.clearUsCmd();
+            uscmd.ClearCmd();
             uscmd.WriteNetCmd(eNetCmd.SV_VarTracerInfo);
             //group count
             uscmd.WriteInt32(_cmdCacher.GetUsedGroupCount());

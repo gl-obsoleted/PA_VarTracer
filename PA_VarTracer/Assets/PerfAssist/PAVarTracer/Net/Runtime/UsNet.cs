@@ -160,10 +160,8 @@ namespace VariableTracer
 
         public void SendCommand(UsCmd cmd)
         {
-            if (_tcpClient == null || _tcpClient.GetStream() == null)
-            {
+            if (!IsSendAvaiable())
                 return;
-            }
             byte[] cmdLenBytes = BitConverter.GetBytes((ushort)cmd.WrittenLen);
             _tcpClient.GetStream().Write(cmdLenBytes, 0, cmdLenBytes.Length);
             _tcpClient.GetStream().Write(cmd.Buffer, 0, cmd.WrittenLen);

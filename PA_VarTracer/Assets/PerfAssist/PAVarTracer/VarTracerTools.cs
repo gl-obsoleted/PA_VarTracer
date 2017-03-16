@@ -27,7 +27,6 @@ namespace VariableTracer
 {
     public class VarTracerTools
     {
-
         public static void UpdateVariable(string variableName, float value)
         {
             UpdateVariable(VarTracerConst.DEFAULT_GROUP_NAME, variableName, value);
@@ -49,7 +48,6 @@ namespace VariableTracer
         {
             VarTracerSender.Instance.CmdCacher.SendEvent(groupName, eventName, duration);
         }
-
 }
 
 
