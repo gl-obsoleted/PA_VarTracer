@@ -6,173 +6,224 @@ using UnityEditor;
 using System.Text.RegularExpressions;
 using System.Threading;
 
-public class VarTracerNet
+namespace VariableTracer
 {
-    public static VarTracerNet mInstance = null;
-
-    private  float m_lastHandleJsonTime;
-
-    private long m_startTimeStamp;
-    public long StartTimeStamp
+    public class VarTracerNet
     {
-        get { return m_startTimeStamp; }
-        set { m_startTimeStamp = value; }
-    }
+        public static VarTracerNet mInstance = null;
+        private float m_lastHandleJsonTime;
 
-    private long m_netDeltaTime;
-    public long NetDeltaTime
-    {
-        get { return m_netDeltaTime; }
-        set { m_netDeltaTime = value; }
-    }
-
-    List<string> vartracerJsonMsgList = new List<string>();
-    public List<string> VartracerJsonMsgList
-    {
-        get { return vartracerJsonMsgList; }
-    }
-
-    static VartracerJsonAsynObj vartracerJsonObj = new VartracerJsonAsynObj();
-
-    private readonly  object _locker = new object();
-
-    public void Upate()
-    {
-        if (Time.realtimeSinceStartup - m_lastHandleJsonTime >= VarTracerConst.HANDLE_JASON_INTERVAL)
+        private long m_startTimeStamp;
+        public long StartTimeStamp
         {
-            m_lastHandleJsonTime = Time.realtimeSinceStartup;
-            if(VartracerJsonMsgList.Count > 0)
-            {
-                Thread mThread = new Thread(new ParameterizedThreadStart(handleMsgAsyn));
-                lock (_locker)
-                {
-                    mThread.Start(VartracerJsonMsgList.ToArray());
-                    VartracerJsonMsgList.Clear();
-                }
-            }
+            get { return m_startTimeStamp; }
+            set { m_startTimeStamp = value; }
+        }
 
-            if (vartracerJsonObj.readerFlag)
+        private long m_netDeltaTime;
+        public long NetDeltaTime
+        {
+            get { return m_netDeltaTime; }
+            set { m_netDeltaTime = value; }
+        }
+
+        List<string> vartracerJsonMsgList = new List<string>();
+        public List<string> VartracerJsonMsgList
+        {
+            get { return vartracerJsonMsgList; }
+        }
+
+        static VartracerJsonAsynObj vartracerJsonObj = new VartracerJsonAsynObj();
+
+        private VarTracerCmdCacher _cmdCacher = new VarTracerCmdCacher();
+
+        private readonly object _locker = new object();
+
+        public void Upate()
+        {
+            if (Time.realtimeSinceStartup - m_lastHandleJsonTime >= VarTracerConst.HANDLE_JASON_INTERVAL)
             {
-                var result = vartracerJsonObj.readResovleJsonResult();
-                if (result != null)
+                m_lastHandleJsonTime = Time.realtimeSinceStartup;
+                if (VartracerJsonMsgList.Count > 0)
                 {
-                    foreach (var vjt in result)
+                    Thread mThread = new Thread(new ParameterizedThreadStart(handleMsgAsyn));
+                    lock (_locker)
                     {
-                        VarTracerHandler.ResoloveJsonMsg(vjt);
+                        mThread.Start(VartracerJsonMsgList.ToArray());
+                        VartracerJsonMsgList.Clear();
+                    }
+                }
+
+                if (vartracerJsonObj.readerFlag)
+                {
+                    var result = vartracerJsonObj.readResovleJsonResult();
+                    if (result != null)
+                    {
+                        foreach (var vjt in result)
+                        {
+                            VarTracerHandler.ResoloveJsonMsg(vjt);
+                        }
                     }
                 }
             }
         }
-    }
 
-    public void handleMsgAsyn(object o)
-    {
-        string[] strArray = (string[])o;
-        VarTracerJsonType[] writeVjt = new VarTracerJsonType[strArray.Length];
-        for (int i = 0; i < strArray.Length; i++)
-		{
-            var str = strArray[i];
-            var resolved = JsonUtility.FromJson<VarTracerJsonType>(str);
-            //Debug.LogFormat("Rec = {0}",resolved.testIndex);
-            writeVjt[i] = resolved;        			 
-		}
-        vartracerJsonObj.writeResovleJsonResult(writeVjt);
-    }
-
-    public int GetCurrentFrameFromTimestamp(long timeStamp)
-    {
-        int currentFrame = (int)((timeStamp - m_startTimeStamp) / 1000.0f * VarTracerConst.FPS);
-        return currentFrame;
-    }
-
-    public bool Handle_VarTracerJsonParameter(eNetCmd cmd, UsCmd c)
-    {
-        //var varTracerInfo = c.ReadString();
-        //if (string.IsNullOrEmpty(varTracerInfo))
-        //    return false;
-        //lock (_locker)
-        //    VarTracerNet.Instance.VartracerJsonMsgList.Add(varTracerInfo);
-        //NetUtil.Log("varTracer info{0}", varTracerInfo);
-        return true;
-    }
-
-    public bool Handle_ServerLogging(eNetCmd cmd, UsCmd c)
-    {
-        return true;
-    }
-
-    
-    public static VarTracerNet Instance
-    {
-        get
+        public void handleMsgAsyn(object o)
         {
-#if UNITY_EDITOR
-            if (mInstance == null)
+            string[] strArray = (string[])o;
+            VarTracerJsonType[] writeVjt = new VarTracerJsonType[strArray.Length];
+            for (int i = 0; i < strArray.Length; i++)
             {
-                mInstance = new VarTracerNet();
+                var str = strArray[i];
+                var resolved = JsonUtility.FromJson<VarTracerJsonType>(str);
+                //Debug.LogFormat("Rec = {0}",resolved.testIndex);
+                writeVjt[i] = resolved;
             }
-            return mInstance;
+            vartracerJsonObj.writeResovleJsonResult(writeVjt);
+        }
+
+        public int GetCurrentFrameFromTimestamp(long timeStamp)
+        {
+            int currentFrame = (int)((timeStamp - m_startTimeStamp) / 1000.0f * VarTracerConst.FPS);
+            return currentFrame;
+        }
+
+        public bool Handle_VarTracerInfo(eNetCmd cmd, UsCmd c)
+        {
+            int groupCount = c.ReadInt32();
+            //NetUtil.Log("read group count: {0}.", groupCount);
+
+            for (int i = 0; i < groupCount; i++)
+            {
+                var groupName = c.ReadString();
+                //NetUtil.Log("read group Name: {0}.", groupName);
+
+                //if (!_cmdCacher.GroupCmdPackage.ContainsKey(groupName))
+                //    _cmdCacher.GroupCmdPackage.Add(groupName, new NamePackage());
+
+                //var group = _cmdCacher.GroupCmdPackage[groupName];
+                var variableCount = c.ReadInt32();
+                //NetUtil.Log("read var count : {0}.", variableCount);
+                for (int j = 0; j < variableCount; j++)
+                {
+                    var variableName = c.ReadString();
+                    NetUtil.Log("read variableName: {0}.", variableName);
+                    //if(!group.VariableDict.ContainsKey(variableName))
+                    //    group.VariableDict.Add(variableName,new CacheList<VariableCmdParam>());
+                    var sessionCount = c.ReadInt32();
+                    //NetUtil.Log("read sessionCount: {0}.", sessionCount);
+                    for (int k = 0; k < sessionCount; k++)
+                    {
+                        //long stamp = c.ReadLong();
+                        int stamp = c.ReadInt32();
+                        //NetUtil.Log("read stamp: {0}.", stamp);
+                        float value = c.ReadFloat();
+                        //NetUtil.Log("read value: {0}.", value);
+                    }
+                }
+
+                var eventCount = c.ReadInt32();
+                for (int j = 0; j < eventCount; j++)
+                {
+                    var eventName = c.ReadString();
+                    //if (!group.EventDict.ContainsKey(eventName))
+                    //    group.EventDict.Add(eventName, new CacheList<EventCmdParam>());
+                    var sessionCount = c.ReadInt32();
+                    for (int k = 0; k < sessionCount; k++)
+                    {
+                        long stamp = c.ReadLong();
+                        NetUtil.Log("read stamp: {0}.", stamp);
+                        float duration = c.ReadFloat();
+                    }
+                }
+            }
+
+            //var varTracerInfo = c.ReadString();
+            //if (string.IsNullOrEmpty(varTracerInfo))
+            //    return false;
+            //lock (_locker)
+            //    VarTracerNet.Instance.VartracerJsonMsgList.Add(varTracerInfo);
+            //NetUtil.Log("varTracer info{0}", varTracerInfo);
+            return true;
+        }
+
+        public bool Handle_ServerLogging(eNetCmd cmd, UsCmd c)
+        {
+            return true;
+        }
+
+
+        public static VarTracerNet Instance
+        {
+            get
+            {
+#if UNITY_EDITOR
+                if (mInstance == null)
+                {
+                    mInstance = new VarTracerNet();
+                }
+                return mInstance;
 #else
             return null;
 #endif
+            }
+        }
+    }
+
+    public class VartracerJsonAsynObj
+    {
+        public bool readerFlag = false;
+        public VarTracerJsonType[] m_resovleResult;
+        public VarTracerJsonType[] readResovleJsonResult()
+        {
+            if (m_resovleResult == null)
+                return null;
+            lock (this)
+            {
+                if (!readerFlag)
+                {
+                    try
+                    {
+                        Monitor.Wait(this);
+                    }
+                    catch (SynchronizationLockException e)
+                    {
+                        Console.WriteLine(e);
+                    }
+                    catch (ThreadInterruptedException e)
+                    {
+                        Console.WriteLine(e);
+                    }
+                }
+                readerFlag = false;
+                Monitor.Pulse(this);
+            }
+            return m_resovleResult;
+        }
+
+        public void writeResovleJsonResult(VarTracerJsonType[] resovleResult)
+        {
+            lock (this)
+            {
+                if (readerFlag)
+                {
+                    try
+                    {
+                        Monitor.Wait(this);
+                    }
+                    catch (SynchronizationLockException e)
+                    {
+                        Console.WriteLine(e);
+                    }
+                    catch (ThreadInterruptedException e)
+                    {
+                        Console.WriteLine(e);
+                    }
+                }
+                m_resovleResult = resovleResult;
+                readerFlag = true;
+                Monitor.Pulse(this);
+            }
         }
     }
 }
-
-public class VartracerJsonAsynObj
-{
-    public bool readerFlag = false;
-    public VarTracerJsonType[] m_resovleResult;
-    public VarTracerJsonType[] readResovleJsonResult()
-    {
-        if (m_resovleResult == null)
-            return null;
-        lock (this)
-        {
-            if (!readerFlag)
-            {
-                try
-                {
-                    Monitor.Wait(this);
-                }
-                catch (SynchronizationLockException e)
-                {
-                    Console.WriteLine(e);
-                }
-                catch (ThreadInterruptedException e)
-                {
-                    Console.WriteLine(e);
-                }
-            }
-            readerFlag = false;
-            Monitor.Pulse(this);
-        }
-        return m_resovleResult;
-    }
-
-    public void writeResovleJsonResult(VarTracerJsonType[] resovleResult)
-    {
-        lock (this)
-        {
-            if (readerFlag)
-            {
-                try
-                {
-                    Monitor.Wait(this);
-                }
-                catch (SynchronizationLockException e)
-                {
-                    Console.WriteLine(e);
-                }
-                catch (ThreadInterruptedException e)
-                {
-                    Console.WriteLine(e);
-                }
-            }
-            m_resovleResult = resovleResult;
-            readerFlag = true;
-            Monitor.Pulse(this);
-        }
-    }
-}
-

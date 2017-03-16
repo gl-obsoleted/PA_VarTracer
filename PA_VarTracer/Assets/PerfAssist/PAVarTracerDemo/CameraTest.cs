@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Threading;
+using VariableTracer;
 
 public class CameraTest : MonoBehaviour {
     // Use this for initialization

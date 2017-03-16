@@ -4,13 +4,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using UnityEngine;
-
 //Demo
-//VarTracerTools.DefineEvent("ATTACK", "Camera");
 //VarTracerTools.UpdateVariable("CameraV_X", Camera.main.velocity.x);
 //VarTracerTools.SendEvent("JUMP", 1.0f, "PLAYER JUMP");
 //VarTracerTools.SendEvent("ATTACK");
-//VarTracerTools.DefineEvent("ATTACK", "Camera");
 
 //{
 //    VariableParm vp ;
@@ -26,29 +23,35 @@ using UnityEngine;
 //        new Group("Test", new VariableParm[] { vp }, new EventParm[] { ep })
 //    );
 //}
-
-public class VarTracerTools
+namespace VariableTracer
 {
-
-    public static void UpdateVariable(string variableName, float value)
+    public class VarTracerTools
     {
-        UpdateVariable(VarTracerConst.DEFAULT_GROUP_NAME,variableName,value);
-    }
 
-    public static void UpdateVariable(string groupName,string variableName, float value)
-    {
-        VarTracerSender.Instance.CmdCacher.SendVariable(groupName,variableName,value);
-    }
+        public static void UpdateVariable(string variableName, float value)
+        {
+            UpdateVariable(VarTracerConst.DEFAULT_GROUP_NAME, variableName, value);
+        }
 
-    public static void SendEvent(string eventName, float duration = 0)
-    {
-        SendEvent(VarTracerConst.DEFAULT_GROUP_NAME, eventName,duration);
-    }
+        public static void UpdateVariable(string groupName, string variableName, float value)
+        {
+            if (UsNet.Instance.IsSendAvaiable())
+                VarTracerSender.Instance.CmdCacher.SendVariable(groupName, variableName, value);
+        }
 
-    public static void SendEvent(string groupName, string eventName, float duration = 0)
-    {
-        VarTracerSender.Instance.CmdCacher.SendEvent(groupName, eventName, duration);
-    }
+        public static void SendEvent(string eventName, float duration = 0)
+        {
+            if (UsNet.Instance.IsSendAvaiable())
+                SendEvent(VarTracerConst.DEFAULT_GROUP_NAME, eventName, duration);
+        }
+
+        public static void SendEvent(string groupName, string eventName, float duration = 0)
+        {
+            VarTracerSender.Instance.CmdCacher.SendEvent(groupName, eventName, duration);
+        }
+
+}
+
 
     //public static void SendGroup(VarGroup vjp)
     //{

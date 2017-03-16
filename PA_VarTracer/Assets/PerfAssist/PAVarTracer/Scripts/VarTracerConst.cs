@@ -48,8 +48,7 @@ public class VarTracerConst
 
     public static readonly int ByteSize_EventParm = ByteSize_Long + ByteSize_float;
 
-    public static readonly int DefaultCmdByteSize = 1024 * 200; 
-
+    public static readonly int DefaultCmdByteSize = 1024 * 100;
 
     //varTracerGraphItWindow
     public static float NavigationAreaStartX = 0;

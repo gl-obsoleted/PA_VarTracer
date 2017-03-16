@@ -7,178 +7,188 @@ using System.Threading;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
-
-public class VarTracerSender : MonoBehaviour
+namespace VariableTracer
 {
-    public static VarTracerSender mInstance;
-    private VarTracerCmdCacher _cmdCacher = new VarTracerCmdCacher();
-    public VarTracerCmdCacher CmdCacher
+    public class VarTracerSender : MonoBehaviour
     {
-        get { return _cmdCacher; }
-    }
-    private UsCmd _uscmd = new UsCmd(new Byte[VarTracerConst.DefaultCmdByteSize]);
-    
-    void Start()
-    {
-    }
-    
-    public void Destroy()
-    {
-        mInstance = null;
-    }
-
-    public void SendVarTracerCmd()
-    {
-        int newSize = CalculateCmdSize();
-        int currentSize = _uscmd.Buffer.Length;
-        int preSize = currentSize;
-        while (newSize > currentSize)
+        public static VarTracerSender mInstance;
+        private VarTracerCmdCacher _cmdCacher = new VarTracerCmdCacher();
+        public VarTracerCmdCacher CmdCacher
         {
-            currentSize *= 2;
+            get { return _cmdCacher; }
         }
-        if (currentSize > preSize)
-            _uscmd = new UsCmd(new byte[currentSize]);
-
-        writeNetCmd(_uscmd);
-        
-        _cmdCacher.Clear();
-    }
-
-    private void writeNetCmd(UsCmd uscmd)
-    {
-        uscmd.clearUsCmd();
-        uscmd.WriteNetCmd(eNetCmd.SV_VarTracerJsonParameter);
-        //group count
-        uscmd.WriteInt32(_cmdCacher.GetUsedGroupCount());
-        var e = _cmdCacher.GroupCmdPackage.GetEnumerator();
-        //while (e.MoveNext())
-        //{
-        //    e.Current.Value
-        //    //Debug.Log(e.Current);
-        //}
-        foreach (var package in _cmdCacher.GroupCmdPackage)
+        private UsCmd _uscmd = new UsCmd(new Byte[VarTracerConst.DefaultCmdByteSize]);
+        void Start()
         {
-            if (package.Value.IsUse())
-            {
-                //group name
-                uscmd.WriteString(package.Key);
+        }
 
-                //variable count 
-                uscmd.WriteInt32(_cmdCacher.GetUsedVariableCount(package.Value));
-                foreach (var list in package.Value.VariableDict)
+        public void Destroy()
+        {
+            mInstance = null;
+        }
+
+        private bool HasNewVarTracerCmd()
+        {
+            return _cmdCacher.GetUsedGroupCount() > 0;
+        }
+
+        public void SendVarTracerCmd()
+        {
+            if (!HasNewVarTracerCmd())
+                return;
+            int newSize = CalculateCmdSize();
+            int currentSize = _uscmd.Buffer.Length;
+            int preSize = currentSize;
+            while (newSize > currentSize)
+                currentSize *= 2;
+
+            if (currentSize > preSize)
+                _uscmd = new UsCmd(new byte[currentSize]);
+
+            writeNetCmd(_uscmd);
+
+            _cmdCacher.Clear();
+        }
+
+        private void writeNetCmd(UsCmd uscmd)
+        {
+            uscmd.clearUsCmd();
+            uscmd.WriteNetCmd(eNetCmd.SV_VarTracerInfo);
+            //group count
+            uscmd.WriteInt32(_cmdCacher.GetUsedGroupCount());
+            foreach (var package in _cmdCacher.GroupCmdPackage)
+            {
+                if (package.Value.IsUse())
                 {
-                    if (list.Value.IsUse())
+                    //group name
+                    uscmd.WriteString(package.Key);
+
+                    //variable count 
+                    uscmd.WriteInt32(_cmdCacher.GetUsedVariableCount(package.Value));
+                    foreach (var list in package.Value.VariableDict)
                     {
-                        //variable name 
-                        uscmd.WriteString(list.Key);
-                        //stamp count
-                        uscmd.WriteInt32(list.Value.UseIndex);
-                        var cacheList = list.Value;
-                        int usedCount = cacheList.UseIndex;
-                        for (int i = 0; i < usedCount; i++)
+                        if (list.Value.IsUse())
                         {
-                            //stamp
-                            uscmd.WriteLong(list.Value.VarChacheList[i]._stamp);
-                            //value
-                            uscmd.WriteFloat(list.Value.VarChacheList[i]._value);
+                            //variable name 
+                            uscmd.WriteString(list.Key);
+                            //session count
+                            uscmd.WriteInt32(list.Value.UseIndex);
+                            var cacheList = list.Value;
+                            int usedCount = cacheList.UseIndex;
+                            for (int i = 0; i < usedCount; i++)
+                            {
+                                //stamp
+                                uscmd.WriteInt32(312);
+                                //uscmd.WriteLong(list.Value.VarChacheList[i]._stamp);
+                                //value
+                                uscmd.WriteFloat(list.Value.VarChacheList[i]._value);
+                            }
+                        }
+                    }
+
+                    //event count 
+                    uscmd.WriteInt32(_cmdCacher.GetUsedEventCount(package.Value));
+                    foreach (var list in package.Value.EventDict)
+                    {
+                        if (list.Value.IsUse())
+                        {
+                            //event name 
+                            uscmd.WriteString(list.Key);
+                            //session count
+                            uscmd.WriteInt32(list.Value.UseIndex);
+                            var cacheList = list.Value;
+                            int usedCount = cacheList.UseIndex;
+                            for (int i = 0; i < usedCount; i++)
+                            {
+                                //stamp
+                                uscmd.WriteLong(list.Value.VarChacheList[i]._stamp);
+                                //duration
+                                uscmd.WriteFloat(list.Value.VarChacheList[i]._duration);
+                            }
                         }
                     }
                 }
+            }
 
-                //event count 
-                uscmd.WriteInt32(_cmdCacher.GetUsedEventCount(package.Value));
-                foreach (var list in package.Value.EventDict)
+            UsNet.Instance.SendCommand(uscmd);
+        }
+
+        private int CalculateCmdSize()
+        {
+            int byteSize = 0, groupCount = 0;
+            //Cmd Count 
+            byteSize += VarTracerConst.ByteSize_Int;
+            //group Count
+            byteSize += VarTracerConst.ByteSize_Int;
+            foreach (var package in _cmdCacher.GroupCmdPackage)
+            {
+                if (package.Value.IsUse())
                 {
-                    if (list.Value.IsUse())
+                    byteSize += Encoding.Default.GetByteCount(package.Key);
+                    groupCount++;
+
+                    //variable count
+                    byteSize += VarTracerConst.ByteSize_Int;
+                    foreach (var list in package.Value.VariableDict)
                     {
-                        //event name 
-                        uscmd.WriteString(list.Key);
-                        //stamp count
-                        uscmd.WriteInt32(list.Value.UseIndex);
-                        var cacheList = list.Value;
-                        int usedCount = cacheList.UseIndex;
-                        for (int i = 0; i < usedCount; i++)
+                        if (list.Value.IsUse())
                         {
-                            //stamp
-                            uscmd.WriteLong(list.Value.VarChacheList[i]._stamp);
-                            //duration
-                            uscmd.WriteFloat(list.Value.VarChacheList[i]._duration);
+                            //variable name 
+                            byteSize += Encoding.Default.GetByteCount(list.Key);
+
+                            //cacheList count
+                            byteSize += VarTracerConst.ByteSize_Int;
+
+                            //use VariableParm size
+                            byteSize += list.Value.UseIndex * VarTracerConst.ByteSize_VariableParm;
+                        }
+                    }
+
+                    //event count
+                    byteSize += VarTracerConst.ByteSize_Int;
+                    foreach (var list in package.Value.EventDict)
+                    {
+                        if (list.Value.IsUse())
+                        {
+                            //event name 
+                            byteSize += Encoding.Default.GetByteCount(list.Key);
+
+                            //cacheList count
+                            byteSize += VarTracerConst.ByteSize_Int;
+
+                            //use EventParm size
+                            byteSize += list.Value.UseIndex * VarTracerConst.ByteSize_EventParm;
                         }
                     }
                 }
             }
+            return byteSize;
         }
-        UsNet.Instance.SendCommand(uscmd);
-    }
 
-    private int CalculateCmdSize()
-    {
-        int byteSize = 0, groupCount = 0;
-        //Cmd Count 
-        byteSize += VarTracerConst.ByteSize_Int;
-        //group Count
-        byteSize += VarTracerConst.ByteSize_Int;
-        foreach (var package in _cmdCacher.GroupCmdPackage)
+        void Update()
         {
-            if (package.Value.IsUse())
-            {
-                byteSize += Encoding.Default.GetByteCount(package.Key);
-                groupCount++;
-
-                //variable count
-                byteSize += VarTracerConst.ByteSize_Int;
-                foreach (var list in package.Value.VariableDict.Values)
-                {
-                    if (list.IsUse())
-                    {
-                        //cacheList count
-                        byteSize += VarTracerConst.ByteSize_Int;
-
-                        //use VariableParm size
-                        byteSize += list.UseIndex * VarTracerConst.ByteSize_VariableParm;
-                    }
-                }
-
-                //event count
-                byteSize += VarTracerConst.ByteSize_Int;
-                foreach (var list in package.Value.EventDict.Values)
-                {
-                    if (list.IsUse())
-                    {
-                        //cacheList count
-                        byteSize += VarTracerConst.ByteSize_Int;
-
-                        //use EventParm size
-                        byteSize += list.UseIndex * VarTracerConst.ByteSize_EventParm;
-                    }
-                }
-            }
+            SendVarTracerCmd();
         }
-        return byteSize;
-    }
 
-    void Update()
-    {
-        SendVarTracerCmd();
-    }
-
-    public static VarTracerSender Instance
-    {
-        get
+        public static VarTracerSender Instance
         {
-            if (mInstance == null)
+            get
             {
-                if (UsNet.Instance == null && UsNet.Instance.CmdExecutor == null)
+                if (mInstance == null)
                 {
-                    UnityEngine.Debug.LogError("UsNet not available");
-                    return null;
-                }
+                    if (UsNet.Instance == null && UsNet.Instance.CmdExecutor == null)
+                    {
+                        UnityEngine.Debug.LogError("UsNet not available");
+                        return null;
+                    }
 
-                GameObject go = new GameObject("VarTracerSender");
-                go.hideFlags = HideFlags.HideAndDontSave;
-                mInstance = go.AddComponent<VarTracerSender>();
+                    GameObject go = new GameObject("VarTracerSender");
+                    go.hideFlags = HideFlags.HideAndDontSave;
+                    mInstance = go.AddComponent<VarTracerSender>();
+                }
+                return mInstance;
             }
-            return mInstance;
         }
     }
 }
+

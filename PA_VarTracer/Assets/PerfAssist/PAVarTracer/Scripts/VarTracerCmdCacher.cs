@@ -170,7 +170,7 @@ public class VarTracerCmdCacher
     public int GetUsedEventCount(NamePackage packet)
     {
         int eventCount = 0;
-        foreach (var list in packet.VariableDict.Values)
+        foreach (var list in packet.EventDict.Values)
         {
             if (list.IsUse())
             {
@@ -227,6 +227,9 @@ public class NamePackage
 public class CacheList<T>
 {
     int _useIndex = 0;
+    public CacheList()
+    {
+    }
     public CacheList (T t)
     {
         _varChacheList.Add(t);
