@@ -109,6 +109,10 @@ namespace VariableTracer
             {
                 return BitConverter.ToSingle(buffer, startIndex);
             }
+            else if (typeof(T) == typeof(long))
+            {
+                return BitConverter.ToInt64(buffer, startIndex);
+            }
             return null;
         }
     }

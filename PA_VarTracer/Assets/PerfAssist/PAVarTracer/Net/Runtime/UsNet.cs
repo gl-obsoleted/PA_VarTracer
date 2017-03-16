@@ -122,25 +122,15 @@ namespace VariableTracer
             {
                 while (_tcpClient.Available > 0)
                 {
-                    byte[] cmdLenBuf = new byte[2];
+                    byte[] cmdLenBuf = new byte[4];
                     int cmdLenRead = _tcpClient.GetStream().Read(cmdLenBuf, 0, cmdLenBuf.Length);
-                    ushort cmdLen = BitConverter.ToUInt16(cmdLenBuf, 0);
+                    int cmdLen = BitConverter.ToInt32(cmdLenBuf, 0);
                     if (cmdLenRead > 0 && cmdLen > 0)
                     {
                         byte[] buffer = new byte[cmdLen];
-                        int len = _tcpClient.GetStream().Read(buffer, 0, buffer.Length);
-                        if (len == buffer.Length)
-                        {
-                            //						UsCmd c = new UsCmd(buffer);
-                            //					    eNetCmd nc = c.ReadNetCmd();
-                            //						AddToLog(string.Format("cmd {0} - len: {1}", nc, len));
-
-                            _cmdExec.Execute(new UsCmd(buffer));
-                        }
-                        else
-                        {
-                            AddToLog(string.Format("corrupted cmd received - len: {0}", len));
-                        }
+                        if (!NetUtil.ReadStreamData(_tcpClient, ref buffer))
+                            throw new Exception("Read Stream Data Error!");
+                        _cmdExec.Execute(new UsCmd(buffer));
                     }
                 }
             }
@@ -162,10 +152,10 @@ namespace VariableTracer
         {
             if (!IsSendAvaiable())
                 return;
-            byte[] cmdLenBytes = BitConverter.GetBytes((ushort)cmd.WrittenLen);
+            byte[] cmdLenBytes = BitConverter.GetBytes((int)cmd.WrittenLen);
             _tcpClient.GetStream().Write(cmdLenBytes, 0, cmdLenBytes.Length);
             _tcpClient.GetStream().Write(cmd.Buffer, 0, cmd.WrittenLen);
-            //Debug.Log(string.Format("A cmd len = {0} time = {1})", cmd.WrittenLen, s.ElapsedMilliseconds));
+            //Debug.Log(string.Format("B cmd len = {0} size = {1})", cmd.WrittenLen, cmdLenBytes.Length));
         }
 
         // Callback that gets called when a new incoming client

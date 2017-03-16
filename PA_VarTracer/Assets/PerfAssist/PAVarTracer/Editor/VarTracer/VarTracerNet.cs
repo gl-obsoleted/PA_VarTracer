@@ -107,15 +107,14 @@ namespace VariableTracer
                 for (int j = 0; j < variableCount; j++)
                 {
                     var variableName = c.ReadString();
-                    NetUtil.Log("read variableName: {0}.", variableName);
+                    //NetUtil.Log("read variableName: {0}.", variableName);
                     //if(!group.VariableDict.ContainsKey(variableName))
                     //    group.VariableDict.Add(variableName,new CacheList<VariableCmdParam>());
                     var sessionCount = c.ReadInt32();
                     //NetUtil.Log("read sessionCount: {0}.", sessionCount);
                     for (int k = 0; k < sessionCount; k++)
                     {
-                        //long stamp = c.ReadLong();
-                        int stamp = c.ReadInt32();
+                        long stamp = c.ReadLong();
                         //NetUtil.Log("read stamp: {0}.", stamp);
                         float value = c.ReadFloat();
                         //NetUtil.Log("read value: {0}.", value);
@@ -132,10 +131,9 @@ namespace VariableTracer
                     for (int k = 0; k < sessionCount; k++)
                     {
                         long stamp = c.ReadLong();
-                        NetUtil.Log("read stamp: {0}.", stamp);
                         float duration = c.ReadFloat();
-                    }
                 }
+                    }
             }
 
             //var varTracerInfo = c.ReadString();
@@ -151,7 +149,6 @@ namespace VariableTracer
         {
             return true;
         }
-
 
         public static VarTracerNet Instance
         {

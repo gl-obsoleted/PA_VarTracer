@@ -7,10 +7,6 @@ namespace VariableTracer
     public class DemoMain : MonoBehaviour
     {
         private UsMain _usmooth;
-        public bool LogRemotely = true;
-        public bool LogIntoFile = false;
-        public bool InGameGui = false;
-
         public float updateInterval = 0.5F;
 
         private float accum = 0; // FPS accumulated over the interval
@@ -43,8 +39,8 @@ namespace VariableTracer
 
             var PlayerObj = GameObject.Find("Player");
             var PlayerScript = PlayerObj.GetComponent("PlayerTest") as PlayerTest;
-
-            for (int i = 0; i < 200; i++)
+                
+            for (int i = 0; i < 1000; i++)
             {
                 VarTracerTools.UpdateVariable("Player", "PlayerV_X", PlayerScript.GetVelocity().x);
                 VarTracerTools.UpdateVariable("Player", "PlayerV_Y", PlayerScript.GetVelocity().y);
@@ -67,7 +63,7 @@ namespace VariableTracer
                 accum = 0.0F;
                 frames = 0;
                 VarTracerTools.UpdateVariable("System", "FPS", fps);
-                UnityEngine.Debug.LogFormat("FPS= {0}", fps);
+                //UnityEngine.Debug.LogFormat("FPS= {0}", fps);
             }
         }
 

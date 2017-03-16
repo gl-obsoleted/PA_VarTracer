@@ -27,6 +27,7 @@ SOFTWARE.
 using System;
 using System.IO;
 using System.Net.Sockets;
+using UnityEngine;
 
 namespace  VariableTracer{
 
@@ -95,19 +96,21 @@ namespace  VariableTracer{
             }
         }
 
+
         public void Tick_ReceivingData()
         {
             try
             {
                 while (_tcpClient.Available > 0)
                 {
-                    byte[] cmdLenBuf = new byte[2];
+                    byte[] cmdLenBuf = new byte[4];
                     int cmdLenRead = _tcpClient.GetStream().Read(cmdLenBuf, 0, cmdLenBuf.Length);
-                    ushort cmdLen = BitConverter.ToUInt16(cmdLenBuf, 0);
+                    int cmdLen = BitConverter.ToInt32(cmdLenBuf, 0);
                     if (cmdLenRead > 0 && cmdLen > 0)
                     {
                         byte[] buffer = new byte[cmdLen];
-                        int len = _tcpClient.GetStream().Read(buffer, 0, buffer.Length);
+                        if (!NetUtil.ReadStreamData(_tcpClient,ref buffer))
+                            throw new Exception("Read Stream Data Error!");
 
                         UsCmd cmd = new UsCmd(buffer);
                         UsCmdExecResult result = _cmdParser.Execute(cmd);
@@ -122,8 +125,6 @@ namespace  VariableTracer{
                                 NetUtil.Log("net unknown cmd: {0}.", new UsCmd(buffer).ReadNetCmd());
                                 break;
                         }
-
-                        len++; // warning CS0219: The variable `len' is assigned but its value is never used
                     }
                 }
             }
@@ -142,7 +143,7 @@ namespace  VariableTracer{
         {
             try
             {
-                byte[] cmdLenBytes = BitConverter.GetBytes((ushort)cmd.WrittenLen);
+                byte[] cmdLenBytes = BitConverter.GetBytes((int)cmd.WrittenLen);
                 _tcpClient.GetStream().Write(cmdLenBytes, 0, cmdLenBytes.Length);
                 _tcpClient.GetStream().Write(cmd.Buffer, 0, cmd.WrittenLen);
             }

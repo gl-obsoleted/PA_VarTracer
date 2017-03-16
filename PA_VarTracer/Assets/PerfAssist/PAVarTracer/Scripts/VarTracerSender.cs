@@ -77,9 +77,9 @@ namespace VariableTracer
                             int usedCount = cacheList.UseIndex;
                             for (int i = 0; i < usedCount; i++)
                             {
+                                //UnityEngine.Debug.LogFormat("send stamp= {0}", list.Value.VarChacheList[i]._stamp);
                                 //stamp
-                                uscmd.WriteInt32(312);
-                                //uscmd.WriteLong(list.Value.VarChacheList[i]._stamp);
+                                uscmd.WriteLong(list.Value.VarChacheList[i]._stamp);
                                 //value
                                 uscmd.WriteFloat(list.Value.VarChacheList[i]._value);
                             }

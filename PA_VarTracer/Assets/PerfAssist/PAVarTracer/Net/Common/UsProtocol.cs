@@ -53,11 +53,4 @@ namespace VariableTracer
 
         SV_CmdEnd,
     }
-
-    public enum eSubCmd_TransmitStage
-    {
-        DataBegin,
-        DataSlice,
-        DataEnd,
-    }
 }

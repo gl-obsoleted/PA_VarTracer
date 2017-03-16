@@ -60,7 +60,7 @@ namespace VariableTracer
     public class UsCmd
     {
         public const int STRIP_NAME_MAX_LEN = 64;
-        public const int BUFFER_SIZE = 16 * 1024;
+        public const int BUFFER_SIZE = 1 * 200;
 
         public UsCmd()
         {
