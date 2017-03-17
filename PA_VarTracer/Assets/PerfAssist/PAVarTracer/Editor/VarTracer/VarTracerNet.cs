@@ -115,9 +115,17 @@ namespace VariableTracer
                     for (int k = 0; k < sessionCount; k++)
                     {
                         long stamp = c.ReadLong();
+                        if (VarTracerNet.Instance.StartTimeStamp == 0)
+                        {
+                            VarTracerNet.Instance.StartTimeStamp = VarTracerUtils.GetTimeStamp();
+                            VarTracerNet.Instance.NetDeltaTime = VarTracerNet.Instance.StartTimeStamp - stamp;
+                        }
+                        stamp += VarTracerNet.Instance.NetDeltaTime;
+
                         //NetUtil.Log("read stamp: {0}.", stamp);
                         float value = c.ReadFloat();
                         //NetUtil.Log("read value: {0}.", value);
+                        VarTracerHandler.UpdateVariable(groupName, variableName, stamp,value);
                     }
                 }
 
@@ -132,16 +140,10 @@ namespace VariableTracer
                     {
                         long stamp = c.ReadLong();
                         float duration = c.ReadFloat();
-                }
                     }
+                }
             }
 
-            //var varTracerInfo = c.ReadString();
-            //if (string.IsNullOrEmpty(varTracerInfo))
-            //    return false;
-            //lock (_locker)
-            //    VarTracerNet.Instance.VartracerJsonMsgList.Add(varTracerInfo);
-            //NetUtil.Log("varTracer info{0}", varTracerInfo);
             return true;
         }
 

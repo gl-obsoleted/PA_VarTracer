@@ -143,7 +143,7 @@ namespace VariableTracer
 #if UNITY_EDITOR
         public const string VERSION = "1.2.0";
         public Dictionary<string, VarTracerGraphItData> Graphs = new Dictionary<string, VarTracerGraphItData>();
-        public Dictionary<string, VarTracerLogicalBody> VariableBodys = new Dictionary<string, VarTracerLogicalBody>();
+        public Dictionary<string, VarTracerGroup> groups = new Dictionary<string, VarTracerGroup>();
 
         public static VarTracer mInstance = null;
 
@@ -273,7 +273,7 @@ namespace VariableTracer
         public static void AttachVariable(string variableName, string ChannelName)
         {
 #if UNITY_EDITOR
-            foreach (var VarBody in Instance.VariableBodys.Values)
+            foreach (var VarBody in Instance.groups.Values)
             {
                 if (VarBody.VariableDict.ContainsKey(variableName))
                 {
@@ -296,7 +296,7 @@ namespace VariableTracer
                 return null;
 
 #if UNITY_EDITOR
-            foreach (var VarBody in Instance.VariableBodys.Values)
+            foreach (var VarBody in Instance.groups.Values)
             {
                 if (VarBody.VariableDict.ContainsKey(variableName))
                 {
@@ -337,7 +337,7 @@ namespace VariableTracer
 
             string removeChannelName = (Instance.Graphs.Count - 1).ToString();
 #if UNITY_EDITOR
-            foreach (var VarBody in Instance.VariableBodys.Values)
+            foreach (var VarBody in Instance.groups.Values)
             {
                 foreach (var var in VarBody.VariableDict.Values)
                 {
@@ -351,7 +351,7 @@ namespace VariableTracer
         public static void ClearGraph(string graph)
         {
 #if UNITY_EDITOR
-            foreach (var VarBody in Instance.VariableBodys.Values)
+            foreach (var VarBody in Instance.groups.Values)
             {
                 foreach (var var in VarBody.VariableDict.Values)
                 {
@@ -378,7 +378,7 @@ namespace VariableTracer
         public static void ClearAll()
         {
 #if UNITY_EDITOR
-            foreach (var VarBody in Instance.VariableBodys.Values)
+            foreach (var VarBody in Instance.groups.Values)
             {
                 foreach (var var in VarBody.VariableDict.Values)
                 {

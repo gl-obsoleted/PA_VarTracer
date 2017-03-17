@@ -50,7 +50,6 @@ namespace VariableTracer
         }
 }
 
-
     //public static void SendGroup(VarGroup vjp)
     //{
     //    if (vjp == null)

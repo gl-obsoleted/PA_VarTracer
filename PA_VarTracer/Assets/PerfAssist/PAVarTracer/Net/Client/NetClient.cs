@@ -103,7 +103,7 @@ namespace  VariableTracer{
             {
                 while (_tcpClient.Available > 0)
                 {
-                    byte[] cmdLenBuf = new byte[4];
+                    byte[] cmdLenBuf = new byte[VarTracerConst.ByteSize_Int];
                     int cmdLenRead = _tcpClient.GetStream().Read(cmdLenBuf, 0, cmdLenBuf.Length);
                     int cmdLen = BitConverter.ToInt32(cmdLenBuf, 0);
                     if (cmdLenRead > 0 && cmdLen > 0)
@@ -158,7 +158,6 @@ namespace  VariableTracer{
         {
             // Retrieving TcpClient from IAsyncResult
             TcpClient tcpClient = (TcpClient)asyncResult.AsyncState;
-
             try
             {
                 if (tcpClient.Connected) // may throw NullReference

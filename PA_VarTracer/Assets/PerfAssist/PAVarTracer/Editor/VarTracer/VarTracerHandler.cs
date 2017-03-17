@@ -50,10 +50,10 @@ namespace VariableTracer
             //}
         }
 
-        public static void DefineVariable(string variableName, string variableBody)
+        public static void DefineVariable(string variableName, string groupName)
         {
 #if UNITY_EDITOR
-            foreach (var varBody in VarTracer.Instance.VariableBodys.Values)
+            foreach (var varBody in VarTracer.Instance.groups.Values)
             {
                 if (varBody.VariableDict.ContainsKey(variableName))
                 {
@@ -62,35 +62,38 @@ namespace VariableTracer
                 }
             }
 
-            if (!VarTracer.Instance.VariableBodys.ContainsKey(variableBody))
+            if (!VarTracer.Instance.groups.ContainsKey(groupName))
             {
-                var body = new VarTracerLogicalBody(variableBody);
-                body.VariableDict[variableName] = new VarTracerVariable(variableName, variableBody);
-                VarTracer.Instance.VariableBodys[variableBody] = body;
+                var body = new VarTracerGroup(groupName);
+                body.VariableDict[variableName] = new VarTracerVariable(variableName, groupName);
+                VarTracer.Instance.groups[groupName] = body;
             }
 
-            var variableDict = VarTracer.Instance.VariableBodys[variableBody].VariableDict;
+            var variableDict = VarTracer.Instance.groups[groupName].VariableDict;
             if (!variableDict.ContainsKey(variableName))
             {
-                variableDict[variableName] = new VarTracerVariable(variableName, variableBody);
+                variableDict[variableName] = new VarTracerVariable(variableName, groupName);
             }
 #endif
         }
 
-        public static void UpdateVariable(long timeStamp, string variableName, float value)
+        public static void UpdateVariable(string groupName ,string variableName, long timeStamp, float value)
         {
             if (!GraphItWindow.isVarTracerStart())
                 return;
-#if UNITY_EDITOR
-            foreach (var VarBody in VarTracer.Instance.VariableBodys.Values)
+            if (!VarTracer.Instance.groups.ContainsKey(groupName))
             {
-                if (VarBody.VariableDict.ContainsKey(variableName))
-                {
-                    var var = VarBody.VariableDict[variableName];
-                    var.InsertValue(new VarDataInfo(value, VarTracerNet.Instance.GetCurrentFrameFromTimestamp(timeStamp)));
-                }
+                var body = new VarTracerGroup(groupName);
+                body.VariableDict[variableName] = new VarTracerVariable(variableName, groupName);
+                VarTracer.Instance.groups[groupName] = body;
             }
-#endif
+
+            var variableDict = VarTracer.Instance.groups[groupName].VariableDict;
+            if (!variableDict.ContainsKey(variableName))
+            {
+                variableDict[variableName] = new VarTracerVariable(variableName, groupName);
+            }
+             variableDict[variableName].InsertValue(new VarDataInfo(value, VarTracerNet.Instance.GetCurrentFrameFromTimestamp(timeStamp)));
         }
 
         public static void DefineEvent(string eventName, string variableBody)
@@ -99,13 +102,13 @@ namespace VariableTracer
             if (string.IsNullOrEmpty(eventName))
                 return;
 
-            if (!VarTracer.Instance.VariableBodys.ContainsKey(variableBody))
+            if (!VarTracer.Instance.groups.ContainsKey(variableBody))
             {
-                var body = new VarTracerLogicalBody(variableBody);
-                VarTracer.Instance.VariableBodys[variableBody] = body;
+                var body = new VarTracerGroup(variableBody);
+                VarTracer.Instance.groups[variableBody] = body;
             }
 
-            foreach (var varBody in VarTracer.Instance.VariableBodys)
+            foreach (var varBody in VarTracer.Instance.groups)
             {
                 foreach (var eName in varBody.Value.EventInfos.Keys)
                 {
@@ -116,7 +119,7 @@ namespace VariableTracer
                     }
                 }
             }
-            VarTracer.Instance.VariableBodys[variableBody].RegistEvent(eventName);
+            VarTracer.Instance.groups[variableBody].RegistEvent(eventName);
 #endif
         }
 
@@ -124,7 +127,7 @@ namespace VariableTracer
         {
             if (!GraphItWindow.isVarTracerStart())
                 return;
-            foreach (var varBody in VarTracer.Instance.VariableBodys)
+            foreach (var varBody in VarTracer.Instance.groups)
             {
                 foreach (var eName in varBody.Value.EventInfos.Keys)
                 {

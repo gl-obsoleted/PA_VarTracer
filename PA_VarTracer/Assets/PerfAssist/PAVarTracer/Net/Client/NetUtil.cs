@@ -33,6 +33,7 @@ namespace VariableTracer
                 len = client.GetStream().Read(buffer, len, target);
                 if (len < 0)
                     return false;
+
                 target -= len;
             }
             while (target > 0);

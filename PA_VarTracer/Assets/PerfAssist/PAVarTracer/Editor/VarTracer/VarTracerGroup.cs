@@ -27,7 +27,7 @@ namespace VariableTracer
         }
     }
 
-    public class VarTracerLogicalBody
+    public class VarTracerGroup
     {
         private string channelName;
         public string ChannelName
@@ -43,7 +43,7 @@ namespace VariableTracer
             set { m_variableBodyName = value; }
         }
 
-        public VarTracerLogicalBody(string varBodyName)
+        public VarTracerGroup(string varBodyName)
         {
             m_variableBodyName = varBodyName;
         }

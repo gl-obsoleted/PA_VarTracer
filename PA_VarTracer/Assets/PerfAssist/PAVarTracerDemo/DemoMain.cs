@@ -39,13 +39,14 @@ namespace VariableTracer
 
             var PlayerObj = GameObject.Find("Player");
             var PlayerScript = PlayerObj.GetComponent("PlayerTest") as PlayerTest;
-                
-            for (int i = 0; i < 1000; i++)
+
+            VarTracerTools.UpdateVariable("Player", "PlayerV_X", PlayerScript.GetVelocity().x);
+            VarTracerTools.UpdateVariable("Player", "PlayerV_Y", PlayerScript.GetVelocity().y);
+            VarTracerTools.UpdateVariable("Player", "PlayerV_Z", PlayerScript.GetVelocity().z);
+            VarTracerTools.UpdateVariable("Player", "PlayerV_T", PlayerScript.GetVelocity().magnitude);
+            for (int i = 0; i < 250; i++)
             {
-                VarTracerTools.UpdateVariable("Player", "PlayerV_X", PlayerScript.GetVelocity().x);
-                VarTracerTools.UpdateVariable("Player", "PlayerV_Y", PlayerScript.GetVelocity().y);
-                VarTracerTools.UpdateVariable("Player", "PlayerV_Z", PlayerScript.GetVelocity().z);
-                VarTracerTools.UpdateVariable("Player", "PlayerV_T", PlayerScript.GetVelocity().magnitude);
+                
             }
 
             timeleft -= Time.deltaTime;

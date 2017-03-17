@@ -88,8 +88,8 @@ namespace VariableTracer
                 if (VarTracer.Instance.Graphs.Count == 0)
                     VarTracer.AddChannel();
 
-                bool constainsCamera = VarTracer.Instance.VariableBodys.ContainsKey("Camera");
-                if (!constainsCamera || VarTracer.Instance.VariableBodys["Camera"].VariableDict.Count == 0)
+                bool constainsCamera = VarTracer.Instance.groups.ContainsKey("Camera");
+                if (!constainsCamera || VarTracer.Instance.groups["Camera"].VariableDict.Count == 0)
                 {
                     VarTracerHandler.DefineVariable("CameraV_X", "Camera");
                     VarTracerHandler.DefineVariable("CameraV_Y", "Camera");
@@ -149,7 +149,7 @@ namespace VariableTracer
         {
             EditorApplication.update -= Update;
             VarTracer.Instance.Graphs.Clear();
-            VarTracer.Instance.VariableBodys.Clear();
+            VarTracer.Instance.groups.Clear();
         }
 
         void Update()
@@ -229,7 +229,7 @@ namespace VariableTracer
         int CalculateVariableLineNum()
         {
             List<VarTracerVariable> variableList = new List<VarTracerVariable>();
-            foreach (var varBody in VarTracer.Instance.VariableBodys.Values)
+            foreach (var varBody in VarTracer.Instance.groups.Values)
             {
                 foreach (var var in varBody.VariableDict.Values)
                 {
@@ -248,7 +248,7 @@ namespace VariableTracer
         List<VarTracerVariable> GetVariableList()
         {
             List<VarTracerVariable> variableList = new List<VarTracerVariable>();
-            foreach (var varBody in VarTracer.Instance.VariableBodys.Values)
+            foreach (var varBody in VarTracer.Instance.groups.Values)
             {
                 foreach (var var in varBody.VariableDict.Values)
                 {
@@ -737,7 +737,7 @@ namespace VariableTracer
                     }
                 }
 
-                var varBody = VarTracer.Instance.VariableBodys[varBodyName];
+                var varBody = VarTracer.Instance.groups[varBodyName];
 
                 foreach (var eventName in varBody.EventInfos.Keys)
                 {
@@ -772,7 +772,7 @@ namespace VariableTracer
         static List<string> GetAllVariableBodyFromChannel(string channelName)
         {
             List<string> result = new List<string>();
-            foreach (var varBody in VarTracer.Instance.VariableBodys)
+            foreach (var varBody in VarTracer.Instance.groups)
             {
                 foreach (var var in varBody.Value.VariableDict.Values)
                 {
@@ -805,7 +805,7 @@ namespace VariableTracer
                 Dictionary<string, int> colorIndexDict = new Dictionary<string, int>();
                 foreach (var varBodyName in GetAllVariableBodyFromChannel(kv.Key))
                 {
-                    var varBody = VarTracer.Instance.VariableBodys[varBodyName];
+                    var varBody = VarTracer.Instance.groups[varBodyName];
                     foreach (var eventName in varBody.EventInfos.Keys)
                     {
                         var eventInfo = varBody.EventInfos[eventName];
