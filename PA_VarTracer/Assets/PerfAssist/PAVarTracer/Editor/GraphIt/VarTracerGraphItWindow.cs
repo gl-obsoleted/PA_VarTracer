@@ -700,6 +700,8 @@ namespace VariableTracer
                         GUILayout.EndVertical();
                         GUILayout.EndArea();
                     }
+
+                    r.width = mWidth+ 35;
                     ////Respond to mouse input!
                     if (Event.current.type == EventType.MouseDrag && r.Contains(Event.current.mousePosition - Event.current.delta))
                     {

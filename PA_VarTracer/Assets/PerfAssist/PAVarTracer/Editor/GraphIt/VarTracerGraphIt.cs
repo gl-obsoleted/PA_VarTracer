@@ -160,6 +160,7 @@ namespace VariableTracer
                 {
                     GameObject go = new GameObject("GraphIt");
                     go.hideFlags = HideFlags.HideAndDontSave;
+                    go.isStatic = true;
                     mInstance = go.AddComponent<VarTracer>();
                 }
                 return mInstance;

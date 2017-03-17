@@ -1,4 +1,5 @@
 ﻿using System.Net.Sockets;
+using UnityEngine;
 namespace VariableTracer
 {
     public delegate void NetLogHandler(string fmt, params object[] args);
@@ -22,9 +23,13 @@ namespace VariableTracer
 
         public static bool ReadStreamData(TcpClient client, ref byte[] buffer)
         {
-            if (client == null || client.Available <= 0 || !client.GetStream().CanRead 
+            if (client == null || !client.GetStream().CanRead 
                 || buffer == null || buffer.Length == 0)
+            {
+                Debug.LogErrorFormat("client = {0},ava ={1} ,canRead ={2},buffer ={3},bufferLen ={4}", client == null, client.Available, !client.GetStream().CanRead
+                    , buffer == null, buffer.Length == 0);
                 return false;
+            }
 
             int target = buffer.Length;
             int len = 0;
@@ -32,7 +37,11 @@ namespace VariableTracer
             {
                 len = client.GetStream().Read(buffer, len, target);
                 if (len < 0)
+                {
+                    Debug.LogError("len <0");
                     return false;
+                }
+                    
 
                 target -= len;
             }
