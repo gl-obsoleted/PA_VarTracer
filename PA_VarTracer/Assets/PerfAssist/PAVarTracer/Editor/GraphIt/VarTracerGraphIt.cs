@@ -24,7 +24,6 @@ namespace VariableTracer
         public List<VarDataInfo> mDataInfos;
     }
 
-
     public class VarTracerGraphItData
     {
         public Dictionary<string, VarTracerDataInternal> mData = new Dictionary<string, VarTracerDataInternal>();
@@ -146,13 +145,11 @@ namespace VariableTracer
         public Dictionary<string, VarTracerGroup> groups = new Dictionary<string, VarTracerGroup>();
 
         public static VarTracer mInstance = null;
-
 #endif
 
         void Start()
         {
         }
-
 
         public static VarTracer Instance
         {
@@ -294,7 +291,6 @@ namespace VariableTracer
         {
             if (string.IsNullOrEmpty(variableName))
                 return null;
-
 #if UNITY_EDITOR
             foreach (var VarBody in Instance.groups.Values)
             {
@@ -327,7 +323,7 @@ namespace VariableTracer
         {
             string newChannelName = Instance.Graphs.Count.ToString();
             DefineVisualChannel(newChannelName, VarTracerConst.DefaultChannelHieght, true);
-            GraphItWindow.mMouseSelectedGraphNum = VarTracer.Instance.Graphs.Count;
+            VarTracerWindow.mMouseSelectedGraphNum = VarTracer.Instance.Graphs.Count;
         }
 
         public static void RemoveChannel()
@@ -346,8 +342,9 @@ namespace VariableTracer
             }
             Instance.Graphs.Remove(removeChannelName);
 #endif
-            GraphItWindow.mMouseSelectedGraphNum = VarTracer.Instance.Graphs.Count;
+            VarTracerWindow.mMouseSelectedGraphNum = VarTracer.Instance.Graphs.Count;
         }
+
         public static void ClearGraph(string graph)
         {
 #if UNITY_EDITOR

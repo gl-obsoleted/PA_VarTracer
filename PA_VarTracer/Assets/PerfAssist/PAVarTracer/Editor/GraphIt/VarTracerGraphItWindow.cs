@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace VariableTracer
 {
-    public class GraphItWindow : EditorWindow
+    public class VarTracerWindow : EditorWindow
     {
         const int InValidNum = -1;
         static Vector2 mGraphViewScrollPos;
@@ -58,13 +58,14 @@ namespace VariableTracer
         static void Init()
         {
             // Get existing open window or if none, make a new one:
-            GraphItWindow window = (GraphItWindow)EditorWindow.GetWindow(typeof(GraphItWindow), false, "GraphItVariable");
+            VarTracerWindow window = (VarTracerWindow)EditorWindow.GetWindow(typeof(VarTracerWindow), false, "VarTracerWindow");
             window.minSize = new Vector2(230f, 50f);
             window.Show();
         }
         void Awake()
         {
             InitNet();
+            _connectPressed = true;
         }
 
         void InitNet()
@@ -183,6 +184,12 @@ namespace VariableTracer
 
         void OnGUI()
         {
+            if (Event.current.type == EventType.ExecuteCommand && Event.current.commandName.Equals("AppStarted"))
+            {
+                InitNet();
+                _connectPressed = true;
+            }
+
             CheckForResizing();
             InitializeStyles();
 

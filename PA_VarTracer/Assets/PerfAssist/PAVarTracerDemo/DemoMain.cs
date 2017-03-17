@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 
 namespace VariableTracer
 {
@@ -16,6 +17,13 @@ namespace VariableTracer
         void Start()
         {
             _usmooth = new UsMain();
+#if UNITY_EDITOR
+            EditorWindow w = EditorWindow.GetWindow<EditorWindow>("VarTracerWindow");
+            if (w.GetType().Name == "VarTracerWindow")
+            {
+                w.SendEvent(EditorGUIUtility.CommandEvent("AppStarted"));
+            }
+#endif
         }
 
         // Update is called once per frame
@@ -44,6 +52,7 @@ namespace VariableTracer
             VarTracerTools.UpdateVariable("Player", "PlayerV_Y", PlayerScript.GetVelocity().y);
             VarTracerTools.UpdateVariable("Player", "PlayerV_Z", PlayerScript.GetVelocity().z);
             VarTracerTools.UpdateVariable("Player", "PlayerV_T", PlayerScript.GetVelocity().magnitude);
+
             //for (int i = 0; i < 100; i++)
             //{
             //    VarTracerTools.UpdateVariable("Test", string.Format("PlayerV_{0}",i), PlayerScript.GetVelocity().x);
@@ -58,16 +67,16 @@ namespace VariableTracer
                 vps[i] = vp;
             }
 
-            var eps = new EventParm[2];
-            for (int i = 0; i < 2; i++)
-            {
-                EventParm ep;
-                ep.EventName = string.Format("Eve_{0}", i);
-                ep.EventDuration = 1;
-                eps[i] = ep;
-            }
+            //var eps = new EventParm[2];
+            //for (int i = 0; i < 2; i++)
+            //{
+            //    EventParm ep;
+            //    ep.EventName = string.Format("Eve_{0}", i);
+            //    ep.EventDuration = 1;
+            //    eps[i] = ep;
+            //}
 
-            VarTracerTools.SendGroup("Group",vps,eps);
+            VarTracerTools.SendGroup("Group",vps);
             VarTracerTools.SendEvent("Group","TestEvent",0.5f);
 
             timeleft -= Time.deltaTime;

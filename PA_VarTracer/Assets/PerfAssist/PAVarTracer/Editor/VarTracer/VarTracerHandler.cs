@@ -79,7 +79,7 @@ namespace VariableTracer
 
         public static void UpdateVariable(string groupName ,string variableName, long timeStamp, float value)
         {
-            if (!GraphItWindow.isVarTracerStart())
+            if (!VarTracerWindow.isVarTracerStart())
                 return;
             if (!VarTracer.Instance.groups.ContainsKey(groupName))
             {
@@ -125,7 +125,7 @@ namespace VariableTracer
 
         public static void SendEvent(string groupName , long timeStamp, string eventName, float duration = 0)
         {
-            if (!GraphItWindow.isVarTracerStart())
+            if (!VarTracerWindow.isVarTracerStart())
                 return;
 
             if (!VarTracer.Instance.groups.ContainsKey(groupName))
@@ -143,12 +143,12 @@ namespace VariableTracer
 
         public static void StartVarTracer()
         {
-            GraphItWindow.StartVarTracer();
+            VarTracerWindow.StartVarTracer();
         }
 
         public static void StopVarTracer()
         {
-            GraphItWindow.StopVarTracer();
+            VarTracerWindow.StopVarTracer();
         }
     }
 
