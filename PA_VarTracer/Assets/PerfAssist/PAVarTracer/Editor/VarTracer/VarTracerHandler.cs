@@ -123,21 +123,22 @@ namespace VariableTracer
 #endif
         }
 
-        public static void SendEvent(long timeStamp, string eventName, float duration = 0, string desc = "")
+        public static void SendEvent(string groupName , long timeStamp, string eventName, float duration = 0)
         {
             if (!GraphItWindow.isVarTracerStart())
                 return;
-            foreach (var varBody in VarTracer.Instance.groups)
+
+            if (!VarTracer.Instance.groups.ContainsKey(groupName))
             {
-                foreach (var eName in varBody.Value.EventInfos.Keys)
-                {
-                    if (eventName.Equals(eName))
-                    {
-                        varBody.Value.EventInfos[eventName].EventDataList.Add(new EventData(timeStamp, eventName, desc, duration));
-                        break;
-                    }
-                }
+                var body = new VarTracerGroup(groupName);
+                VarTracer.Instance.groups[groupName] = body;
             }
+            
+            var eventInfo = VarTracer.Instance.groups[groupName].EventInfos;
+            if(!eventInfo.ContainsKey(eventName))
+                VarTracer.Instance.groups[groupName].RegistEvent(eventName);
+            
+            eventInfo[eventName].EventDataList.Add(new EventData(timeStamp, eventName, duration));
         }
 
         public static void StartVarTracer()

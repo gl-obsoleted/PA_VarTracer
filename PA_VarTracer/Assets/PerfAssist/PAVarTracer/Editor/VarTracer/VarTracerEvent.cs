@@ -34,19 +34,12 @@ namespace VariableTracer
             get { return m_duration; }
             set { m_duration = value; }
         }
-        private string m_desc;
-        public string Desc
-        {
-            get { return m_desc; }
-            set { m_desc = value; }
-        }
 
-        public EventData(long eventTimeStamp, string eventName, string desc = "", float duration = 0)
+        public EventData(long eventTimeStamp, string eventName, float duration = 0)
         {
             m_timeStamp = eventTimeStamp;
             m_eventName = eventName;
             m_duration = duration;
-            m_desc = desc;
             m_eventFrameIndex = VarTracerNet.Instance.GetCurrentFrameFromTimestamp(m_timeStamp);
         }
     }

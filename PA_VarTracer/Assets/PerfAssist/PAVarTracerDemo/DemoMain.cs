@@ -44,10 +44,31 @@ namespace VariableTracer
             VarTracerTools.UpdateVariable("Player", "PlayerV_Y", PlayerScript.GetVelocity().y);
             VarTracerTools.UpdateVariable("Player", "PlayerV_Z", PlayerScript.GetVelocity().z);
             VarTracerTools.UpdateVariable("Player", "PlayerV_T", PlayerScript.GetVelocity().magnitude);
-            for (int i = 0; i < 250; i++)
+            //for (int i = 0; i < 100; i++)
+            //{
+            //    VarTracerTools.UpdateVariable("Test", string.Format("PlayerV_{0}",i), PlayerScript.GetVelocity().x);
+            //}
+
+            var vps = new VariableParm[100];
+            for (int i = 0; i < 100; i++)
             {
-                
+                VariableParm vp;
+                vp.VariableName = string.Format("Var_{0}",i);
+                vp.VariableValue = PlayerScript.GetVelocity().x;
+                vps[i] = vp;
             }
+
+            var eps = new EventParm[2];
+            for (int i = 0; i < 2; i++)
+            {
+                EventParm ep;
+                ep.EventName = string.Format("Eve_{0}", i);
+                ep.EventDuration = 1;
+                eps[i] = ep;
+            }
+
+            VarTracerTools.SendGroup("Group",vps,eps);
+            VarTracerTools.SendEvent("Group","TestEvent",0.5f);
 
             timeleft -= Time.deltaTime;
             accum += Time.timeScale / Time.deltaTime;

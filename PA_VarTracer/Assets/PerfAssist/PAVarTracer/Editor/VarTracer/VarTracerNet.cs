@@ -35,37 +35,35 @@ namespace VariableTracer
 
         static VartracerJsonAsynObj vartracerJsonObj = new VartracerJsonAsynObj();
 
-        private VarTracerCmdCacher _cmdCacher = new VarTracerCmdCacher();
-
-        private readonly object _locker = new object();
+        //private readonly object _locker = new object();
 
         public void Upate()
         {
-            if (Time.realtimeSinceStartup - m_lastHandleJsonTime >= VarTracerConst.HANDLE_JASON_INTERVAL)
-            {
-                m_lastHandleJsonTime = Time.realtimeSinceStartup;
-                if (VartracerJsonMsgList.Count > 0)
-                {
-                    Thread mThread = new Thread(new ParameterizedThreadStart(handleMsgAsyn));
-                    lock (_locker)
-                    {
-                        mThread.Start(VartracerJsonMsgList.ToArray());
-                        VartracerJsonMsgList.Clear();
-                    }
-                }
+        //    if (Time.realtimeSinceStartup - m_lastHandleJsonTime >= VarTracerConst.HANDLE_JASON_INTERVAL)
+        //    {
+        //        m_lastHandleJsonTime = Time.realtimeSinceStartup;
+        //        if (VartracerJsonMsgList.Count > 0)
+        //        {
+        //            Thread mThread = new Thread(new ParameterizedThreadStart(handleMsgAsyn));
+        //            lock (_locker)
+        //            {
+        //                mThread.Start(VartracerJsonMsgList.ToArray());
+        //                VartracerJsonMsgList.Clear();
+        //            }
+        //        }
 
-                if (vartracerJsonObj.readerFlag)
-                {
-                    var result = vartracerJsonObj.readResovleJsonResult();
-                    if (result != null)
-                    {
-                        foreach (var vjt in result)
-                        {
-                            VarTracerHandler.ResoloveJsonMsg(vjt);
-                        }
-                    }
-                }
-            }
+        //        if (vartracerJsonObj.readerFlag)
+        //        {
+        //            var result = vartracerJsonObj.readResovleJsonResult();
+        //            if (result != null)
+        //            {
+        //                foreach (var vjt in result)
+        //                {
+        //                    VarTracerHandler.ResoloveJsonMsg(vjt);
+        //                }
+        //            }
+        //        }
+        //    }
         }
 
         public void handleMsgAsyn(object o)
@@ -97,19 +95,12 @@ namespace VariableTracer
             {
                 var groupName = c.ReadString();
                 //NetUtil.Log("read group Name: {0}.", groupName);
-
-                //if (!_cmdCacher.GroupCmdPackage.ContainsKey(groupName))
-                //    _cmdCacher.GroupCmdPackage.Add(groupName, new NamePackage());
-
-                //var group = _cmdCacher.GroupCmdPackage[groupName];
                 var variableCount = c.ReadInt32();
                 //NetUtil.Log("read var count : {0}.", variableCount);
                 for (int j = 0; j < variableCount; j++)
                 {
                     var variableName = c.ReadString();
                     //NetUtil.Log("read variableName: {0}.", variableName);
-                    //if(!group.VariableDict.ContainsKey(variableName))
-                    //    group.VariableDict.Add(variableName,new CacheList<VariableCmdParam>());
                     var sessionCount = c.ReadInt32();
                     //NetUtil.Log("read sessionCount: {0}.", sessionCount);
                     for (int k = 0; k < sessionCount; k++)
@@ -133,13 +124,12 @@ namespace VariableTracer
                 for (int j = 0; j < eventCount; j++)
                 {
                     var eventName = c.ReadString();
-                    //if (!group.EventDict.ContainsKey(eventName))
-                    //    group.EventDict.Add(eventName, new CacheList<EventCmdParam>());
                     var sessionCount = c.ReadInt32();
                     for (int k = 0; k < sessionCount; k++)
                     {
                         long stamp = c.ReadLong();
                         float duration = c.ReadFloat();
+                        VarTracerHandler.SendEvent(groupName, stamp, eventName, duration);
                     }
                 }
             }

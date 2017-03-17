@@ -4,34 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using UnityEngine;
 
-public class VarGroup 
-{
-    public VarGroup(string name ,VariableParm[] vp =null)
-    {
-        Name = name;
-        VarItems = vp;       
-    }
-
-    public VarGroup(string name, EventParm[] ep = null)
-    {
-        Name = name;
-        EventItems = ep;
-    }
-
-    public VarGroup(string name, VariableParm[] vp,EventParm[] ep)
-    {
-        Name = name;
-        VarItems = vp;
-        EventItems = ep;
-    }
-
-    public string Name;
-    public VariableParm[] VarItems;
-    public EventParm[] EventItems;
-    public int RuningState;
-    public long TimeStamp;
-}
-
 public struct VariableParm
 {
     public string VariableName;

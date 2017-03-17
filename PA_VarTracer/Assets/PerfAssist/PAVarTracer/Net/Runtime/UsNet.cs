@@ -151,8 +151,11 @@ namespace VariableTracer
             if (!IsSendAvaiable())
                 return;
             byte[] cmdLenBytes = BitConverter.GetBytes((int)cmd.WrittenLen);
-            _tcpClient.GetStream().Write(cmdLenBytes, 0, cmdLenBytes.Length);
-            _tcpClient.GetStream().Write(cmd.Buffer, 0, cmd.WrittenLen);
+            if(_tcpClient.GetStream().CanWrite)
+            {
+                _tcpClient.GetStream().Write(cmdLenBytes, 0, cmdLenBytes.Length);
+                _tcpClient.GetStream().Write(cmd.Buffer, 0, cmd.WrittenLen);
+            }
             //Debug.Log(string.Format("B cmd len = {0} size = {1})", cmd.WrittenLen, cmdLenBytes.Length));
         }
 

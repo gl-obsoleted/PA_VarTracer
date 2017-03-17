@@ -5,24 +5,29 @@ using System.IO;
 using System.Threading;
 using UnityEngine;
 //Demo
-//VarTracerTools.UpdateVariable("CameraV_X", Camera.main.velocity.x);
-//VarTracerTools.SendEvent("JUMP", 1.0f, "PLAYER JUMP");
-//VarTracerTools.SendEvent("ATTACK");
+//VarTracerTools.SendEvent("Group","TestEvent",0.5f);
+//VarTracerTools.UpdateVariable("Player", "PlayerV_X", PlayerScript.GetVelocity().x);
 
+//var vps = new VariableParm[100];
+//for (int i = 0; i < 100; i++)
 //{
-//    VariableParm vp ;
-//    vp.VariableName = "ValueName";
-//    vp.VariableValue = 1.0f;
-
-//    EventParm ep;
-//    ep.EventName = "EventName";
-//    ep.EventDuration = 1.5f;
-//    ep.EventDesc = "EventDesc";
-
-//    VarTracerTools.SendGroup(
-//        new Group("Test", new VariableParm[] { vp }, new EventParm[] { ep })
-//    );
+//    VariableParm vp;
+//    vp.VariableName = string.Format("Var_{0}",i);
+//    vp.VariableValue = PlayerScript.GetVelocity().x;
+//    vps[i] = vp;
 //}
+
+//var eps = new EventParm[2];
+//for (int i = 0; i < 2; i++)
+//{
+//    EventParm ep;
+//    ep.EventName = string.Format("Eve_{0}", i);
+//    ep.EventDuration = 1;
+//    eps[i] = ep;
+//}
+
+//VarTracerTools.SendGroup("Group",vps,eps);
+
 namespace VariableTracer
 {
     public class VarTracerTools
@@ -48,40 +53,39 @@ namespace VariableTracer
         {
             VarTracerSender.Instance.CmdCacher.SendEvent(groupName, eventName, duration);
         }
-}
 
-    //public static void SendGroup(VarGroup vjp)
-    //{
-    //    if (vjp == null)
-    //        return;
+        public static void SendGroup(string name, VariableParm[] vp = null)
+        {
+            SendGroup(name, vp,null);
+        }
 
-    //    NamePackage vtjt = new NamePackage();
-    //    vtjt.logicName = vjp.Name;
-    //    vtjt.runingState = vjp.RuningState;
+        public static void SendGroup(string name, EventParm[] ep = null)
+        {
+            SendGroup(name, null, ep);
+        }
 
-    //    if(vjp.VarItems !=null)
-    //    {
-    //        int count = vjp.VarItems.Length;
-    //        vtjt.variableName  = new string [count];
-    //        vtjt.variableValue = new float[count];
-    //        for (int i = 0; i < count; i++)
-    //        {
-    //            vtjt.variableName[i] = vjp.VarItems[i].VariableName;
-    //            vtjt.variableValue[i] = vjp.VarItems[i].VariableValue;
-    //        }
-    //    }
+        public static void SendGroup(string name, VariableParm[] vp, EventParm[] ep)
+        {
+            if (string.IsNullOrEmpty(name))
+                name = VarTracerConst.DEFAULT_GROUP_NAME;
+            if(vp !=null)
+            {
+                foreach (var variable in vp)
+                {
+                    if (!string.IsNullOrEmpty(variable.VariableName))
+                        UpdateVariable(name, variable.VariableName, variable.VariableValue);
+                }
+            }
 
-    //    if(vjp.EventItems !=null)
-    //    {
-    //        int count = vjp.EventItems.Length;
-    //        vtjt.eventName = new string[count];
-    //        vtjt.eventDuration = new float[count];
-    //        for (int i = 0; i < count; i++)
-    //        {
-    //            vtjt.eventName[i] = vjp.EventItems[i].EventName;
-    //            vtjt.eventDuration[i] = vjp.EventItems[i].EventDuration;
-    //        }
-    //    }
-    //    VarTracerSender.Instance.SendJsonMsg(vtjt);
-    //}
+            if(ep != null)
+            {
+                foreach (var eve in ep)
+                {
+                    if (!string.IsNullOrEmpty(eve.EventName))
+                        SendEvent(name,eve.EventName, eve.EventDuration);
+                }
+            }
+        }
+    }
+  
 }
