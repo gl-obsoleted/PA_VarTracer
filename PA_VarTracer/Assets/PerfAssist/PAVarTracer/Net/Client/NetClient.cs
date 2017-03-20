@@ -96,7 +96,6 @@ namespace  VariableTracer{
             }
         }
 
-
         public void Tick_ReceivingData()
         {
             try

@@ -33,51 +33,8 @@ namespace VariableTracer
             get { return vartracerJsonMsgList; }
         }
 
-        static VartracerJsonAsynObj vartracerJsonObj = new VartracerJsonAsynObj();
-
-        //private readonly object _locker = new object();
-
         public void Upate()
         {
-        //    if (Time.realtimeSinceStartup - m_lastHandleJsonTime >= VarTracerConst.HANDLE_JASON_INTERVAL)
-        //    {
-        //        m_lastHandleJsonTime = Time.realtimeSinceStartup;
-        //        if (VartracerJsonMsgList.Count > 0)
-        //        {
-        //            Thread mThread = new Thread(new ParameterizedThreadStart(handleMsgAsyn));
-        //            lock (_locker)
-        //            {
-        //                mThread.Start(VartracerJsonMsgList.ToArray());
-        //                VartracerJsonMsgList.Clear();
-        //            }
-        //        }
-
-        //        if (vartracerJsonObj.readerFlag)
-        //        {
-        //            var result = vartracerJsonObj.readResovleJsonResult();
-        //            if (result != null)
-        //            {
-        //                foreach (var vjt in result)
-        //                {
-        //                    VarTracerHandler.ResoloveJsonMsg(vjt);
-        //                }
-        //            }
-        //        }
-        //    }
-        }
-
-        public void handleMsgAsyn(object o)
-        {
-            string[] strArray = (string[])o;
-            VarTracerJsonType[] writeVjt = new VarTracerJsonType[strArray.Length];
-            for (int i = 0; i < strArray.Length; i++)
-            {
-                var str = strArray[i];
-                var resolved = JsonUtility.FromJson<VarTracerJsonType>(str);
-                //Debug.LogFormat("Rec = {0}",resolved.testIndex);
-                writeVjt[i] = resolved;
-            }
-            vartracerJsonObj.writeResovleJsonResult(writeVjt);
         }
 
         public int GetCurrentFrameFromTimestamp(long timeStamp)
@@ -137,11 +94,6 @@ namespace VariableTracer
             return true;
         }
 
-        public bool Handle_ServerLogging(eNetCmd cmd, UsCmd c)
-        {
-            return true;
-        }
-
         public static VarTracerNet Instance
         {
             get
@@ -159,60 +111,4 @@ namespace VariableTracer
         }
     }
 
-    public class VartracerJsonAsynObj
-    {
-        public bool readerFlag = false;
-        public VarTracerJsonType[] m_resovleResult;
-        public VarTracerJsonType[] readResovleJsonResult()
-        {
-            if (m_resovleResult == null)
-                return null;
-            lock (this)
-            {
-                if (!readerFlag)
-                {
-                    try
-                    {
-                        Monitor.Wait(this);
-                    }
-                    catch (SynchronizationLockException e)
-                    {
-                        Console.WriteLine(e);
-                    }
-                    catch (ThreadInterruptedException e)
-                    {
-                        Console.WriteLine(e);
-                    }
-                }
-                readerFlag = false;
-                Monitor.Pulse(this);
-            }
-            return m_resovleResult;
-        }
-
-        public void writeResovleJsonResult(VarTracerJsonType[] resovleResult)
-        {
-            lock (this)
-            {
-                if (readerFlag)
-                {
-                    try
-                    {
-                        Monitor.Wait(this);
-                    }
-                    catch (SynchronizationLockException e)
-                    {
-                        Console.WriteLine(e);
-                    }
-                    catch (ThreadInterruptedException e)
-                    {
-                        Console.WriteLine(e);
-                    }
-                }
-                m_resovleResult = resovleResult;
-                readerFlag = true;
-                Monitor.Pulse(this);
-            }
-        }
-    }
 }

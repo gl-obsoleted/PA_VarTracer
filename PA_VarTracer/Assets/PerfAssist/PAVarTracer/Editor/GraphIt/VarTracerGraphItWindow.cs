@@ -53,6 +53,7 @@ namespace VariableTracer
         public static GUIStyle VarSelectedBtnStyle;
         public static GUIStyle EventButtonStyle;
 
+        //static bool testFlag = false;
 
         [MenuItem("Window/PerfAssist" + "/VarTracer")]
         static void Init()
@@ -92,10 +93,10 @@ namespace VariableTracer
                 bool constainsCamera = VarTracer.Instance.groups.ContainsKey("Camera");
                 if (!constainsCamera || VarTracer.Instance.groups["Camera"].VariableDict.Count == 0)
                 {
-                    VarTracerHandler.DefineVariable("CameraV_X", "Camera");
-                    VarTracerHandler.DefineVariable("CameraV_Y", "Camera");
-                    VarTracerHandler.DefineVariable("CameraV_Z", "Camera");
-                    VarTracerHandler.DefineVariable("CameraV_T", "Camera");
+                    //VarTracerHandler.DefineVariable("CameraV_X", "Camera");
+                    //VarTracerHandler.DefineVariable("CameraV_Y", "Camera");
+                    //VarTracerHandler.DefineVariable("CameraV_Z", "Camera");
+                    //VarTracerHandler.DefineVariable("CameraV_T", "Camera");
 
                     VarTracerHandler.DefineVariable("PlayerV_X", "Player");
                     VarTracerHandler.DefineVariable("PlayerV_Y", "Player");
@@ -107,10 +108,10 @@ namespace VariableTracer
                     VarTracerHandler.DefineEvent("JUMP", "Camera");
                     VarTracerHandler.DefineEvent("ATTACK", "Camera");
 
-                    VarTracerHandler.DefineVariable("NpcV_X", "Npc");
-                    VarTracerHandler.DefineVariable("NpcV_Y", "Npc");
-                    VarTracerHandler.DefineVariable("NpcV_Z", "Npc");
-                    VarTracerHandler.DefineVariable("NpcV_T", "Npc");
+                    //VarTracerHandler.DefineVariable("NpcV_X", "Npc");
+                    //VarTracerHandler.DefineVariable("NpcV_Y", "Npc");
+                    //VarTracerHandler.DefineVariable("NpcV_Z", "Npc");
+                    //VarTracerHandler.DefineVariable("NpcV_T", "Npc");
                 }
             }
             VarTracer.AddChannel();
@@ -120,15 +121,12 @@ namespace VariableTracer
         public static void StartVarTracer()
         {
             m_isStart = true;
-            //EditorApplication.isPaused = false;
             m_isPaused = false;
         }
 
         public static void StopVarTracer()
         {
             VarTracerUtils.StopTimeStamp = VarTracerUtils.GetTimeStamp();
-            //m_isStart = false;
-            //EditorApplication.isPaused = true;
             m_isPaused = true;
         }
 
@@ -155,13 +153,22 @@ namespace VariableTracer
 
         void Update()
         {
+#if UNITY_EDITOR
+            foreach (KeyValuePair<string, VarTracerGraphItData> kv in VarTracer.Instance.Graphs)
+            {
+                VarTracerGraphItData g = kv.Value;
+                if (g.mReadyForUpdate && !g.mFixedUpdate)
+                {
+                    VarTracer.Instance.StepGraphInternal(g);
+                }
+            }
+#endif
             if (_connectPressed)
             {
                 VarTracerNetUtils.Connect(_IPField);
                 _connectPressed = false;
             }
             VarTracerNet.Instance.Upate();
-
             Repaint();
         }
         public void CheckForResizing()
@@ -195,6 +202,43 @@ namespace VariableTracer
 
             Handles.BeginGUI();
             Handles.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(1, 1, 1));
+
+            //if (!testFlag)
+            //{
+            //    CreateLineMaterial();
+            //    //Material material = new Material(Shader.Find("Diffuse"));
+            //    mLineMaterial.SetPass(0);
+
+            //    GL.Color(new Color(1, 1, 1));
+
+            //    // 构建三角形的三个顶点，并赋值给Mesh.vertices
+            //    Mesh mesh = new Mesh();
+            //    mesh.vertices = new Vector3[] {
+            //    new Vector3 (50, 50, 0),
+            //    new Vector3 (200, 200, 0),
+            //    new Vector3 (500,500, 0),
+            //};
+
+            //    // 构建三角形的顶点顺序，因为这里只有一个三角形，
+            //    // 所以只能是(0, 1, 2)这个顺序。
+            //    mesh.triangles = new int[3] { 0, 1, 2 };
+
+            //    mesh.RecalculateNormals();
+            //    mesh.RecalculateBounds();
+
+            //    //// 使用Shader构建一个材质，并设置材质的颜色。
+            //    //material.SetColor("_Color", Color.yellow);
+
+            //    Graphics.DrawMeshNow(mesh, Handles.matrix);
+
+            //    GL.Begin(GL.LINES);
+            //    GL.Color(new Color(1, 1, 1));
+            //    Plot(10, 10, 500, 500);
+            //    Plot(0, 500, 500, 500);
+            //    GL.End();
+            //    //testFlag = !testFlag;
+            //}
+
             //control窗口内容
             GUILayout.BeginArea(new Rect(0, m_controlScreenPosY, m_winWidth, m_controlScreenHeight));
             {

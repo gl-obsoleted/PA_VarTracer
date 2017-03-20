@@ -18,7 +18,7 @@ namespace VariableTracer
         {
             _usmooth = new UsMain();
 #if UNITY_EDITOR
-            EditorWindow w = EditorWindow.GetWindow<EditorWindow>("VarTracerWindow");
+            EditorWindow w = EditorWindow.GetWindow<EditorWindow>("VarTracerWindow",false);
             if (w.GetType().Name == "VarTracerWindow")
             {
                 w.SendEvent(EditorGUIUtility.CommandEvent("AppStarted"));
@@ -76,8 +76,8 @@ namespace VariableTracer
             //    eps[i] = ep;
             //}
 
-            VarTracerTools.SendGroup("Group",vps);
-            VarTracerTools.SendEvent("Group","TestEvent",0.5f);
+            //VarTracerTools.SendGroup("Group",vps);
+            //VarTracerTools.SendEvent("Group","TestEvent",0.5f);
 
             timeleft -= Time.deltaTime;
             accum += Time.timeScale / Time.deltaTime;

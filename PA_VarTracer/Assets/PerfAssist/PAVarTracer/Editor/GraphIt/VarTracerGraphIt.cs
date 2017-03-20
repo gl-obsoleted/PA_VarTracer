@@ -160,7 +160,6 @@ namespace VariableTracer
                 {
                     GameObject go = new GameObject("GraphIt");
                     go.hideFlags = HideFlags.HideAndDontSave;
-                    go.isStatic = true;
                     mInstance = go.AddComponent<VarTracer>();
                 }
                 return mInstance;
@@ -170,7 +169,7 @@ namespace VariableTracer
             }
         }
 
-        void StepGraphInternal(VarTracerGraphItData graph)
+        public void StepGraphInternal(VarTracerGraphItData graph)
         {
 #if UNITY_EDITOR
             foreach (KeyValuePair<string, VarTracerDataInternal> entry in graph.mData)
@@ -203,31 +202,16 @@ namespace VariableTracer
         // Update is called once per frame
         void LateUpdate()
         {
-#if UNITY_EDITOR
-            foreach (KeyValuePair<string, VarTracerGraphItData> kv in Graphs)
-            {
-                VarTracerGraphItData g = kv.Value;
-                if (g.mReadyForUpdate && !g.mFixedUpdate)
-                {
-                    StepGraphInternal(g);
-                }
-            }
-#endif
-        }
-
-        // Update is called once per fixed frame
-        void FixedUpdate()
-        {
-#if UNITY_EDITOR
-            foreach (KeyValuePair<string, VarTracerGraphItData> kv in Graphs)
-            {
-                VarTracerGraphItData g = kv.Value;
-                if (g.mReadyForUpdate && g.mFixedUpdate)
-                {
-                    StepGraphInternal(g);
-                }
-            }
-#endif
+//#if UNITY_EDITOR
+//            foreach (KeyValuePair<string, VarTracerGraphItData> kv in Graphs)
+//            {
+//                VarTracerGraphItData g = kv.Value;
+//                if (g.mReadyForUpdate && !g.mFixedUpdate)
+//                {
+//                    StepGraphInternal(g);
+//                }
+//            }
+//#endif
         }
 
         /// <summary>

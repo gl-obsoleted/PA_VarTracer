@@ -246,6 +246,3 @@ public class EventCmdParam
     public float _duration = 0.0f;
 }
 
-public class VarTracerJsonType
-{
-}
